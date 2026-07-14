@@ -4,24 +4,27 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>OpenCode Mobile — OpenCode AI Coding Agent on Android</title>
-<meta name="description" content="Free, open-source Android client for the OpenCode AI coding agent. Connect your phone to a self-hosted OpenCode server and code from anywhere. F-Droid or APK." />
+<meta name="description" content="Run opencode serve on your laptop or VPS. OpenCode Mobile connects from your Android phone — stream AI sessions, review diffs, approve tool calls. Best with Tailscale." />
 <meta name="keywords" content="OpenCode Mobile, OpenCode Android client, AI coding agent on Android, self-hosted AI coding, mobile coding agent, OpenCode app, open source Android coding" />
 <meta name="theme-color" content="#3b82f6" />
 <link rel="canonical" href="https://dzianisv.github.io/opencode-mobile/" />
 <link rel="icon" type="image/png" href="fdroid/repo/icons/icon.png" />
+<!-- Vercel Web Analytics — privacy-first, no cookies -->
+<script defer src="https://cdn.vercel-insights.com/v1/speed-insights/script.js"></script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="OpenCode Mobile" />
 <meta property="og:title" content="OpenCode Mobile — OpenCode AI Coding Agent on Android" />
-<meta property="og:description" content="Free, open-source Android client for the OpenCode AI coding agent. Connect to your own self-hosted OpenCode server and code from your phone." />
+<meta property="og:description" content="Remote control for opencode serve. Run opencode on your machine, drive it from your Android phone — stream sessions, review diffs, approve tool calls. Best with Tailscale." />
 <meta property="og:url" content="https://dzianisv.github.io/opencode-mobile/" />
 <meta property="og:image" content="https://dzianisv.github.io/opencode-mobile/og.png" />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="OpenCode Mobile — OpenCode AI Coding Agent on Android" />
-<meta name="twitter:description" content="Free, open-source Android client for the OpenCode AI coding agent. Connect to your own self-hosted OpenCode server and code from your phone." />
+<meta name="twitter:description" content="Remote control for opencode serve. Run opencode on your machine, drive it from your Android phone — stream sessions, review diffs, approve tool calls. Best with Tailscale." />
 <meta name="twitter:image" content="https://dzianisv.github.io/opencode-mobile/og.png" />
 
 <!-- Structured data -->
@@ -32,7 +35,7 @@
   "name": "OpenCode Mobile",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Android",
-  "description": "Free, open-source Android client for the OpenCode AI coding agent. Connect to your own self-hosted OpenCode server over Tailscale, a tunnel, or your local network and write, review, and ship code from your phone.",
+  "description": "Remote control for opencode serve. Run opencode on your laptop or VPS, connect from your Android phone — stream AI sessions, review diffs, and approve tool calls from anywhere. Best with Tailscale.",
   "url": "https://dzianisv.github.io/opencode-mobile/",
   "downloadUrl": "https://github.com/dzianisv/opencode-mobile/releases/latest",
   "license": "https://opensource.org/licenses/MIT",
@@ -84,7 +87,7 @@
       "name": "Is there an iOS app?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. OpenCode Mobile is Android only. There is no iOS or iPadOS build."
+        "text": "Not for download yet. The iPhone and iPad build is in active development, including native build CI and TestFlight automation."
       }
     },
     {
@@ -248,7 +251,7 @@ footer a{margin:0 8px}
       <line x1="46" y1="26" x2="38" y2="58" stroke="#9aa6be" stroke-width="5" stroke-linecap="round"/>
     </svg>
     <h1>OpenCode Mobile</h1>
-    <p class="tagline">The free, open-source Android client for the OpenCode AI coding agent. Connect to your own self-hosted OpenCode server and write, review, and ship code from your phone.</p>
+    <p class="tagline">Run <code>opencode serve</code> on your laptop or VPS. OpenCode Mobile connects to it from your phone — stream AI sessions, review diffs, and approve tool calls from anywhere. Best with Tailscale.</p>
     <div class="cta">
       <a class="btn btn-primary" href="download/">Download for Android</a>
       <a class="btn" href="https://dzianisv.github.io/opencode-mobile/fdroid/repo">Get it on F-Droid</a>
@@ -262,27 +265,52 @@ footer a{margin:0 8px}
 <section id="what">
   <div class="wrap">
     <h2>What is OpenCode Mobile?</h2>
-    <p>OpenCode Mobile is a thin Android client for the <a href="https://github.com/sst/opencode">OpenCode</a> AI coding agent, built with React Native and Expo. It is not a standalone agent — it connects to an OpenCode server that <strong>you</strong> run yourself (on your laptop, a VPS, or anywhere you control) and speaks its HTTP + SSE API to browse sessions, stream responses, and review file changes.</p>
-    <p>All AI model calls happen on your server using your own API keys. The app never proxies your code or conversations through anyone else's servers. It is <strong>free and open-source</strong> under the MIT license — no feature gate, no ads, and no analytics you did not opt into.</p>
+    <p>OpenCode Mobile is a remote control for <a href="https://github.com/sst/opencode">opencode</a>. Start <code>opencode serve --hostname 0.0.0.0 --port 4096</code> on your machine, point the app at it, and you're driving a full AI coding session from your phone. It speaks the opencode HTTP + SSE API directly — no middleman, no cloud relay.</p>
+    <p>The app has <strong>zero AI built in</strong>. All inference runs on your server with your own API keys. The recommended connectivity setup is <strong>Tailscale</strong>: install it on both your laptop and phone and your laptop gets a stable private hostname that works from anywhere, no port forwarding required. You can also use WireGuard, Cloudflare Tunnel, ngrok, or plain LAN. It is <strong>free and open-source</strong> (MIT) — no account, no ads, no telemetry unless you opt in.</p>
   </div>
 </section>
 
 <section id="screenshots">
   <div class="wrap">
     <h2>See it in action</h2>
-    <p class="muted" style="margin-bottom:18px">Connect to your server, chat with the agent, review every diff before it lands — all from your phone.</p>
+    <p class="muted" style="margin-bottom:18px">Connect to your server, start a session, watch the agent work — all from your phone.</p>
+    <div style="text-align:center;margin-bottom:28px">
+      <video autoplay loop muted playsinline
+        style="max-width:320px;width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px rgba(0,0,0,.4)"
+        poster="screenshots/01.png">
+        <source src="demo.mp4" type="video/mp4" />
+        <img src="demo.gif" alt="OpenCode Mobile demo: connect to opencode serve, start a session, stream AI responses" style="max-width:320px;width:100%;border-radius:18px" />
+      </video>
+      <p class="muted" style="font-size:.85rem;margin-top:8px">10× speed — full session from connect to AI reply</p>
+    </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
-      <figure style="margin:0;flex:1 1 240px;max-width:300px">
-        <img src="screenshots/01.png" alt="OpenCode Mobile connection screen: add a server URL or connect via Cloudflare Tunnel or ngrok" width="1080" height="2400" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
-        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Connect to your own server</figcaption>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/01.png" alt="OpenCode Mobile: add connection screen — enter your opencode server URL" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Connect to your opencode server</figcaption>
       </figure>
-      <figure style="margin:0;flex:1 1 240px;max-width:300px">
-        <img src="screenshots/02.png" alt="OpenCode Mobile streaming chat with the AI agent and an inline approve/reject tool-call prompt" width="1080" height="2400" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
-        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Stream replies, approve tool calls</figcaption>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/02.png" alt="OpenCode Mobile: sessions list loaded from server" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Sessions load from your server</figcaption>
       </figure>
-      <figure style="margin:0;flex:1 1 240px;max-width:300px">
-        <img src="screenshots/03.png" alt="OpenCode Mobile diff viewer showing added and removed lines for a file the agent changed" width="1080" height="2400" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
-        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Review every diff before it lands</figcaption>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/03.png" alt="OpenCode Mobile: session chat view, message sent to AI agent" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Send tasks to your AI agent</figcaption>
+      </figure>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/04.png" alt="OpenCode Mobile: AI agent running tool calls — reading and writing files" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Watch tool calls stream live</figcaption>
+      </figure>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/05.png" alt="OpenCode Mobile: AI agent writing TypeScript files to disk" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">File writes happen on your server</figcaption>
+      </figure>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/06.png" alt="OpenCode Mobile: completed coding task — hello.ts created successfully" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Task complete — code on your machine</figcaption>
+      </figure>
+      <figure style="margin:0;flex:1 1 200px;max-width:260px">
+        <img src="screenshots/07.png" alt="OpenCode Mobile: settings screen with AI model selection" width="1280" height="2560" loading="lazy" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08)" />
+        <figcaption class="muted" style="text-align:center;font-size:.9rem;margin-top:8px">Pick any model your server supports</figcaption>
       </figure>
     </div>
   </div>
@@ -364,7 +392,7 @@ OPENCODE_SERVER_PASSWORD=yourpassword opencode serve --hostname 0.0.0.0 --port 4
       </details>
       <details>
         <summary>Is there an iOS app?</summary>
-        <p>No. OpenCode Mobile is Android only. There is no iOS or iPadOS build. More on the <a href="ios/">iOS / iPhone page</a>.</p>
+        <p>Not for download yet. The iPhone and iPad build is in active development, including native build CI and TestFlight automation. Follow the <a href="ios/">iOS / iPhone progress page</a>.</p>
       </details>
       <details>
         <summary>Where do my API keys live?</summary>

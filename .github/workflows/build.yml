@@ -86,6 +86,10 @@ jobs:
           VERSION=$(node -p "require('./app.json').expo.version")
           echo "SENTRY_RELEASE=opencode-mobile@${VERSION}" >> "$GITHUB_ENV"
           echo "SENTRY_DIST=${VERSION}" >> "$GITHUB_ENV"
+          if [[ -z "${{ secrets.SENTRY_AUTH_TOKEN }}" ]]; then
+            echo "SENTRY_DISABLE_AUTO_UPLOAD=true" >> "$GITHUB_ENV"
+            echo "Sentry auto-upload disabled (no SENTRY_AUTH_TOKEN secret)"
+          fi
           echo "Sentry release=opencode-mobile@${VERSION} dist=${VERSION}"
 
       - name: Expo prebuild

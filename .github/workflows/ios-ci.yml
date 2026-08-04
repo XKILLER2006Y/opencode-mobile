@@ -55,8 +55,12 @@ jobs:
   ios-build:
     name: Unsigned iOS Simulator build
     needs: test
-    # macos-15 ships Xcode 16.x, which React Native 0.86 / Expo SDK 57 require.
-    runs-on: macos-15
+    # macos-26 ships Xcode 26.x (Swift 6.2+), required by Expo SDK 57's SwiftPM
+    # packages: expo-modules-jsi and @expo/expo-modules-macros-plugin both declare
+    # swift-tools-version 6.2. macos-15 (Xcode 16.4, Swift 6.1) fails package
+    # resolution with "package 'apple' is using Swift tools version 6.2.0 but the
+    # installed version is 6.1.0".
+    runs-on: macos-26
     timeout-minutes: 45
     env:
       # No source-map upload from CI (no Sentry auth token here); keep the build hermetic.

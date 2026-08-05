@@ -5,6 +5,23 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-05 — Merged: remote connectivity + CI keystore fix
+
+- PR #2 `fix/ci-keytool-keystore` → main (`43c2b11`): `rm -f
+  android/app/debug.keystore` before `keytool -genkey` in
+  `cua-smoke.yml`, `activation-e2e.yml`, `publish-fdroid.yml`. Root cause:
+  `expo prebuild` already generates the debug keystore, so keytool failed
+  with "alias androiddebugkey already exists" on every run — killed CUA
+  Smoke, Activation E2E, and publish-fdroid.
+- PR #1 `feat/remote-connectivity` → main (`fc11770`), merge commit for the
+  entry below. All automated checks green on merge: Build Android APK,
+  iOS CI, Activation E2E (Maestro). CUA Smoke deferred to human (needs
+  Azure secrets + Mac emulator on this repo).
+- Main CI after both merges: Build Android APK ✅, iOS CI ✅, Activation
+  E2E ✅.
+
+---
+
 ## 2026-08-05 — Remote connectivity: opencode-remote CLI + QR pairing
 
 Branch: `feat/remote-connectivity` → `main`

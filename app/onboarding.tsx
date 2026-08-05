@@ -4,7 +4,7 @@ import { router } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { getTheme, theme } from "../src/lib/theme"
-import { completeOnboarding } from "../src/lib/onboarding-secure"
+import { useOnboarding } from "../src/stores/onboarding"
 
 type Step = "guide" | "helper"
 
@@ -22,7 +22,9 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState<Step>("guide")
 
   const handleSkip = async () => {
-    await completeOnboarding()
+    // complete() flips the root gate's store state synchronously, so the
+    // normal Stack replaces the onboarding Stack before we replace to (tabs).
+    await useOnboarding.getState().complete()
     router.replace("/(tabs)")
   }
 

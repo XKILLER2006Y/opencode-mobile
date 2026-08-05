@@ -11,6 +11,7 @@ import { useConnections } from "../src/stores/connections"
 import { useEvents } from "../src/stores/events"
 import { useCatalog } from "../src/stores/catalog"
 import { useSettings } from "../src/stores/settings"
+import { useOnboarding } from "../src/stores/onboarding"
 import { useLoadedFonts } from "../src/lib/fonts"
 import { AuthGate } from "../src/components/AuthGate"
 import { ErrorBoundary } from "../src/components/ErrorBoundary"
@@ -26,7 +27,8 @@ function RootLayout() {
   const { t } = useTranslation()
 
   const { initialize: initAuth, isLoading: authLoading } = useAuth()
-  const { loadConnections, isLoading: connectionsLoading, client } = useConnections()
+  const { loadConnections, isLoading: connectionsLoading, client, connections } = useConnections()
+  const onboardingCompleted = useOnboarding((s) => s.completed)
   const { loaded: fontsLoaded } = useLoadedFonts()
   const sseStarted = useRef(false)
   const notifPermissionRequested = useRef(false)
@@ -38,6 +40,7 @@ function RootLayout() {
     initAuth()
     loadConnections()
     useSettings.getState().load()
+    void useOnboarding.getState().load()
 
     // Connect notification preferences to the notification module
     notifications.configure(() => useSettings.getState().notifications)
@@ -124,7 +127,26 @@ function RootLayout() {
     }
   }, [client])
 
-  const isLoading = authLoading || connectionsLoading || consentState === "loading" || !fontsLoaded
+  const isLoading =
+    authLoading || connectionsLoading || consentState === "loading" || !fontsLoaded || onboardingCompleted === null
+
+  const showOnboarding = onboardingCompleted === false && connections.length === 0
+
+  // Shared chrome for both Stack variants (normal + onboarding) so the modal
+  // screens (connect/scan, connection/add) look identical whichever gate
+  // rendered them. The root gate flips when onboarding completes — if the
+  // user is mid-modal on connect/scan when the flag flips, that route MUST
+  // still be registered in the new Stack or the navigation state breaks.
+  const screenOptions = {
+    headerStyle: {
+      backgroundColor: isDark ? "#000000" : "#F2F2F7",
+    },
+    headerTintColor: isDark ? "#FFFFFF" : "#000000",
+    headerTitleStyle: { fontFamily: "Inter-SemiBold" },
+    contentStyle: {
+      backgroundColor: isDark ? "#000000" : "#F2F2F7",
+    },
+  }
 
   if (isLoading) {
     return (
@@ -147,48 +169,57 @@ function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <BottomSheetModalProvider>
             <AuthGate>
-            <Stack
-              screenOptions={{
-                headerStyle: {
-                  backgroundColor: isDark ? "#000000" : "#F2F2F7",
-                },
-                headerTintColor: isDark ? "#FFFFFF" : "#000000",
-                headerTitleStyle: { fontFamily: "Inter-SemiBold" },
-                contentStyle: {
-                  backgroundColor: isDark ? "#000000" : "#F2F2F7",
-                },
-              }}
-            >
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="session/[id]"
-                options={{
-                  title: t("session.titleFallback"),
-                  presentation: "card",
-                }}
-              />
-              <Stack.Screen
-                name="connection/add"
-                options={{
-                  title: t("nav.addConnectionTitle"),
-                  presentation: "modal",
-                }}
-              />
-              <Stack.Screen
-                name="connection/[id]"
-                options={{
-                  title: t("nav.editConnectionTitle"),
-                  presentation: "modal",
-                }}
-              />
-              <Stack.Screen
-                name="connect/scan"
-                options={{
-                  headerShown: false,
-                  presentation: "modal",
-                }}
-              />
-            </Stack>
+            {showOnboarding ? (
+              <Stack screenOptions={screenOptions}>
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="connect/scan"
+                  options={{
+                    headerShown: false,
+                    presentation: "modal",
+                  }}
+                />
+                <Stack.Screen
+                  name="connection/add"
+                  options={{
+                    title: t("nav.addConnectionTitle"),
+                    presentation: "modal",
+                  }}
+                />
+              </Stack>
+            ) : (
+              <Stack screenOptions={screenOptions}>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="session/[id]"
+                  options={{
+                    title: t("session.titleFallback"),
+                    presentation: "card",
+                  }}
+                />
+                <Stack.Screen
+                  name="connection/add"
+                  options={{
+                    title: t("nav.addConnectionTitle"),
+                    presentation: "modal",
+                  }}
+                />
+                <Stack.Screen
+                  name="connection/[id]"
+                  options={{
+                    title: t("nav.editConnectionTitle"),
+                    presentation: "modal",
+                  }}
+                />
+                <Stack.Screen
+                  name="connect/scan"
+                  options={{
+                    headerShown: false,
+                    presentation: "modal",
+                  }}
+                />
+              </Stack>
+            )}
               <StatusBar style={isDark ? "light" : "dark"} />
             </AuthGate>
         </BottomSheetModalProvider>

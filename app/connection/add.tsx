@@ -15,6 +15,7 @@ import { router } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { useConnections } from "../../src/stores/connections"
+import { useOnboarding } from "../../src/stores/onboarding"
 import type { ConnectionType } from "../../src/lib/types"
 import { probeConnection, shareReport } from "../../src/lib/diagnostics"
 import { captureDiagnostic } from "../../src/lib/sentry"
@@ -103,6 +104,10 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        // First-launch flow: a successful connection completes onboarding.
+        // complete() flips the root gate to the normal Stack before back()
+        // lands — connection/add stays registered in both Stack configs.
+        await useOnboarding.getState().complete()
         setIsConnecting(false)
         router.back()
       } catch {
@@ -179,6 +184,8 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        // First-launch flow: successful connection completes onboarding.
+        await useOnboarding.getState().complete()
         setIsConnecting(false)
         router.back()
       } catch {

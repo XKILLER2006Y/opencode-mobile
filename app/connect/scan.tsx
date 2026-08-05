@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera"
 import { useConnections } from "../../src/stores/connections"
+import { useOnboarding } from "../../src/stores/onboarding"
 import { parseConnectPayload, type ConnectPayload } from "../../src/lib/connect-qr"
 
 export default function ConnectScanScreen() {
@@ -46,6 +47,11 @@ export default function ConnectScanScreen() {
         },
         pw,
       )
+      // First-launch flow: a successful connection counts as onboarding
+      // completion. complete() flips the root gate to the normal Stack
+      // before back() lands — the modal stays valid (both Stacks register
+      // connect/scan), then back pops onto (tabs).
+      await useOnboarding.getState().complete()
       router.back()
     } catch {
       setIsConnecting(false)

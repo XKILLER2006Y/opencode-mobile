@@ -38,6 +38,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      # Gradle daemon heap. MUST be set as an env var, not in android/gradle.properties:
+      # `expo prebuild` regenerates that file from the template and resets jvmargs
+      # back to -Xmx2048m, silently wiping file-based memory fixes (the earlier
+      # 4GB commit was a no-op in CI for exactly this reason). JAVA_TOOL_OPTIONS
+      # is applied to every JVM Gradle spawns, survives prebuild, and is what
+      # keeps :app:mergeExtDexRelease from OOM'ing on busy runners.
+      JAVA_TOOL_OPTIONS: -Xmx4096m -XX:MaxMetaspaceSize=1024m
       EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
       EXPO_PUBLIC_POSTHOG_KEY: ${{ secrets.EXPO_PUBLIC_POSTHOG_KEY }}
       EXPO_PUBLIC_CHATWOOT_INBOX_IDENTIFIER: ${{ secrets.EXPO_PUBLIC_CHATWOOT_INBOX_IDENTIFIER }}

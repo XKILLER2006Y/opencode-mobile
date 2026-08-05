@@ -181,6 +181,13 @@ function RootLayout() {
                   presentation: "modal",
                 }}
               />
+              <Stack.Screen
+                name="connect/scan"
+                options={{
+                  headerShown: false,
+                  presentation: "modal",
+                }}
+              />
             </Stack>
               <StatusBar style={isDark ? "light" : "dark"} />
             </AuthGate>

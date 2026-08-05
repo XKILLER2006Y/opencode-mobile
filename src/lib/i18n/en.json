@@ -233,10 +233,36 @@
       "subtitle": "Add a connection to your OpenCode server"
     },
     "header": "Tap to switch, long press for options",
+    "scan": "Scan to connect",
+    "exposeCard": {
+      "title": "Expose over internet",
+      "subtitle": "Share this server with your phone over a Cloudflare tunnel.",
+      "commandLabel": "Run on your server:",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
     "preferences": {
       "title": "Preferences",
       "pageSizeLabel": "Messages per page",
       "pageSizeHint": "How many messages to load when opening a session. Lower = faster."
+    }
+  },
+  "connectScan": {
+    "permissionTitle": "Camera access needed",
+    "permissionMessage": "OpenCode uses the camera to scan the QR code shown by opencode-remote on your server.",
+    "permissionButton": "Grant camera access",
+    "openSettings": "Open Settings",
+    "hint": "Point your camera at the QR code from opencode-remote",
+    "invalidQr": "That's not a valid OpenCode connection QR code. Scan the one shown by opencode-remote start.",
+    "passwordTitle": "Server requires a password",
+    "passwordHint": "Enter the password for {{name}} to connect.",
+    "passwordPlaceholder": "Password",
+    "connectButton": "Connect",
+    "cancelButton": "Cancel",
+    "connecting": "Connecting…",
+    "errors": {
+      "saveFailedTitle": "Could not save connection",
+      "saveFailedMessage": "The server was scanned but could not be saved. Please try again."
     }
   },
   "sessionsList": {

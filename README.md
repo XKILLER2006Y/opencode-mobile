@@ -53,6 +53,7 @@ OpenCode Mobile is a React Native / Expo app that brings the power of the [openc
 
 - **Offline demo mode** — tap "Try a Demo" to see a full bug-fix walkthrough (reasoning → grep → diff → permission prompt) with zero setup, right from the empty state
 - **Multi-connection** — manage multiple opencode servers (local network, Cloudflare Tunnel, ngrok, or Tailscale)
+- **QR pairing** — run `opencode-remote` on your machine, then tap **Scan to connect** in the app and point at its QR: one tap to a tunneled server, no typing
 - **Biometric unlock** — Face ID, Touch ID, or Android fingerprint protects the app and individual message sends
 - **Streaming chat** — token-by-token streaming responses directly from your opencode server
 - **Diff viewer** — inline side-by-side diffs of every file change the agent makes
@@ -105,6 +106,24 @@ Open the app, tap **Add Connection**, and choose your connection type:
 
 Enter the password you set in Step 1, tap **Connect**, and you're in.
 
+**Prefer a QR code? (opencode-remote)**
+
+On your machine, open a terminal and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dzianisv/opencode-mobile/main/scripts/opencode-remote/cli.mjs | node -- start
+```
+
+This starts (or reuses) your opencode server on port 4096, opens a Cloudflare
+Tunnel, and prints a QR code. In the app: **Connections → Scan to connect** →
+point at the QR → the connection is added automatically. If your server has a
+password, the app asks for it on-device before saving — the QR itself never
+contains credentials.
+
+For a stable URL on your own domain (instead of a random `trycloudflare.com`
+address), run `setup-domain` first, then `start --name <subdomain>`. More
+commands (`stop`, `restart`, `status`, `doctor`) via `--help`.
+
 ---
 
 ## How It Works
@@ -151,6 +170,7 @@ OpenCode Mobile is a thin client. It speaks the opencode HTTP + SSE API: listing
 | Tool call approval UI | Stable |
 | Sentry crash reporting (opt-in) | Stable |
 | Cloudflare / ngrok tunnel wizard | Beta |
+| QR pairing (opencode-remote) | Beta |
 | opencode Cloud one-tap connect | Planned |
 | iPad / tablet layout | Planned |
 | Offline session history | Planned |

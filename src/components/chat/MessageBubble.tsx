@@ -78,9 +78,11 @@ export const MessageBubble = memo(
           <Ionicons
             name={isUser ? "person" : "sparkles"}
             size={14}
-            color={isUser ? (isDark ? "#ffffff" : "#0a0a0a") : "#8b5cf6"}
+            color={isUser ? "#FFFFFF" : "#0071E3"}
           />
-          <Text style={[s.role, isUser && s.roleUser, isDark && s.textWhite]}>{isUser ? "You" : "Assistant"}</Text>
+          <Text style={[s.role, isUser && s.roleUser, isUser && isDark && s.roleUserDark]}>
+            {isUser ? "You" : "Assistant"}
+          </Text>
           {message.model && <Text style={[s.modelTag, isDark && s.modelTagDark]}>{message.model.modelID}</Text>}
           {!isUser && message.modelID && <Text style={[s.modelTag, isDark && s.modelTagDark]}>{message.modelID}</Text>}
         </View>
@@ -112,7 +114,7 @@ export const MessageBubble = memo(
         {/* Message text */}
         {renderText.length > 0 &&
           (isUser ? (
-            <Text style={[s.messageText, isDark && s.textWhite]} selectable>
+            <Text style={[s.messageText, s.messageTextUser, isDark && s.messageTextUserDark]} selectable>
               {renderText}
             </Text>
           ) : (
@@ -155,34 +157,44 @@ export const MessageBubble = memo(
 )
 
 const s = StyleSheet.create({
-  bubble: { marginBottom: 16, padding: 14, borderRadius: 16, maxWidth: "100%" },
-  user: { backgroundColor: "#F4F4F5", marginLeft: 32, borderWidth: 1, borderColor: "#E4E4E7" },
-  userDark: { backgroundColor: "#27272A", borderColor: "#3F3F46" },
-  assistant: { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E4E4E7" },
-  assistantDark: { backgroundColor: "#18181B", borderColor: "#27272A" },
+  bubble: {
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20, // uniform, no tail — iOS 18+ Messages
+    maxWidth: "75%",
+  },
+  user: { backgroundColor: "#0071E3", alignSelf: "flex-end" },
+  userDark: { backgroundColor: "#0A84FF" },
+  assistant: { backgroundColor: "#E9E9EB", alignSelf: "flex-start" },
+  assistantDark: { backgroundColor: "#2C2C2E" },
 
-  header: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
-  role: { fontSize: 13, fontWeight: "600", color: "#71717A" },
-  roleUser: { color: "#09090B" },
-  textWhite: { color: "#FAFAFA" },
+  header: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  role: { fontSize: 13, fontWeight: "600", color: "#6E6E73" },
+  roleUser: { color: "rgba(255,255,255,0.85)" },
+  roleUserDark: { color: "rgba(255,255,255,0.85)" },
+  textWhite: { color: "#FFFFFF" },
+  textWhiteDark: { color: "#FFFFFF" },
 
   modelTag: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#71717A",
-    backgroundColor: "#F4F4F5",
+    color: "#6E6E73",
+    backgroundColor: "#F2F2F7",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     overflow: "hidden",
   },
-  modelTagDark: { backgroundColor: "#27272A", color: "#A1A1AA" },
+  modelTagDark: { backgroundColor: "#1C1C1E", color: "#AEAEB2" },
 
-  messageText: { fontSize: 15, lineHeight: 22, color: "#09090B" },
+  messageText: { fontSize: 17, lineHeight: 22, color: "#000000" },
+  messageTextUser: { color: "#FFFFFF" },
+  messageTextUserDark: { color: "#FFFFFF" },
   markdownWrap: { marginHorizontal: -4 },
 
-  tokens: { fontSize: 11, color: "#A1A1AA", marginTop: 8 },
-  tokensDark: { color: "#71717A" },
+  tokens: { fontSize: 11, color: "#8E8E93", marginTop: 8 },
+  tokensDark: { color: "#8E8E93" },
 
   // Images
   imageScroll: { marginBottom: 8 },
@@ -192,8 +204,8 @@ const s = StyleSheet.create({
     width: Math.min(200, SCREEN_WIDTH * 0.5),
     height: Math.min(200, SCREEN_WIDTH * 0.5),
     borderRadius: 12,
-    backgroundColor: "#E4E4E7",
+    backgroundColor: "#E9E9EB",
   },
-  imageLabel: { fontSize: 10, color: "#71717A", marginTop: 4, maxWidth: 200 },
-  imageLabelDark: { color: "#A1A1AA" },
+  imageLabel: { fontSize: 10, color: "#6E6E73", marginTop: 4, maxWidth: 200 },
+  imageLabelDark: { color: "#AEAEB2" },
 })

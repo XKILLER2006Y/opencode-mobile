@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:versions": "node scripts/check-version-parity.mjs",
-    "test": "node --test \"src/**/*.test.ts\""
+    "test": "node --test \"src/**/*.test.ts\"",
+    "test:remote": "node --test scripts/opencode-remote/cli.test.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.8",
@@ -22,6 +23,7 @@
     "@sentry/react-native": "~7.11.0",
     "expo": "~57.0.10",
     "expo-blur": "~57.0.2",
+    "expo-camera": "~57.0.3",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.9",
     "expo-crypto": "~57.0.1",

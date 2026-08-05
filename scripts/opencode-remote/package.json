@@ -1,0 +1,17 @@
+{
+  "name": "opencode-remote",
+  "version": "0.1.0",
+  "description": "Tunnel wizard for exposing a local opencode server over the internet via Cloudflare Tunnel",
+  "type": "module",
+  "bin": {
+    "opencode-remote": "cli.mjs"
+  },
+  "files": ["cli.mjs"],
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "license": "MIT"
+}

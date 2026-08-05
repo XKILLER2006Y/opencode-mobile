@@ -233,10 +233,40 @@
       "subtitle": "添加一个 OpenCode 服务器连接"
     },
     "header": "点击切换，长按查看更多选项",
+    "scan": "扫码连接",
+    "exposeCard": {
+      "title": "通过互联网访问",
+      "subtitle": "通过 Cloudflare 隧道在手机上访问此服务器。",
+      "commandLabel": "在服务器上运行：",
+      "copy": "复制",
+      "copied": "已复制"
+    },
+    "modeBadges": {
+      "quick": "快速",
+      "stable": "稳定"
+    },
     "preferences": {
       "title": "偏好设置",
       "pageSizeLabel": "每页消息数",
       "pageSizeHint": "打开会话时加载的消息数量。数值越小加载越快。"
+    }
+  },
+  "connectScan": {
+    "permissionTitle": "需要相机权限",
+    "permissionMessage": "OpenCode 需要使用相机扫描服务器上 opencode-remote 显示的二维码。",
+    "permissionButton": "授予相机权限",
+    "openSettings": "打开设置",
+    "hint": "将相机对准 opencode-remote 显示的二维码",
+    "invalidQr": "这不是有效的 OpenCode 连接二维码。请扫描 opencode-remote start 显示的二维码。",
+    "passwordTitle": "服务器需要密码",
+    "passwordHint": "输入 {{name}} 的密码以连接。",
+    "passwordPlaceholder": "密码",
+    "connectButton": "连接",
+    "cancelButton": "取消",
+    "connecting": "连接中…",
+    "errors": {
+      "saveFailedTitle": "无法保存连接",
+      "saveFailedMessage": "已扫描服务器但无法保存，请重试。"
     }
   },
   "sessionsList": {

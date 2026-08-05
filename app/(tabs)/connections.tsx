@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react"
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, useColorScheme, Alert } from "react-native"
+import * as Clipboard from "expo-clipboard"
 import { router } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { useConnections } from "../../src/stores/connections"
 import { useSettings } from "../../src/stores/settings"
 import type { ServerConnection } from "../../src/lib/types"
+import { INSTALL_COMMAND } from "../../src/lib/connect-qr"
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 200] as const
 
@@ -12,6 +15,7 @@ function ConnectionItem({
   connection,
   isDark,
   isActive,
+  health,
   onSelect,
   onEdit,
   onDelete,
@@ -19,12 +23,15 @@ function ConnectionItem({
   connection: ServerConnection
   isDark: boolean
   isActive: boolean
+  health: boolean | undefined
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
 }) {
   const { t } = useTranslation()
   const typeIcon = connection.type === "local" ? "wifi" : connection.type === "tunnel" ? "globe" : "cloud"
+  // Green = healthy, amber = ping failed (unreachable/unauthorized), gray = unknown
+  const dotColor = health === true ? "#22c55e" : health === false ? "#f59e0b" : "#a1a1aa"
 
   const handleLongPress = () => {
     Alert.alert(connection.name, t("connectionsList.actionsAlert.message"), [
@@ -47,10 +54,15 @@ function ConnectionItem({
     >
       <View style={styles.connectionIcon}>
         <Ionicons name={typeIcon} size={24} color={isActive ? "#22c55e" : isDark ? "#888888" : "#666666"} />
+        <View
+          style={[styles.healthDot, isDark && styles.healthDotDark, { backgroundColor: dotColor }]}
+          testID={`health-dot-${connection.id}`}
+        />
       </View>
       <View style={styles.connectionContent}>
         <View style={styles.connectionHeader}>
           <Text
+            numberOfLines={1}
             style={[
               styles.connectionName,
               isDark && styles.textDark,
@@ -64,6 +76,17 @@ function ConnectionItem({
             <View style={[styles.activeBadge, isDark && styles.activeBadgeDark]}>
               <Text style={[styles.activeBadgeText, isDark && styles.activeBadgeTextDark]}>
                 {t("connectionsList.activeBadge")}
+              </Text>
+            </View>
+          )}
+          {connection.tunnelMode && (
+            <View
+              style={[styles.modeBadge, connection.tunnelMode === "quick" ? styles.modeBadgeQuick : styles.modeBadgeNamed]}
+            >
+              <Text style={styles.modeBadgeText}>
+                {connection.tunnelMode === "quick"
+                  ? t("connectionsList.modeBadges.quick")
+                  : t("connectionsList.modeBadges.stable")}
               </Text>
             </View>
           )}
@@ -87,13 +110,67 @@ function ConnectionItem({
   )
 }
 
+function ExposeCard({ isDark }: { isDark: boolean }) {
+  const { t } = useTranslation()
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(INSTALL_COMMAND)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <View style={[styles.exposeCard, isDark && styles.exposeCardDark]}>
+      <View style={styles.exposeHeader}>
+        <Ionicons name="globe-outline" size={22} color="#6366f1" />
+        <Text style={[styles.exposeTitle, isDark && styles.textDark]}>{t("connectionsList.exposeCard.title")}</Text>
+      </View>
+      <Text style={[styles.exposeSubtitle, isDark && styles.metaDark]}>
+        {t("connectionsList.exposeCard.subtitle")}
+      </Text>
+      <Text style={[styles.exposeCommandLabel, isDark && styles.metaDark]}>
+        {t("connectionsList.exposeCard.commandLabel")}
+      </Text>
+      <View style={styles.commandRow}>
+        <View style={[styles.commandBox, isDark && styles.commandBoxDark]}>
+          <Text style={[styles.commandText, isDark && styles.commandTextDark]} numberOfLines={2}>
+            {INSTALL_COMMAND}
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.copyButton} onPress={() => void handleCopy()} testID="expose-copy-button">
+          <Ionicons name={copied ? "checkmark" : "copy-outline"} size={16} color="#6366f1" />
+          <Text style={styles.copyButtonText}>
+            {copied ? t("connectionsList.exposeCard.copied") : t("connectionsList.exposeCard.copy")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+}
+
 export default function ConnectionsScreen() {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
   const { t } = useTranslation()
 
-  const { connections, activeConnection, setActiveConnection, removeConnection } = useConnections()
+  const { connections, activeConnection, setActiveConnection, removeConnection, pingHealth } = useConnections()
   const { pageSize, setPageSize } = useSettings()
+
+  // Ping every saved connection on mount so rows show live health: green for
+  // reachable, amber for failed (unreachable/unauthorized), gray while unknown.
+  const [health, setHealth] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    let cancelled = false
+    const pings = connections.map(async (c) => {
+      const ok = await pingHealth(c.id)
+      if (!cancelled) setHealth((prev) => ({ ...prev, [c.id]: ok }))
+    })
+    void Promise.all(pings)
+    return () => {
+      cancelled = true
+    }
+  }, [connections, pingHealth])
 
   const handleDelete = (connection: ServerConnection) => {
     Alert.alert(
@@ -120,6 +197,7 @@ export default function ConnectionsScreen() {
             connection={item}
             isDark={isDark}
             isActive={activeConnection?.id === item.id}
+            health={health[item.id]}
             onSelect={() => setActiveConnection(item.id)}
             onEdit={() => router.push(`/connection/${item.id}`)}
             onDelete={() => handleDelete(item)}
@@ -135,8 +213,21 @@ export default function ConnectionsScreen() {
           </View>
         }
         ListHeaderComponent={
-          <View style={[styles.header, isDark && styles.headerDark]}>
-            <Text style={[styles.headerText, isDark && styles.metaDark]}>{t("connectionsList.header")}</Text>
+          <View>
+            <ExposeCard isDark={isDark} />
+            <TouchableOpacity
+              style={[styles.scanButton, isDark && styles.scanButtonDark]}
+              onPress={() => router.push("/connect/scan")}
+              testID="scan-to-connect-button"
+            >
+              <Ionicons name="qr-code-outline" size={20} color={isDark ? "#0a0a0a" : "#ffffff"} />
+              <Text style={[styles.scanButtonText, isDark && styles.scanButtonTextDark]}>
+                {t("connectionsList.scan")}
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.header, isDark && styles.headerDark]}>
+              <Text style={[styles.headerText, isDark && styles.metaDark]}>{t("connectionsList.header")}</Text>
+            </View>
           </View>
         }
         ListFooterComponent={
@@ -338,6 +429,130 @@ const styles = StyleSheet.create({
   },
   fabDark: {
     backgroundColor: "#ffffff",
+  },
+  healthDot: {
+    position: "absolute",
+    top: -1,
+    right: -1,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+  healthDotDark: {
+    borderColor: "#18181B",
+  },
+  modeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  modeBadgeQuick: {
+    backgroundColor: "#f59e0b",
+  },
+  modeBadgeNamed: {
+    backgroundColor: "#6366f1",
+  },
+  modeBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  exposeCard: {
+    backgroundColor: "#f0f0ff",
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#c7d2fe",
+  },
+  exposeCardDark: {
+    backgroundColor: "#1e1b4b",
+    borderColor: "#3730a3",
+  },
+  exposeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  exposeTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0a0a0a",
+  },
+  exposeSubtitle: {
+    fontSize: 13,
+    color: "#666666",
+    lineHeight: 20,
+    marginTop: 6,
+  },
+  exposeCommandLabel: {
+    fontSize: 12,
+    color: "#666666",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  commandRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 8,
+  },
+  commandBox: {
+    flex: 1,
+    backgroundColor: "#eef2ff",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    justifyContent: "center",
+  },
+  commandBoxDark: {
+    backgroundColor: "#312e81",
+  },
+  commandText: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    color: "#3730a3",
+    lineHeight: 16,
+  },
+  commandTextDark: {
+    color: "#c7d2fe",
+  },
+  copyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#eef2ff",
+  },
+  copyButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#4338ca",
+  },
+  scanButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#0a0a0a",
+    marginHorizontal: 16,
+    marginTop: 16,
+  },
+  scanButtonDark: {
+    backgroundColor: "#ffffff",
+  },
+  scanButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
+  scanButtonTextDark: {
+    color: "#0a0a0a",
   },
   settingsSection: {
     padding: 16,

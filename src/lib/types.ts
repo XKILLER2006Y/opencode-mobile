@@ -1,4 +1,6 @@
 // Connection types for multiple server support
+import type { TunnelMode } from "./connect-qr"
+
 export type ConnectionType = "local" | "tunnel" | "cloud"
 
 export interface ServerConnection {
@@ -15,6 +17,8 @@ export interface ServerConnection {
   lastConnected?: number
   // Is this the active connection?
   active?: boolean
+  // How the tunnel was shared (opencode-remote): quick = random URL, named = custom subdomain
+  tunnelMode?: TunnelMode
 }
 
 export interface AppSettings {

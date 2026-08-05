@@ -92,10 +92,20 @@ export class ErrorBoundary extends React.Component<Props, State> {
           ) : null}
 
           <View style={styles.actions}>
-            <TouchableOpacity style={[styles.button, styles.buttonPrimary]} onPress={this.handleShare}>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={this.handleShare}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t("errorBoundary.shareButton")}
+            >
               <Text style={styles.buttonPrimaryText}>{i18n.t("errorBoundary.shareButton")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={this.handleRetry}>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={this.handleRetry}
+              accessibilityRole="button"
+              accessibilityLabel={i18n.t("errorBoundary.tryAgainButton")}
+            >
               <Text style={styles.buttonSecondaryText}>{i18n.t("errorBoundary.tryAgainButton")}</Text>
             </TouchableOpacity>
           </View>

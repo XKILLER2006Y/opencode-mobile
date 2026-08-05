@@ -101,6 +101,8 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
                 selected && isDark && s.optionSelectedDark,
               ]}
               onPress={() => toggleOption(opt.label)}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
             >
               <Text style={[s.optionLabel, isDark && s.textWhite, selected && s.optionLabelSelected]}>{opt.label}</Text>
               {opt.description ? <Text style={[s.optionDesc, isDark && s.metaDark]}>{opt.description}</Text> : null}
@@ -119,25 +121,40 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
                 onChangeText={setCustom}
                 onSubmitEditing={submitCustom}
                 autoFocus
+                accessibilityLabel={t("chat.questionPrompt.answerPlaceholder")}
               />
-              <TouchableOpacity onPress={submitCustom} style={s.customSubmit}>
+              <TouchableOpacity
+                onPress={submitCustom}
+                style={s.customSubmit}
+                accessibilityRole="button"
+                accessibilityLabel={t("chat.questionPrompt.submit")}
+              >
                 <Ionicons name="send" size={18} color={isDark ? "#0A84FF" : "#0071E3"} />
               </TouchableOpacity>
             </View>
           ) : (
-            <TouchableOpacity style={[s.option, isDark && s.optionDark]} onPress={() => setShowCustom(true)}>
+            <TouchableOpacity
+              style={[s.option, isDark && s.optionDark]}
+              onPress={() => setShowCustom(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.questionPrompt.customAnswerLabel")}
+            >
               <Text style={[s.optionLabel, { color: isDark ? "#0A84FF" : "#0071E3" }]}>{t("chat.questionPrompt.customAnswerLabel")}</Text>
             </TouchableOpacity>
           ))}
       </View>
 
       <View style={s.footer}>
-        <TouchableOpacity onPress={reject}>
+        <TouchableOpacity onPress={reject} accessibilityRole="button" accessibilityLabel={t("chat.questionPrompt.dismiss")}>
           <Text style={[s.dismiss, isDark && s.metaDark]}>{t("chat.questionPrompt.dismiss")}</Text>
         </TouchableOpacity>
         {(request.questions.length > 1 || q.multiple) && (
           <TouchableOpacity
             style={[s.submitBtn, isDark && s.submitBtnDark]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              current < request.questions.length - 1 ? t("chat.questionPrompt.next") : t("chat.questionPrompt.submit")
+            }
             onPress={() => {
               if (current < request.questions.length - 1) {
                 setCurrent(current + 1)

@@ -1,5 +1,6 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { useTranslation } from "react-i18next"
 
 export interface Attachment {
   uri: string
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function ImageAttachments({ attachments, isDark, onRemove }: Props) {
+  const { t } = useTranslation()
   if (attachments.length === 0) return null
 
   return (
@@ -24,8 +26,14 @@ export function ImageAttachments({ attachments, isDark, onRemove }: Props) {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scroll}>
         {attachments.map((att, idx) => (
           <View key={`${att.uri}-${idx}`} style={s.thumb}>
-            <Image source={{ uri: att.uri }} style={s.image} resizeMode="cover" />
-            <TouchableOpacity style={[s.remove, isDark && s.removeDark]} onPress={() => onRemove(idx)}>
+            <Image source={{ uri: att.uri }} style={s.image} resizeMode="cover" accessibilityLabel={att.filename} />
+            <TouchableOpacity
+              style={[s.remove, isDark && s.removeDark]}
+              onPress={() => onRemove(idx)}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.imageAttachments.removeButton", { name: att.filename || `#${idx + 1}` })}
+              hitSlop={8}
+            >
               <Ionicons name="close" size={14} color="#ffffff" />
             </TouchableOpacity>
             {att.filename && (

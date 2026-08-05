@@ -70,7 +70,11 @@ export function TelemetryConsentModal({ visible, onAllow, onDecline }: Props) {
           </View>
 
           {/* Privacy policy link */}
-          <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+            accessibilityRole="link"
+            accessibilityLabel={t("telemetryConsent.privacyLink")}
+          >
             <Text style={styles.privacyLink}>{t("telemetryConsent.privacyLink")}</Text>
           </TouchableOpacity>
 
@@ -79,6 +83,7 @@ export function TelemetryConsentModal({ visible, onAllow, onDecline }: Props) {
             <TouchableOpacity
               style={[styles.btn, styles.btnDecline, isDark && styles.btnDeclineDark]}
               onPress={onDecline}
+              accessibilityRole="button"
               accessibilityLabel={t("telemetryConsent.declineA11yLabel")}
               testID="telemetry-decline-button"
             >
@@ -89,6 +94,7 @@ export function TelemetryConsentModal({ visible, onAllow, onDecline }: Props) {
             <TouchableOpacity
               style={[styles.btn, styles.btnAllow]}
               onPress={onAllow}
+              accessibilityRole="button"
               accessibilityLabel={t("telemetryConsent.allowA11yLabel")}
               testID="telemetry-allow-button"
             >

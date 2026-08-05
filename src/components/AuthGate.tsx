@@ -52,7 +52,12 @@ export function AuthGate({ children }: Props) {
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <TouchableOpacity style={[styles.button, isDark && styles.buttonDark]} onPress={authenticate}>
+        <TouchableOpacity
+          style={[styles.button, isDark && styles.buttonDark]}
+          onPress={authenticate}
+          accessibilityRole="button"
+          accessibilityLabel={t("authGate.unlockButton")}
+        >
           <Ionicons name={iconName} size={24} color={isDark ? "#0a0a0a" : "#ffffff"} />
           <Text style={[styles.buttonText, isDark && styles.buttonTextDark]}>{t("authGate.unlockButton")}</Text>
         </TouchableOpacity>

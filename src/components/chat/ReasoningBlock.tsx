@@ -25,6 +25,9 @@ export function ReasoningBlock({ text, isDark }: Props) {
       ]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={t("chat.reasoningBlock.label")}
+      accessibilityState={{ expanded }}
     >
       <View style={s.header}>
         <View style={[s.iconBadge, { backgroundColor: isDark ? "rgba(255, 159, 10, 0.15)" : "rgba(255, 149, 0, 0.1)" }]}>

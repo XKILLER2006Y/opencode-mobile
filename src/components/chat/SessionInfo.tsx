@@ -110,7 +110,7 @@ export function SessionInfo({
             <Text style={[s.cost, isDark && s.dimDark]}>{t("chat.sessionInfo.noUsageData")}</Text>
           )}
         </View>
-        <TouchableOpacity onPress={onClose} hitSlop={8}>
+        <TouchableOpacity onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t("common.close")}>
           <Ionicons name="close" size={16} color={isDark ? "#666666" : "#999999"} />
         </TouchableOpacity>
       </View>
@@ -180,7 +180,14 @@ export function SessionInfo({
       {/* Navigation actions */}
       <View style={s.actions}>
         {hasMore && (
-          <TouchableOpacity style={[s.action, isDark && s.actionDark]} onPress={onLoadAll} disabled={loadingAll}>
+          <TouchableOpacity
+            style={[s.action, isDark && s.actionDark]}
+            onPress={onLoadAll}
+            disabled={loadingAll}
+            accessibilityRole="button"
+            accessibilityLabel={loadingAll ? t("chat.sessionInfo.loading") : t("chat.sessionInfo.loadAllMessages")}
+            accessibilityState={{ disabled: loadingAll }}
+          >
             {loadingAll ? (
               <ActivityIndicator size="small" color={isDark ? "#888888" : "#666666"} />
             ) : (
@@ -192,7 +199,12 @@ export function SessionInfo({
           </TouchableOpacity>
         )}
         {messages.length > 0 && (
-          <TouchableOpacity style={[s.action, isDark && s.actionDark]} onPress={onScrollToTop}>
+          <TouchableOpacity
+            style={[s.action, isDark && s.actionDark]}
+            onPress={onScrollToTop}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.sessionInfo.jumpToBeginning")}
+          >
             <Ionicons name="arrow-up-outline" size={14} color={isDark ? "#888888" : "#666666"} />
             <Text style={[s.actionText, isDark && s.dimDark]}>{t("chat.sessionInfo.jumpToBeginning")}</Text>
           </TouchableOpacity>

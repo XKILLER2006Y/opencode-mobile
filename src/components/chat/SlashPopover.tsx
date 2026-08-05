@@ -31,7 +31,13 @@ export function SlashPopover({ query, commands, isDark, onSelect }: Props) {
     <View style={[s.popover, isDark && s.popoverDark]}>
       <ScrollView keyboardShouldPersistTaps="always" style={s.scroll}>
         {filtered.map((cmd) => (
-          <TouchableOpacity key={cmd.trigger} style={[s.item, isDark && s.itemDark]} onPress={() => onSelect(cmd)}>
+          <TouchableOpacity
+            key={cmd.trigger}
+            style={[s.item, isDark && s.itemDark]}
+            onPress={() => onSelect(cmd)}
+            accessibilityRole="button"
+            accessibilityLabel={cmd.description ? `/${cmd.trigger}, ${cmd.description}` : `/${cmd.trigger}`}
+          >
             <Ionicons
               name={cmd.icon}
               size={18}

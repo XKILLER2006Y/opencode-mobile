@@ -72,6 +72,11 @@ export const MessageBubble = memo(
           !isUser && isDark && s.assistantDark,
         ]}
         testID={`chat-bubble-${message.role}`}
+        accessibilityRole="button"
+        accessibilityLabel={
+          renderText ? `${isUser ? "You" : "Assistant"}: ${renderText}` : isUser ? "You" : "Assistant"
+        }
+        accessibilityHint={isUser && onLongPress ? "Long press for actions" : undefined}
       >
         {/* Role indicator */}
         <View style={s.header}>

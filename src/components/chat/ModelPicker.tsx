@@ -110,6 +110,7 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
           onChangeText={setSearch}
           autoCorrect={false}
           autoCapitalize="none"
+          accessibilityLabel={t("chat.modelPicker.searchPlaceholder")}
         />
       </View>
       <BottomSheetSectionList
@@ -127,6 +128,9 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
               style={[s.row, isDark && s.rowDark, active && (isDark ? s.rowSelectedDark : s.rowSelected)]}
               onPress={() => handleSelect(item.providerID, item.modelID)}
               testID={`model-option-${item.providerID}-${item.modelID}`}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.modelName || item.modelID}, ${item.providerName || item.providerID}`}
+              accessibilityState={{ selected: active }}
             >
               <View style={s.rowText}>
                 <Text style={[s.rowName, isDark && s.textWhite]} numberOfLines={1}>

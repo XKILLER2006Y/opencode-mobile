@@ -437,7 +437,9 @@
       "serverDefaultLabel": "Server Default",
       "browseLabel": "Browse…",
       "recentProjectsLabel": "Recent Projects",
-      "usesServerDir": "Uses server's working directory"
+      "usesServerDir": "Uses server's working directory",
+      "inputLabel": "Project directory",
+      "goButton": "Open directory"
     },
     "directoryBrowserSheet": {
       "noActiveConnection": "No active connection",
@@ -447,7 +449,9 @@
       "noSubfolders": "No subfolders here",
       "enterPathHint": "Enter a path above to start browsing",
       "useFolderButton": "Use {{folder}}",
-      "thisFolderFallback": "this folder"
+      "thisFolderFallback": "this folder",
+      "goButton": "Go",
+      "upButton": "Go up"
     },
     "reasoningBlock": {
       "label": "Thinking"
@@ -483,6 +487,9 @@
         "hoursAgo": "{{count}}h ago",
         "daysAgo": "{{count}}d ago"
       }
+    },
+    "imageAttachments": {
+      "removeButton": "Remove {{name}}"
     }
   },
   "demo": {
@@ -513,4 +520,3 @@
     }
   }
 }
-

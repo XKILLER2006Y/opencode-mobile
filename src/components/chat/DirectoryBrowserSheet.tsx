@@ -176,6 +176,8 @@ export function DirectoryBrowserSheet({
         style={[s.row, isDark && s.rowDark]}
         onPress={() => enter(item.absolute)}
         testID={`directory-row-${item.name}`}
+        accessibilityRole="button"
+        accessibilityLabel={item.name}
       >
         <Ionicons
           name="folder-outline"
@@ -220,7 +222,15 @@ export function DirectoryBrowserSheet({
       <View style={s.header}>
         <Text style={[s.title, isDark && s.white]}>{t("chat.directoryBrowserSheet.title")}</Text>
         <View style={s.pathRow}>
-          <TouchableOpacity onPress={goUp} disabled={!canGoUp} hitSlop={8} testID="directory-up-button">
+          <TouchableOpacity
+            onPress={goUp}
+            disabled={!canGoUp}
+            hitSlop={8}
+            testID="directory-up-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.directoryBrowserSheet.upButton")}
+            accessibilityState={{ disabled: !canGoUp }}
+          >
             <Ionicons
               name="arrow-up-circle-outline"
               size={22}
@@ -241,6 +251,9 @@ export function DirectoryBrowserSheet({
               style={[s.rootChip, isDark && s.rootChipDark, browseDir === root.path && s.rootChipActive]}
               onPress={() => enter(root.path)}
               testID={`directory-root-${root.label}`}
+              accessibilityRole="button"
+              accessibilityLabel={root.path}
+              accessibilityState={{ selected: browseDir === root.path }}
             >
               <Ionicons
                 name={root.label === "Home" ? "home-outline" : "layers-outline"}
@@ -274,9 +287,15 @@ export function DirectoryBrowserSheet({
           autoCapitalize="none"
           autoCorrect={false}
           testID="directory-jump-input"
+          accessibilityLabel={t("chat.directoryBrowserSheet.jumpPlaceholder")}
         />
         {jumpPath.trim() && (
-          <TouchableOpacity style={[s.goBtn, isDark && s.goBtnDark]} onPress={goJump}>
+          <TouchableOpacity
+            style={[s.goBtn, isDark && s.goBtnDark]}
+            onPress={goJump}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.directoryBrowserSheet.goButton")}
+          >
             <Ionicons name="arrow-forward" size={18} color={isDark ? "#0a0a0a" : "#ffffff"} />
           </TouchableOpacity>
         )}
@@ -315,6 +334,11 @@ export function DirectoryBrowserSheet({
           onPress={handleUseFolder}
           disabled={!browseDir}
           testID="directory-select-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("chat.directoryBrowserSheet.useFolderButton", {
+            folder: browseDir ? nameOf(browseDir) : t("chat.directoryBrowserSheet.thisFolderFallback"),
+          })}
+          accessibilityState={{ disabled: !browseDir }}
         >
           <Ionicons name="checkmark-circle" size={18} color={isDark ? "#0a0a0a" : "#ffffff"} />
           <Text style={[s.selectBtnText, isDark && s.selectBtnTextDark]} numberOfLines={1}>

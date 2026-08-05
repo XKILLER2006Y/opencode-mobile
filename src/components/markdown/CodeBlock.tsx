@@ -26,7 +26,12 @@ export function CodeBlock({ code, language }: Props) {
     <View style={[styles.container, isDark && styles.containerDark]}>
       <View style={[styles.header, isDark && styles.headerDark]}>
         <Text style={[styles.language, isDark && styles.languageDark]}>{language || "code"}</Text>
-        <TouchableOpacity onPress={copy} hitSlop={8}>
+        <TouchableOpacity
+          onPress={copy}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={copied ? "Copied!" : `Copy ${language || "code"}`}
+        >
           <Text style={[styles.copyBtn, isDark && styles.copyBtnDark]}>{copied ? "Copied!" : "Copy"}</Text>
         </TouchableOpacity>
       </View>

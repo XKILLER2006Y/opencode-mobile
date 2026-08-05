@@ -437,7 +437,9 @@
       "serverDefaultLabel": "服务器默认",
       "browseLabel": "浏览…",
       "recentProjectsLabel": "最近项目",
-      "usesServerDir": "使用服务器的工作目录"
+      "usesServerDir": "使用服务器的工作目录",
+      "inputLabel": "项目目录",
+      "goButton": "打开目录"
     },
     "directoryBrowserSheet": {
       "noActiveConnection": "没有活动连接",
@@ -447,7 +449,9 @@
       "noSubfolders": "此处没有子文件夹",
       "enterPathHint": "在上方输入路径以开始浏览",
       "useFolderButton": "使用 {{folder}}",
-      "thisFolderFallback": "此文件夹"
+      "thisFolderFallback": "此文件夹",
+      "goButton": "跳转",
+      "upButton": "上一级"
     },
     "reasoningBlock": {
       "label": "思考中"
@@ -483,6 +487,9 @@
         "hoursAgo": "{{count}} 小时前",
         "daysAgo": "{{count}} 天前"
       }
+    },
+    "imageAttachments": {
+      "removeButton": "移除 {{name}}"
     }
   },
   "demo": {

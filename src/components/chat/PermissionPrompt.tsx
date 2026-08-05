@@ -20,13 +20,28 @@ export function PermissionPrompt({ permission, isDark, onReply }: Props) {
         {permission.permission}: {permission.patterns.join(", ")}
       </Text>
       <View style={s.actions}>
-        <TouchableOpacity style={[s.btn, s.deny]} onPress={() => onReply("reject")}>
+        <TouchableOpacity
+          style={[s.btn, s.deny]}
+          onPress={() => onReply("reject")}
+          accessibilityRole="button"
+          accessibilityLabel={t("chat.permissionPrompt.deny")}
+        >
           <Text style={s.denyText}>{t("chat.permissionPrompt.deny")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[s.btn, s.always, isDark && s.alwaysDark]} onPress={() => onReply("always")}>
+        <TouchableOpacity
+          style={[s.btn, s.always, isDark && s.alwaysDark]}
+          onPress={() => onReply("always")}
+          accessibilityRole="button"
+          accessibilityLabel={t("chat.permissionPrompt.always")}
+        >
           <Text style={[s.alwaysText, isDark && s.textWhite]}>{t("chat.permissionPrompt.always")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[s.btn, s.allow, isDark && s.allowDark]} onPress={() => onReply("once")}>
+        <TouchableOpacity
+          style={[s.btn, s.allow, isDark && s.allowDark]}
+          onPress={() => onReply("once")}
+          accessibilityRole="button"
+          accessibilityLabel={t("chat.permissionPrompt.allow")}
+        >
           <Text style={[s.allowText, isDark && s.allowTextDark]}>{t("chat.permissionPrompt.allow")}</Text>
         </TouchableOpacity>
       </View>

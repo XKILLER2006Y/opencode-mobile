@@ -73,6 +73,9 @@ export function VariantPicker({ variants, selected, isDark, onSelect, sheetRef }
               style={[s.row, isDark && s.rowDark, active && (isDark ? s.rowSelectedDark : s.rowSelected)]}
               onPress={() => handleSelect(item.id)}
               testID={`variant-option-${item.id ?? "auto"}`}
+              accessibilityRole="button"
+              accessibilityLabel={item.description ? `${item.label}, ${item.description}` : item.label}
+              accessibilityState={{ selected: active }}
             >
               <View style={s.rowText}>
                 <Text style={[s.rowName, isDark && s.textWhite]}>{item.label}</Text>

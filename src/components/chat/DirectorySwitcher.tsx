@@ -100,9 +100,15 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
           returnKeyType="go"
           autoCapitalize="none"
           autoCorrect={false}
+          accessibilityLabel={t("chat.directorySwitcher.inputLabel")}
         />
         {custom.trim() && (
-          <TouchableOpacity style={[s.goBtn, isDark && s.goBtnDark]} onPress={handleCustomSubmit}>
+          <TouchableOpacity
+            style={[s.goBtn, isDark && s.goBtnDark]}
+            onPress={handleCustomSubmit}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.directorySwitcher.goButton")}
+          >
             <Ionicons name="arrow-forward" size={18} color={isDark ? "#0a0a0a" : "#ffffff"} />
           </TouchableOpacity>
         )}
@@ -113,10 +119,20 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
         <View style={s.chips}>
           {serverHome && (
             <>
-              <TouchableOpacity style={[s.chip, isDark && s.chipDark]} onPress={() => setCustom(serverHome)}>
+              <TouchableOpacity
+                style={[s.chip, isDark && s.chipDark]}
+                onPress={() => setCustom(serverHome)}
+                accessibilityRole="button"
+                accessibilityLabel={serverHome}
+              >
                 <Text style={[s.chipText, isDark && s.chipTextDark]}>~</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[s.chip, isDark && s.chipDark]} onPress={() => setCustom(serverHome + "/")}>
+              <TouchableOpacity
+                style={[s.chip, isDark && s.chipDark]}
+                onPress={() => setCustom(serverHome + "/")}
+                accessibilityRole="button"
+                accessibilityLabel={`${serverHome}/`}
+              >
                 <Text style={[s.chipText, isDark && s.chipTextDark]}>~/</Text>
               </TouchableOpacity>
             </>
@@ -128,6 +144,8 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
                 sheetRef.current?.close()
                 onBrowse()
               }}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.directorySwitcher.browseLabel")}
             >
               <Ionicons name="folder-open-outline" size={14} color={isDark ? "#8b5cf6" : "#6d28d9"} />
               <Text style={[s.chipText, isDark && s.chipTextDark]}>{t("chat.directorySwitcher.browseLabel")}</Text>
@@ -144,6 +162,13 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
           <TouchableOpacity
             style={[s.row, isDark && s.rowDark, item.active && s.rowActive]}
             onPress={() => handleSelect(item.dir)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.dir
+                ? `${item.label}, ${item.dir}`
+                : `${item.label}, ${t("chat.directorySwitcher.usesServerDir")}`
+            }
+            accessibilityState={{ selected: item.active }}
           >
             <View style={s.rowIcon}>
               <Ionicons

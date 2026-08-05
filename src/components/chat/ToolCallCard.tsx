@@ -335,6 +335,11 @@ export const ToolCallCard = memo(
         ]}
         onPress={toggle}
         activeOpacity={hasDetail ? 0.7 : 1}
+        accessibilityRole="button"
+        accessibilityLabel={`${tool.state?.title || tool.tool || t("chat.toolCallCard.fallbackTitle")}${
+          status !== "pending" ? `, ${status}` : ""
+        }`}
+        accessibilityState={{ expanded }}
       >
         {/* Header row */}
         <View style={s.header}>

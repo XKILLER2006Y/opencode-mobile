@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next"
 import * as ImagePicker from "expo-image-picker"
 import * as ImageManipulator from "expo-image-manipulator"
 import * as Clipboard from "expo-clipboard"
+import { BlurView } from "expo-blur"
 import type BottomSheet from "@gorhom/bottom-sheet"
 import {
   MessageBubble,
@@ -577,7 +578,7 @@ export default function SessionScreen() {
 
   // Current agent display
   const currentAgent = agents.find((a) => a.name === agent)
-  const agentColor = currentAgent?.color || "#8b5cf6"
+  const agentColor = currentAgent?.color || (isDark ? "#0A84FF" : "#0071E3")
   const modelLabel = model?.modelID ? model.modelID.split("/").pop() || model.modelID : "default"
 
   // Variants for current model (for reasoning effort picker)
@@ -597,7 +598,7 @@ export default function SessionScreen() {
             <View style={s.headerRight}>
               {shortDir && (
                 <View style={[s.dirBadge, isDark && s.dirBadgeDark]}>
-                  <Ionicons name="folder-outline" size={14} color={isDark ? "#888888" : "#666666"} />
+                  <Ionicons name="folder-outline" size={14} color={isDark ? "#8E8E93" : "#6E6E73"} />
                   <Text style={[s.dirText, isDark && s.dirTextDark]}>{shortDir}</Text>
                 </View>
               )}
@@ -605,7 +606,7 @@ export default function SessionScreen() {
                 <Ionicons
                   name={showInfo ? "stats-chart" : "stats-chart-outline"}
                   size={20}
-                  color={showInfo ? "#3b82f6" : isDark ? "#888888" : "#666666"}
+                  color={showInfo ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"}
                 />
               </TouchableOpacity>
             </View>
@@ -684,7 +685,7 @@ export default function SessionScreen() {
 
         {isLoading ? (
           <View style={s.loading}>
-            <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
+            <ActivityIndicator size="large" color={isDark ? "#FFFFFF" : "#000000"} />
           </View>
         ) : (
           <View style={s.listWrap}>
@@ -723,7 +724,7 @@ export default function SessionScreen() {
               ListFooterComponent={
                 loadingMore ? (
                   <View style={s.loadingMore}>
-                    <ActivityIndicator size="small" color={isDark ? "#888888" : "#666666"} />
+                    <ActivityIndicator size="small" color={isDark ? "#8E8E93" : "#6E6E73"} />
                     <Text style={[s.loadingMoreText, isDark && s.metaDark]}>{t("session.loadingOlder")}</Text>
                   </View>
                 ) : null
@@ -733,14 +734,14 @@ export default function SessionScreen() {
                 inverted transform mirroring its text/icon (see #ui-mirror). */}
             {messageData.length === 0 && (
               <View style={s.emptyOverlay} pointerEvents="none">
-                <Ionicons name="chatbubble-outline" size={48} color={isDark ? "#444444" : "#cccccc"} />
+                <Ionicons name="chatbubble-outline" size={48} color={isDark ? "#8E8E93" : "#C6C6C8"} />
                 <Text style={[s.emptyText, isDark && s.metaDark]}>{t("session.empty.title")}</Text>
                 <Text style={[s.emptyHint, isDark && s.metaDark]}>{t("session.empty.hint")}</Text>
               </View>
             )}
             {showScrollButton && (
               <TouchableOpacity style={[s.scrollBtn, isDark && s.scrollBtnDark]} onPress={() => scrollToBottom(true)}>
-                <Ionicons name="chevron-down" size={24} color={isDark ? "#ffffff" : "#0a0a0a"} />
+                <Ionicons name="chevron-down" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
               </TouchableOpacity>
             )}
           </View>
@@ -776,103 +777,109 @@ export default function SessionScreen() {
         )}
 
         {/* Agent/model toolbar */}
-        <View style={[s.toolbar, isDark && s.toolbarDark]}>
-          <TouchableOpacity
-            style={[s.agentChip, { borderColor: agentColor }]}
-            onPress={() => cycleAgent()}
-            onLongPress={() => cycleAgent(-1)}
-          >
-            <View style={[s.agentDot, { backgroundColor: agentColor }]} />
-            <Text style={[s.agentLabel, isDark && s.textWhite]}>{agent || "build"}</Text>
-            <Ionicons name="swap-horizontal-outline" size={12} color={isDark ? "#888888" : "#666666"} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[s.modelChip, isDark && s.modelChipDark]}
-            onPress={() => modelSheetRef.current?.expand()}
-            testID="model-chip"
-          >
-            <Ionicons name="hardware-chip-outline" size={14} color={isDark ? "#888888" : "#666666"} />
-            <Text style={[s.modelLabel, isDark && s.metaDark]} numberOfLines={1}>
-              {modelLabel}
-            </Text>
-          </TouchableOpacity>
-
-          {currentModelVariants && Object.keys(currentModelVariants).length > 0 && (
+        <BlurView
+          intensity={isDark ? 40 : 60}
+          tint={isDark ? "dark" : "light"}
+          style={s.composerGlass}
+        >
+          <View style={[s.toolbar, isDark && s.toolbarDark]}>
             <TouchableOpacity
-              style={[s.variantChip, isDark && s.variantChipDark, variant && s.variantChipActive]}
-              onPress={() => variantSheetRef.current?.expand()}
-              testID="variant-chip"
+              style={[s.agentChip, { borderColor: agentColor }]}
+              onPress={() => cycleAgent()}
+              onLongPress={() => cycleAgent(-1)}
             >
-              <Ionicons name="flash-outline" size={14} color={variant ? "#8b5cf6" : isDark ? "#888888" : "#666666"} />
-              <Text style={[s.variantLabel, isDark && s.metaDark, variant && s.variantLabelActive]} numberOfLines={1}>
-                {variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")}
+              <View style={[s.agentDot, { backgroundColor: agentColor }]} />
+              <Text style={[s.agentLabel, isDark && s.textWhite]}>{agent || "build"}</Text>
+              <Ionicons name="swap-horizontal-outline" size={12} color={isDark ? "#8E8E93" : "#6E6E73"} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[s.modelChip, isDark && s.modelChipDark]}
+              onPress={() => modelSheetRef.current?.expand()}
+              testID="model-chip"
+            >
+              <Ionicons name="hardware-chip-outline" size={14} color={isDark ? "#8E8E93" : "#6E6E73"} />
+              <Text style={[s.modelLabel, isDark && s.metaDark]} numberOfLines={1}>
+                {modelLabel}
               </Text>
             </TouchableOpacity>
-          )}
-        </View>
 
-        {/* Attachment preview */}
-        <ImageAttachments attachments={attachments} isDark={isDark} onRemove={removeAttachment} />
-
-        {/* Input */}
-        <View
-          style={[s.inputContainer, isDark && s.inputContainerDark, { paddingBottom: Math.max(12, insets.bottom) }]}
-        >
-          <View style={s.inputRow}>
-            {/* Attach button */}
-            <TouchableOpacity style={s.attachBtn} onPress={pickFromLibrary} onLongPress={pickFromCamera}>
-              <Ionicons name="add-circle-outline" size={26} color={isDark ? "#888888" : "#666666"} />
-            </TouchableOpacity>
-
-            {/* Clipboard paste button */}
-            <TouchableOpacity style={s.attachBtn} onPress={pasteFromClipboard}>
-              <Ionicons name="clipboard-outline" size={22} color={isDark ? "#888888" : "#666666"} />
-            </TouchableOpacity>
-
-            <TextInput
-              style={[s.input, isDark && s.inputDark, speech.listening && s.inputListening]}
-              placeholder={
-                speech.listening
-                  ? t("session.input.placeholderListening")
-                  : isSending
-                    ? t("session.input.placeholderFollowUp")
-                    : t("session.input.placeholderDefault")
-              }
-              placeholderTextColor={speech.listening ? "#ef4444" : isDark ? "#666666" : "#999999"}
-              value={speech.listening ? speech.transcript : input}
-              onChangeText={speech.listening ? undefined : setInput}
-              editable={!speech.listening}
-              multiline
-              maxLength={10000}
-              testID="chat-message-input"
-            />
-            {/* Stop button: only when busy and no input */}
-            {isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-              <TouchableOpacity style={s.stopBtn} onPress={abortSession}>
-                <Ionicons name="stop" size={20} color="#ffffff" />
-              </TouchableOpacity>
-            )}
-            {/* Mic button: when no input, not sending, and not listening */}
-            {!isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-              <TouchableOpacity style={s.micBtn} onPress={speech.start}>
-                <Ionicons name="mic" size={22} color={isDark ? "#888888" : "#666666"} />
-              </TouchableOpacity>
-            )}
-            {/* Listening indicator: tap to stop */}
-            {speech.listening && (
-              <TouchableOpacity style={s.micBtnActive} onPress={speech.stop}>
-                <Ionicons name="mic" size={22} color="#ffffff" />
-              </TouchableOpacity>
-            )}
-            {/* Send button: when there's input */}
-            {!speech.listening && (input.trim() || attachments.length > 0) && (
-              <TouchableOpacity style={s.sendBtn} onPress={handleSend} testID="chat-send-button">
-                <Ionicons name="send" size={20} color="#ffffff" />
+            {currentModelVariants && Object.keys(currentModelVariants).length > 0 && (
+              <TouchableOpacity
+                style={[s.variantChip, isDark && s.variantChipDark, variant && s.variantChipActive]}
+                onPress={() => variantSheetRef.current?.expand()}
+                testID="variant-chip"
+              >
+                <Ionicons name="flash-outline" size={14} color={variant ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"} />
+                <Text style={[s.variantLabel, isDark && s.metaDark, variant && s.variantLabelActive]} numberOfLines={1}>
+                  {variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
-        </View>
+
+          {/* Attachment preview */}
+          <ImageAttachments attachments={attachments} isDark={isDark} onRemove={removeAttachment} />
+
+          {/* Input */}
+          <View
+            style={[s.inputContainer, isDark && s.inputContainerDark, { paddingBottom: Math.max(12, insets.bottom) }]}
+          >
+            <View style={s.inputRow}>
+              {/* Attach button */}
+              <TouchableOpacity style={s.attachBtn} onPress={pickFromLibrary} onLongPress={pickFromCamera}>
+                <Ionicons name="add-circle-outline" size={26} color={isDark ? "#8E8E93" : "#6E6E73"} />
+              </TouchableOpacity>
+
+              {/* Clipboard paste button */}
+              <TouchableOpacity style={s.attachBtn} onPress={pasteFromClipboard}>
+                <Ionicons name="clipboard-outline" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
+              </TouchableOpacity>
+
+              <TextInput
+                style={[s.input, isDark && s.inputDark, speech.listening && s.inputListening, speech.listening && isDark && s.inputListeningDark]}
+                placeholder={
+                  speech.listening
+                    ? t("session.input.placeholderListening")
+                    : isSending
+                      ? t("session.input.placeholderFollowUp")
+                      : t("session.input.placeholderDefault")
+                }
+                placeholderTextColor={speech.listening ? (isDark ? "#FF453A" : "#FF3B30") : isDark ? "#AEAEB2" : "#8E8E93"}
+                value={speech.listening ? speech.transcript : input}
+                onChangeText={speech.listening ? undefined : setInput}
+                editable={!speech.listening}
+                multiline
+                maxLength={10000}
+                testID="chat-message-input"
+              />
+              {/* Stop button: only when busy and no input */}
+              {isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
+                <TouchableOpacity style={s.stopBtn} onPress={abortSession}>
+                  <Ionicons name="stop" size={20} color="#ffffff" />
+                </TouchableOpacity>
+              )}
+              {/* Mic button: when no input, not sending, and not listening */}
+              {!isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
+                <TouchableOpacity style={s.micBtn} onPress={speech.start}>
+                  <Ionicons name="mic" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
+                </TouchableOpacity>
+              )}
+              {/* Listening indicator: tap to stop */}
+              {speech.listening && (
+                <TouchableOpacity style={s.micBtnActive} onPress={speech.stop}>
+                  <Ionicons name="mic" size={22} color="#ffffff" />
+                </TouchableOpacity>
+              )}
+              {/* Send button: when there's input */}
+              {!speech.listening && (input.trim() || attachments.length > 0) && (
+                <TouchableOpacity style={s.sendBtn} onPress={handleSend} testID="chat-send-button">
+                  <Ionicons name="send" size={20} color="#ffffff" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </BlurView>
       </KeyboardAvoidingView>
       </View>
 
@@ -898,8 +905,8 @@ export default function SessionScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ffffff" },
-  containerDark: { backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: "#F2F2F7" },
+  containerDark: { backgroundColor: "#000000" },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
   listWrap: { flex: 1, position: "relative" },
 
@@ -923,7 +930,7 @@ const s = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  scrollBtnDark: { backgroundColor: "#2a2a2a" },
+  scrollBtnDark: { backgroundColor: "#2C2C2E" },
 
   // Loading more (appears at top in inverted list = ListFooterComponent)
   loadingMore: {
@@ -933,7 +940,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 16,
   },
-  loadingMoreText: { fontSize: 13, color: "#999999" },
+  loadingMoreText: { fontSize: 13, color: "#8E8E93" },
 
   // Empty state overlay — sits on top of the (empty) inverted list, untransformed,
   // so its text/icon render upright and un-mirrored on Android.
@@ -950,23 +957,25 @@ const s = StyleSheet.create({
 
   // Empty
   empty: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 64 },
-  emptyText: { fontSize: 16, color: "#999999", marginTop: 12 },
+  emptyText: { fontSize: 16, color: "#8E8E93", marginTop: 12 },
   emptyHint: { fontSize: 13, color: "#bbbbbb", marginTop: 4 },
-  metaDark: { color: "#666666" },
-  textWhite: { color: "#ffffff" },
+  metaDark: { color: "#AEAEB2" },
+  textWhite: { color: "#FFFFFF" },
 
   // Toolbar
+  composerGlass: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "transparent",
+  },
   toolbar: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
-    backgroundColor: "#ffffff",
+    backgroundColor: "transparent",
   },
-  toolbarDark: { borderTopColor: "#1a1a1a", backgroundColor: "#0a0a0a" },
+  toolbarDark: { backgroundColor: "transparent" },
   agentChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -977,42 +986,40 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   agentDot: { width: 8, height: 8, borderRadius: 4 },
-  agentLabel: { fontSize: 12, fontWeight: "600", color: "#0a0a0a" },
+  agentLabel: { fontFamily: "Inter-SemiBold", fontSize: 13, color: "#000000" },
   modelChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "rgba(120, 120, 128, 0.12)",
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  modelChipDark: { backgroundColor: "#1a1a1a" },
-  modelLabel: { fontSize: 12, color: "#666666", maxWidth: 160 },
+  modelChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
+  modelLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: "#6E6E73", maxWidth: 160 },
 
   // Variant (reasoning effort) chip
   variantChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "rgba(120, 120, 128, 0.12)",
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  variantChipDark: { backgroundColor: "#1a1a1a" },
-  variantChipActive: { backgroundColor: "#f5f3ff" },
-  variantLabel: { fontSize: 12, color: "#666666" },
-  variantLabelActive: { color: "#8b5cf6" },
+  variantChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
+  variantChipActive: { backgroundColor: "rgba(0, 113, 227, 0.12)" },
+  variantLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: "#6E6E73" },
+  variantLabelActive: { color: "#0071E3" },
 
   // Input
   inputContainer: {
     padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
-    backgroundColor: "#ffffff",
+    backgroundColor: "transparent",
   },
-  inputContainerDark: { borderTopColor: "#1a1a1a", backgroundColor: "#0a0a0a" },
+  inputContainerDark: { backgroundColor: "transparent" },
   inputRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -1025,30 +1032,32 @@ const s = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "rgba(120, 120, 128, 0.12)",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
     maxHeight: 120,
-    color: "#0a0a0a",
+    color: "#000000",
   },
-  inputDark: { backgroundColor: "#1a1a1a", color: "#ffffff" },
-  inputListening: { borderWidth: 1, borderColor: "#ef4444" },
+  inputDark: { backgroundColor: "rgba(120, 120, 128, 0.24)", color: "#FFFFFF" },
+  inputListening: { borderWidth: 1, borderColor: "#FF3B30" },
+  inputListeningDark: { borderColor: "#FF453A" },
   sendBtn: {
-    width: 40,
+    minWidth: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#0a0a0a",
+    borderRadius: 9999,
+    backgroundColor: "#0071E3",
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
+    paddingHorizontal: 10,
   },
-  sendBtnDisabled: { backgroundColor: "#cccccc" },
+  sendBtnDisabled: { backgroundColor: "#8E8E93" },
   micBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 9999,
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
@@ -1056,8 +1065,8 @@ const s = StyleSheet.create({
   micBtnActive: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ef4444",
+    borderRadius: 9999,
+    backgroundColor: "#FF3B30",
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
@@ -1065,8 +1074,8 @@ const s = StyleSheet.create({
   stopBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ef4444",
+    borderRadius: 9999,
+    backgroundColor: "#FF3B30",
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
@@ -1078,14 +1087,14 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F2F2F7",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
-  dirBadgeDark: { backgroundColor: "#1a1a1a" },
-  dirText: { fontSize: 12, color: "#666666", fontWeight: "500" },
-  dirTextDark: { color: "#888888" },
+  dirBadgeDark: { backgroundColor: "#1C1C1E" },
+  dirText: { fontSize: 12, color: "#6E6E73", fontWeight: "500" },
+  dirTextDark: { color: "#AEAEB2" },
 
   // SSE reconnect/connected banner
   banner: {

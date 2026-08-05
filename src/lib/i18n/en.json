@@ -241,6 +241,10 @@
       "copy": "Copy",
       "copied": "Copied"
     },
+    "modeBadges": {
+      "quick": "Quick",
+      "stable": "Stable"
+    },
     "preferences": {
       "title": "Preferences",
       "pageSizeLabel": "Messages per page",

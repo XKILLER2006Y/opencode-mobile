@@ -13,7 +13,7 @@ export function PermissionPrompt({ permission, isDark, onReply }: Props) {
   return (
     <View style={[s.card, isDark && s.cardDark]}>
       <View style={s.header}>
-        <Ionicons name="shield-outline" size={18} color="#f59e0b" />
+        <Ionicons name="shield-outline" size={18} color={isDark ? "#FF9F0A" : "#FF9500"} />
         <Text style={[s.title, isDark && s.textWhite]}>{t("chat.permissionPrompt.title")}</Text>
       </View>
       <Text style={[s.type, isDark && s.typeDark]}>
@@ -38,26 +38,26 @@ const s = StyleSheet.create({
   card: {
     margin: 12,
     padding: 16,
-    backgroundColor: "rgba(245, 158, 11, 0.06)",
+    backgroundColor: "rgba(255, 149, 0, 0.06)",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(245, 158, 11, 0.2)",
+    borderColor: "rgba(255, 149, 0, 0.2)",
   },
-  cardDark: { backgroundColor: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.25)" },
+  cardDark: { backgroundColor: "rgba(255, 159, 10, 0.08)", borderColor: "rgba(255, 159, 10, 0.25)" },
   header: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  title: { fontSize: 15, fontWeight: "600", color: "#D97706" },
-  textWhite: { color: "#FBBF24" },
-  type: { fontSize: 13, color: "#B45309", marginBottom: 14, lineHeight: 18 },
-  typeDark: { color: "#FCD34D" },
+  title: { fontSize: 15, fontWeight: "600", color: "#FF9500" },
+  textWhite: { color: "#FF9F0A" },
+  type: { fontSize: 13, color: "#FF9500", marginBottom: 14, lineHeight: 18 },
+  typeDark: { color: "#FF9F0A" },
   actions: { flexDirection: "row", gap: 8 },
   btn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: "center" },
-  deny: { backgroundColor: "rgba(239, 68, 68, 0.1)" },
-  denyText: { color: "#EF4444", fontWeight: "600", fontSize: 14 },
-  always: { backgroundColor: "#F4F4F5" },
-  alwaysDark: { backgroundColor: "#27272A" },
-  alwaysText: { color: "#09090B", fontWeight: "600", fontSize: 14 },
-  allow: { backgroundColor: "#09090B" },
-  allowDark: { backgroundColor: "#FAFAFA" },
-  allowText: { color: "#FAFAFA", fontWeight: "600", fontSize: 14 },
-  allowTextDark: { color: "#09090B" },
+  deny: { backgroundColor: "rgba(255, 59, 48, 0.1)" },
+  denyText: { color: "#FF3B30", fontWeight: "600", fontSize: 14 },
+  always: { backgroundColor: "#F2F2F7" },
+  alwaysDark: { backgroundColor: "#2C2C2E" },
+  alwaysText: { color: "#000000", fontWeight: "600", fontSize: 14 },
+  allow: { backgroundColor: "#000000" },
+  allowDark: { backgroundColor: "#FFFFFF" },
+  allowText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
+  allowTextDark: { color: "#000000" },
 })

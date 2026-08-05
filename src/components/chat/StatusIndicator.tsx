@@ -26,7 +26,7 @@ export function StatusIndicator({ sessionID, isDark }: Props) {
 
   return (
     <View style={[s.bar, isDark && s.barDark]}>
-      <ActivityIndicator size="small" color="#8b5cf6" />
+      <ActivityIndicator size="small" color={isDark ? "#0A84FF" : "#0071E3"} />
       <Text style={[s.text, isDark && s.textDark]}>{label}</Text>
     </View>
   )
@@ -39,11 +39,11 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "#f5f3ff",
+    backgroundColor: "rgba(0, 113, 227, 0.06)",
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
+    borderTopColor: "#C6C6C8",
   },
-  barDark: { backgroundColor: "#1a1a2e", borderTopColor: "#2a2a2a" },
-  text: { fontSize: 13, color: "#6d28d9", fontWeight: "500" },
-  textDark: { color: "#a78bfa" },
+  barDark: { backgroundColor: "#1C1C1E", borderTopColor: "#2C2C2E" },
+  text: { fontSize: 13, color: "#0071E3", fontWeight: "500" },
+  textDark: { color: "#0A84FF" },
 })

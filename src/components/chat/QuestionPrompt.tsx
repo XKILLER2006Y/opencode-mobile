@@ -83,7 +83,7 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
   return (
     <View style={[s.card, isDark && s.cardDark]}>
       <View style={s.header}>
-        <Ionicons name="chatbubble-ellipses-outline" size={18} color="#8b5cf6" />
+        <Ionicons name="chatbubble-ellipses-outline" size={18} color={isDark ? "#0A84FF" : "#0071E3"} />
         <Text style={[s.title, isDark && s.textWhite]}>{q.header || t("chat.questionPrompt.headerFallback")}</Text>
       </View>
       <Text style={[s.question, isDark && s.textWhite]}>{q.question}</Text>
@@ -114,19 +114,19 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
               <TextInput
                 style={[s.customInput, isDark && s.customInputDark]}
                 placeholder={t("chat.questionPrompt.answerPlaceholder")}
-                placeholderTextColor={isDark ? "#666666" : "#999999"}
+                placeholderTextColor={isDark ? "#AEAEB2" : "#8E8E93"}
                 value={custom}
                 onChangeText={setCustom}
                 onSubmitEditing={submitCustom}
                 autoFocus
               />
               <TouchableOpacity onPress={submitCustom} style={s.customSubmit}>
-                <Ionicons name="send" size={18} color="#8b5cf6" />
+                <Ionicons name="send" size={18} color={isDark ? "#0A84FF" : "#0071E3"} />
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity style={[s.option, isDark && s.optionDark]} onPress={() => setShowCustom(true)}>
-              <Text style={[s.optionLabel, { color: "#8b5cf6" }]}>{t("chat.questionPrompt.customAnswerLabel")}</Text>
+              <Text style={[s.optionLabel, { color: isDark ? "#0A84FF" : "#0071E3" }]}>{t("chat.questionPrompt.customAnswerLabel")}</Text>
             </TouchableOpacity>
           ))}
       </View>
@@ -160,17 +160,17 @@ const s = StyleSheet.create({
   card: {
     margin: 12,
     padding: 16,
-    backgroundColor: "rgba(139, 92, 246, 0.06)",
+    backgroundColor: "rgba(0, 113, 227, 0.06)",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(139, 92, 246, 0.2)",
+    borderColor: "rgba(0, 113, 227, 0.2)",
   },
-  cardDark: { backgroundColor: "rgba(139, 92, 246, 0.08)", borderColor: "rgba(139, 92, 246, 0.25)" },
+  cardDark: { backgroundColor: "rgba(10, 132, 255, 0.08)", borderColor: "rgba(10, 132, 255, 0.25)" },
   header: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  title: { fontSize: 15, fontWeight: "600", color: "#7C3AED" },
-  textWhite: { color: "#A78BFA" },
-  question: { fontSize: 14, lineHeight: 20, color: "#09090B", marginBottom: 12 },
-  metaDark: { color: "#A1A1AA" },
+  title: { fontSize: 15, fontWeight: "600", color: "#0071E3" },
+  textWhite: { color: "#0A84FF" },
+  question: { fontSize: 14, lineHeight: 20, color: "#000000", marginBottom: 12 },
+  metaDark: { color: "#AEAEB2" },
 
   options: { gap: 8 },
   option: {
@@ -178,14 +178,14 @@ const s = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: "#C6C6C8",
   },
-  optionDark: { backgroundColor: "#18181B", borderColor: "#27272A" },
-  optionSelected: { borderColor: "#8B5CF6", backgroundColor: "rgba(139, 92, 246, 0.12)" },
-  optionSelectedDark: { borderColor: "#A78BFA", backgroundColor: "rgba(139, 92, 246, 0.2)" },
-  optionLabel: { fontSize: 14, fontWeight: "600", color: "#09090B" },
-  optionLabelSelected: { color: "#7C3AED" },
-  optionDesc: { fontSize: 12, color: "#71717A", marginTop: 2 },
+  optionDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E" },
+  optionSelected: { borderColor: "#0071E3", backgroundColor: "rgba(0, 113, 227, 0.12)" },
+  optionSelectedDark: { borderColor: "#0A84FF", backgroundColor: "rgba(10, 132, 255, 0.2)" },
+  optionLabel: { fontSize: 14, fontWeight: "600", color: "#000000" },
+  optionLabelSelected: { color: "#0071E3" },
+  optionDesc: { fontSize: 12, color: "#6E6E73", marginTop: 2 },
 
   customRow: { flexDirection: "row", gap: 8 },
   customInput: {
@@ -196,15 +196,15 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
-    color: "#09090B",
+    borderColor: "#C6C6C8",
+    color: "#000000",
   },
-  customInputDark: { backgroundColor: "#18181B", borderColor: "#27272A", color: "#FAFAFA" },
+  customInputDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E", color: "#FFFFFF" },
   customSubmit: { justifyContent: "center", alignItems: "center", padding: 8 },
 
   footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12 },
-  dismiss: { fontSize: 14, color: "#71717A" },
-  submitBtn: { backgroundColor: "#8B5CF6", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
-  submitBtnDark: { backgroundColor: "#7C3AED" },
+  dismiss: { fontSize: 14, color: "#6E6E73" },
+  submitBtn: { backgroundColor: "#0071E3", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  submitBtnDark: { backgroundColor: "#0A84FF" },
   submitText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
 })

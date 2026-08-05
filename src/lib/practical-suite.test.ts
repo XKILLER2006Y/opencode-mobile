@@ -18,14 +18,14 @@ test("practical: light theme surface is high contrast against dark primary text"
   const light = getTheme(false)
   assert.notEqual(light.surface, light.textPrimary)
   assert.equal(light.surface, "#FFFFFF")
-  assert.equal(light.textPrimary, "#09090B")
+  assert.equal(light.textPrimary, "#000000")
 })
 
 test("practical: accent colors remain distinct between light and dark modes", () => {
   const dark = getTheme(true)
   const light = getTheme(false)
-  assert.equal(dark.accent, "#8B5CF6")
-  assert.equal(light.accent, "#7C3AED")
+  assert.equal(dark.accent, "#0A84FF")
+  assert.equal(light.accent, "#0071E3")
 })
 
 test("practical: spacing scale is strictly monotonic", () => {
@@ -48,10 +48,11 @@ test("practical: border radii follow exponential rounded scale", () => {
 
 test("practical: typography font sizes increase predictably", () => {
   const t = theme.typography
-  assert.ok(t.small.fontSize < t.caption.fontSize)
-  assert.ok(t.caption.fontSize < t.body.fontSize)
-  assert.ok(t.body.fontSize < t.title.fontSize)
-  assert.ok(t.title.fontSize < t.display.fontSize)
+  assert.ok(t.caption.fontSize < t.footnote.fontSize)
+  assert.ok(t.footnote.fontSize < t.body.fontSize)
+  assert.ok(t.body.fontSize <= t.headline.fontSize)
+  assert.ok(t.headline.fontSize < t.title1.fontSize)
+  assert.ok(t.title1.fontSize < t.largeTitle.fontSize)
 })
 
 // --- Group 2: Path & Directory Operations (6 tests) ---

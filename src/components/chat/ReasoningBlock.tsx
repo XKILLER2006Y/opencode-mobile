@@ -19,18 +19,18 @@ export function ReasoningBlock({ text, isDark }: Props) {
       style={[
         s.block,
         {
-          backgroundColor: isDark ? "rgba(139, 92, 246, 0.08)" : "rgba(124, 58, 237, 0.05)",
-          borderColor: isDark ? "rgba(139, 92, 246, 0.2)" : "rgba(124, 58, 237, 0.15)",
+          backgroundColor: isDark ? "rgba(10, 132, 255, 0.08)" : "rgba(0, 113, 227, 0.05)",
+          borderColor: isDark ? "rgba(10, 132, 255, 0.2)" : "rgba(0, 113, 227, 0.15)",
         },
       ]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
     >
       <View style={s.header}>
-        <View style={[s.iconBadge, { backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.1)" }]}>
-          <Ionicons name="bulb-outline" size={14} color="#F59E0B" />
+        <View style={[s.iconBadge, { backgroundColor: isDark ? "rgba(255, 159, 10, 0.15)" : "rgba(255, 149, 0, 0.1)" }]}>
+          <Ionicons name="bulb-outline" size={14} color={isDark ? "#FF9F0A" : "#FF9500"} />
         </View>
-        <Text style={[s.label, { color: isDark ? "#FBBF24" : "#D97706" }]}>{t("chat.reasoningBlock.label")}</Text>
+        <Text style={[s.label, { color: isDark ? "#FF9F0A" : "#FF9500" }]}>{t("chat.reasoningBlock.label")}</Text>
         <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={14} color={colors.textMuted} />
       </View>
       {expanded && (

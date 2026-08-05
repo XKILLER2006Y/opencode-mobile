@@ -25,11 +25,11 @@ const TOOL_ICONS: Record<string, string> = {
 
 const mono = Platform.OS === "ios" ? "Menlo" : "monospace"
 
-function statusColor(status: string): string {
-  if (status === "completed") return "#22c55e"
-  if (status === "error") return "#ef4444"
-  if (status === "running") return "#f59e0b"
-  return "#888888"
+function statusColor(status: string, isDark: boolean): string {
+  if (status === "completed") return isDark ? "#30D158" : "#34C759"
+  if (status === "error") return isDark ? "#FF453A" : "#FF3B30"
+  if (status === "running") return isDark ? "#FF9F0A" : "#FF9500"
+  return "#8E8E93"
 }
 
 // --- Tool-specific detail renderers ---
@@ -179,7 +179,7 @@ function WebfetchDetail({ input, isDark }: { input: unknown; isDark: boolean }) 
   return (
     <View style={s.detailSection}>
       {typeof url === "string" && (
-        <Text style={[s.detailFile, isDark && s.detailFileDark, { color: "#8b5cf6" }]} selectable numberOfLines={3}>
+        <Text style={[s.detailFile, isDark && s.detailFileDark, { color: isDark ? "#0A84FF" : "#0071E3" }]} selectable numberOfLines={3}>
           {url}
         </Text>
       )}
@@ -218,7 +218,7 @@ function TodoDetail({ input, isDark }: { input: unknown; isDark: boolean }) {
             <Ionicons
               name={done ? "checkbox" : "square-outline"}
               size={16}
-              color={done ? "#22c55e" : isDark ? "#666666" : "#999999"}
+              color={done ? (isDark ? "#30D158" : "#34C759") : isDark ? "#6E6E73" : "#8E8E93"}
             />
             <Text style={[s.todoText, isDark && s.todoTextDark, done && s.todoDone]} numberOfLines={2}>
               {String(item.content || item.title || "")}
@@ -288,7 +288,7 @@ function ToolDetail({ tool, isDark }: { tool: Part; isDark: boolean }) {
 function ErrorBanner({ message, isDark }: { message: string; isDark: boolean }) {
   return (
     <View style={[s.errorBanner, isDark && s.errorBannerDark]}>
-      <Ionicons name="alert-circle" size={14} color="#ef4444" />
+      <Ionicons name="alert-circle" size={14} color={isDark ? "#FF453A" : "#FF3B30"} />
       <Text style={s.errorText} numberOfLines={3} selectable>
         {message}
       </Text>
@@ -316,7 +316,7 @@ export const ToolCallCard = memo(
     const [expanded, setExpanded] = useState(false)
     const icon = (tool.tool && TOOL_ICONS[tool.tool]) || "extension-puzzle-outline"
     const status = tool.state?.status || "pending"
-    const color = statusColor(status)
+    const color = statusColor(status, isDark)
     const error = tool.state?.error?.message
     const elapsed = duration(tool.state?.time?.start, tool.state?.time?.end)
     const hasDetail = tool.state?.input !== undefined || tool.state?.output !== undefined || error
@@ -347,13 +347,13 @@ export const ToolCallCard = memo(
           </View>
           <View style={s.headerRight}>
             {status === "running" && <ActivityIndicator size="small" color={color} />}
-            {status === "completed" && <Ionicons name="checkmark-circle" size={16} color="#22c55e" />}
-            {status === "error" && <Ionicons name="close-circle" size={16} color="#ef4444" />}
+            {status === "completed" && <Ionicons name="checkmark-circle" size={16} color={isDark ? "#30D158" : "#34C759"} />}
+            {status === "error" && <Ionicons name="close-circle" size={16} color={isDark ? "#FF453A" : "#FF3B30"} />}
             {hasDetail && (
               <Ionicons
                 name={expanded ? "chevron-up" : "chevron-down"}
                 size={16}
-                color={isDark ? "#666666" : "#999999"}
+                color={isDark ? "#6E6E73" : "#8E8E93"}
               />
             )}
           </View>
@@ -377,16 +377,16 @@ export const ToolCallCard = memo(
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#F4F4F5",
+    backgroundColor: "#F2F2F7",
     padding: 12,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: "#C6C6C8",
   },
-  cardDark: { backgroundColor: "#18181B", borderColor: "#27272A" },
-  cardError: { borderColor: "#FECACA", backgroundColor: "#FEF2F2" },
-  cardErrorDark: { borderColor: "#991B1B", backgroundColor: "#18181B" },
+  cardDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E" },
+  cardError: { borderColor: "rgba(255, 59, 48, 0.3)", backgroundColor: "rgba(255, 59, 48, 0.06)" },
+  cardErrorDark: { borderColor: "rgba(255, 69, 58, 0.35)", backgroundColor: "rgba(255, 69, 58, 0.1)" },
 
   header: {
     flexDirection: "row",
@@ -395,10 +395,10 @@ const s = StyleSheet.create({
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 6 },
-  name: { fontSize: 13, fontWeight: "600", color: "#09090B", flex: 1 },
-  nameDark: { color: "#FAFAFA" },
-  elapsed: { fontSize: 11, fontWeight: "500", color: "#71717A" },
-  elapsedDark: { color: "#A1A1AA" },
+  name: { fontSize: 13, fontWeight: "600", color: "#000000", flex: 1 },
+  nameDark: { color: "#FFFFFF" },
+  elapsed: { fontSize: 11, fontWeight: "500", color: "#6E6E73" },
+  elapsedDark: { color: "#AEAEB2" },
 
   // Error
   errorBanner: {
@@ -407,13 +407,13 @@ const s = StyleSheet.create({
     gap: 6,
     marginTop: 8,
     padding: 10,
-    backgroundColor: "rgba(239, 68, 68, 0.08)",
+    backgroundColor: "rgba(255, 59, 48, 0.08)",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(239, 68, 68, 0.2)",
+    borderColor: "rgba(255, 59, 48, 0.2)",
   },
-  errorBannerDark: { backgroundColor: "rgba(239, 68, 68, 0.12)" },
-  errorText: { fontSize: 12, color: "#EF4444", flex: 1, lineHeight: 18, fontWeight: "500" },
+  errorBannerDark: { backgroundColor: "rgba(255, 69, 58, 0.12)" },
+  errorText: { fontSize: 12, color: "#FF3B30", flex: 1, lineHeight: 18, fontWeight: "500" },
 
   // Detail
   detailScroll: { maxHeight: 300, marginTop: 8 },
@@ -421,16 +421,16 @@ const s = StyleSheet.create({
   detailFile: {
     fontSize: 12,
     fontFamily: mono,
-    color: "#7C3AED",
-    backgroundColor: "rgba(124, 58, 237, 0.08)",
+    color: "#0071E3",
+    backgroundColor: "rgba(0, 113, 227, 0.08)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
     overflow: "hidden",
   },
-  detailFileDark: { color: "#A78BFA", backgroundColor: "rgba(139, 92, 246, 0.15)" },
-  detailMeta: { fontSize: 12, color: "#71717A", lineHeight: 18 },
-  detailMetaDark: { color: "#A1A1AA" },
+  detailFileDark: { color: "#0A84FF", backgroundColor: "rgba(10, 132, 255, 0.15)" },
+  detailMeta: { fontSize: 12, color: "#6E6E73", lineHeight: 18 },
+  detailMetaDark: { color: "#AEAEB2" },
 
   // Code block
   codeBlock: {
@@ -438,17 +438,17 @@ const s = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: "#C6C6C8",
   },
-  codeBlockDark: { backgroundColor: "#09090B", borderColor: "#27272A" },
+  codeBlockDark: { backgroundColor: "#000000", borderColor: "#2C2C2E" },
   codePre: {
     fontSize: 12,
     fontFamily: mono,
-    color: "#09090B",
+    color: "#000000",
     lineHeight: 18,
   },
-  codePteDark: { color: "#FAFAFA" },
-  codePrompt: { color: "#8B5CF6", fontWeight: "700" },
+  codePteDark: { color: "#FFFFFF" },
+  codePrompt: { color: "#0071E3", fontWeight: "700" },
 
   // Todo
   todoRow: {
@@ -457,7 +457,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 3,
   },
-  todoText: { fontSize: 13, color: "#09090B", flex: 1, lineHeight: 20 },
-  todoTextDark: { color: "#FAFAFA" },
-  todoDone: { textDecorationLine: "line-through", color: "#A1A1AA" },
+  todoText: { fontSize: 13, color: "#000000", flex: 1, lineHeight: 20 },
+  todoTextDark: { color: "#FFFFFF" },
+  todoDone: { textDecorationLine: "line-through", color: "#AEAEB2" },
 })

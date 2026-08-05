@@ -66,7 +66,7 @@ the payload.
 - `addConnection` needed no change — it already spreads `ServerConnection`
   fields, so `tunnelMode` persists through SecureStore
 
-### Task 5 — Full gate + docs (`<pending>`)
+### Task 5 — Full gate + docs (`2436925`)
 
 - Full gate: `npx eslint src app scripts; npx tsc --noEmit; npm test`
 - This ledger + README quick-start for remote

@@ -136,7 +136,7 @@ function RootLayout() {
           backgroundColor: isDark ? "#000000" : "#F2F2F7",
         }}
       >
-        <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
+        <ActivityIndicator size="large" color={isDark ? "#FFFFFF" : "#000000"} />
       </View>
     )
   }

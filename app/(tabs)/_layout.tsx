@@ -11,16 +11,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: isDark ? "#ffffff" : "#0a0a0a",
-        tabBarInactiveTintColor: isDark ? "#666666" : "#999999",
+        tabBarActiveTintColor: isDark ? "#0A84FF" : "#0071E3",
+        tabBarInactiveTintColor: isDark ? "#8E8E93" : "#8E8E93",
         tabBarStyle: {
-          backgroundColor: isDark ? "#0a0a0a" : "#ffffff",
-          borderTopColor: isDark ? "#1a1a1a" : "#e5e5e5",
+          backgroundColor: isDark ? "#000000" : "#FFFFFF",
+          borderTopColor: isDark ? "#1C1C1E" : "#E9E9EB",
         },
         headerStyle: {
-          backgroundColor: isDark ? "#0a0a0a" : "#ffffff",
+          backgroundColor: isDark ? "#000000" : "#F2F2F7",
         },
-        headerTintColor: isDark ? "#ffffff" : "#0a0a0a",
+        headerTintColor: isDark ? "#FFFFFF" : "#000000",
+        headerTitleStyle: { fontFamily: "Inter-SemiBold", fontSize: 17 },
       }}
     >
       <Tabs.Screen

@@ -469,6 +469,25 @@
     "ctaSubtitle": "This was a scripted demo. Connect your own opencode server to do this for real.",
     "connectButton": "Connect your own server",
     "setupGuideLink": "How to set up a server",
-    "hostedCtaLink": "No server? Join the OpenCode Connect waitlist — hosted, no setup"
+    "hostedCtaLink": "No server? Join the OpenCode Connect waitlist – hosted, no setup"
+  },
+  "onboarding": {
+    "welcomeTitle": "Control your opencode server from anywhere",
+    "welcomeSubtitle": "Your PC runs opencode. This app lets you drive it from your phone — sessions, commands, and files on the go.",
+    "feature1": "Chat with your coding agent from anywhere",
+    "feature2": "Run commands and open files on your PC",
+    "feature3": "Pair instantly with a QR code",
+    "getStarted": "Get Started",
+    "skip": "Skip",
+    "helperTitle": "Connect your server",
+    "helperSubtitle": "Add the opencode server running on your computer.",
+    "scanQr": "Scan QR code",
+    "addManually": "Add manually",
+    "health": {
+      "healthy": "Server reachable",
+      "unreachable": "Server unreachable",
+      "unknown": "Server status unknown"
+    }
   }
 }
+

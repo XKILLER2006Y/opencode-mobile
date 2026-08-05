@@ -470,5 +470,23 @@
     "connectButton": "连接您自己的服务器",
     "setupGuideLink": "如何设置服务器",
     "hostedCtaLink": "没有服务器？加入 OpenCode Connect 候补名单 — 托管，无需搭建"
+  },
+  "onboarding": {
+    "welcomeTitle": "随时随地控制您的 opencode 服务器",
+    "welcomeSubtitle": "您的电脑运行 opencode。这款应用让您可以在手机上操控它 — 会话、命令和文件随时可用。",
+    "feature1": "随时随地与您的编程代理聊天",
+    "feature2": "在电脑上运行命令并打开文件",
+    "feature3": "使用二维码即时配对",
+    "getStarted": "开始使用",
+    "skip": "跳过",
+    "helperTitle": "连接您的服务器",
+    "helperSubtitle": "添加您电脑上运行的 opencode 服务器。",
+    "scanQr": "扫描二维码",
+    "addManually": "手动添加",
+    "health": {
+      "healthy": "服务器可访问",
+      "unreachable": "服务器不可访问",
+      "unknown": "服务器状态未知"
+    }
   }
 }

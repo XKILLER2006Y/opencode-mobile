@@ -15,3 +15,6 @@ const secureStoreStorage: OnboardingStorage = {
 }
 
 export const onboardingStore = createOnboardingStore(secureStoreStorage)
+
+export const loadOnboardingCompleted = () => onboardingStore.loadOnboardingCompleted()
+export const completeOnboarding = () => onboardingStore.completeOnboarding()

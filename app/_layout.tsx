@@ -11,6 +11,7 @@ import { useConnections } from "../src/stores/connections"
 import { useEvents } from "../src/stores/events"
 import { useCatalog } from "../src/stores/catalog"
 import { useSettings } from "../src/stores/settings"
+import { useLoadedFonts } from "../src/lib/fonts"
 import { AuthGate } from "../src/components/AuthGate"
 import { ErrorBoundary } from "../src/components/ErrorBoundary"
 import { TelemetryConsentModal } from "../src/components/TelemetryConsentModal"
@@ -26,6 +27,7 @@ function RootLayout() {
 
   const { initialize: initAuth, isLoading: authLoading } = useAuth()
   const { loadConnections, isLoading: connectionsLoading, client } = useConnections()
+  const { loaded: fontsLoaded } = useLoadedFonts()
   const sseStarted = useRef(false)
   const notifPermissionRequested = useRef(false)
 
@@ -122,7 +124,7 @@ function RootLayout() {
     }
   }, [client])
 
-  const isLoading = authLoading || connectionsLoading || consentState === "loading"
+  const isLoading = authLoading || connectionsLoading || consentState === "loading" || !fontsLoaded
 
   if (isLoading) {
     return (
@@ -131,7 +133,7 @@ function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: isDark ? "#0a0a0a" : "#ffffff",
+          backgroundColor: isDark ? "#000000" : "#F2F2F7",
         }}
       >
         <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
@@ -148,11 +150,12 @@ function RootLayout() {
             <Stack
               screenOptions={{
                 headerStyle: {
-                  backgroundColor: isDark ? "#0a0a0a" : "#ffffff",
+                  backgroundColor: isDark ? "#000000" : "#F2F2F7",
                 },
-                headerTintColor: isDark ? "#ffffff" : "#0a0a0a",
+                headerTintColor: isDark ? "#FFFFFF" : "#000000",
+                headerTitleStyle: { fontFamily: "Inter-SemiBold" },
                 contentStyle: {
-                  backgroundColor: isDark ? "#0a0a0a" : "#ffffff",
+                  backgroundColor: isDark ? "#000000" : "#F2F2F7",
                 },
               }}
             >

@@ -67,6 +67,12 @@ export const theme = {
     caption: { fontSize: 12, fontWeight: "400" as const, lineHeight: 14 },
     code: { fontSize: 13, fontFamily: "monospace" },
   },
+  font: {
+    regular: "Inter-Regular",
+    medium: "Inter-Medium",
+    semibold: "Inter-SemiBold",
+    bold: "Inter-Bold",
+  },
 }
 
 export function getTheme(isDark: boolean) {

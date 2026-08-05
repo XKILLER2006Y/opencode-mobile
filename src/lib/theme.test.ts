@@ -4,30 +4,30 @@ import { getTheme, theme } from "./theme.ts"
 
 test("theme: dark colors contain required design system properties", () => {
   const dark = theme.colors.dark
-  assert.equal(dark.bg, "#09090B")
-  assert.equal(dark.surface, "#18181B")
-  assert.equal(dark.accent, "#8B5CF6")
-  assert.equal(dark.textPrimary, "#FAFAFA")
-  assert.equal(dark.statusSuccess, "#22C55E")
-  assert.equal(dark.statusError, "#EF4444")
+  assert.equal(dark.bg, "#000000")
+  assert.equal(dark.surface, "#1C1C1E")
+  assert.equal(dark.accent, "#0A84FF")
+  assert.equal(dark.textPrimary, "#FFFFFF")
+  assert.equal(dark.statusSuccess, "#30D158")
+  assert.equal(dark.statusError, "#FF453A")
 })
 
 test("theme: light colors contain required design system properties", () => {
   const light = theme.colors.light
-  assert.equal(light.bg, "#F4F4F5")
+  assert.equal(light.bg, "#F2F2F7")
   assert.equal(light.surface, "#FFFFFF")
-  assert.equal(light.accent, "#7C3AED")
-  assert.equal(light.textPrimary, "#09090B")
-  assert.equal(light.statusSuccess, "#16A34A")
-  assert.equal(light.statusError, "#DC2626")
+  assert.equal(light.accent, "#0071E3")
+  assert.equal(light.textPrimary, "#000000")
+  assert.equal(light.statusSuccess, "#34C759")
+  assert.equal(light.statusError, "#FF3B30")
 })
 
 test("theme: getTheme returns appropriate palette based on isDark flag", () => {
   const darkPalette = getTheme(true)
   const lightPalette = getTheme(false)
 
-  assert.equal(darkPalette.bg, "#09090B")
-  assert.equal(lightPalette.bg, "#F4F4F5")
+  assert.equal(darkPalette.bg, "#000000")
+  assert.equal(lightPalette.bg, "#F2F2F7")
   assert.notEqual(darkPalette.surface, lightPalette.surface)
 })
 
@@ -44,8 +44,8 @@ test("theme: spacing and radii tokens are positive numbers", () => {
 })
 
 test("theme: typography scale has valid font sizes and weights", () => {
-  assert.equal(theme.typography.display.fontSize, 24)
-  assert.equal(theme.typography.title.fontSize, 18)
-  assert.equal(theme.typography.body.fontSize, 15)
-  assert.equal(theme.typography.caption.fontSize, 13)
+  assert.equal(theme.typography.largeTitle.fontSize, 28)
+  assert.equal(theme.typography.title1.fontSize, 22)
+  assert.equal(theme.typography.body.fontSize, 17)
+  assert.equal(theme.typography.footnote.fontSize, 13)
 })

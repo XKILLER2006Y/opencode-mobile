@@ -602,7 +602,13 @@ export default function SessionScreen() {
                   <Text style={[s.dirText, isDark && s.dirTextDark]}>{shortDir}</Text>
                 </View>
               )}
-              <TouchableOpacity onPress={() => setShowInfo((v) => !v)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() => setShowInfo((v) => !v)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("session.header.infoButton")}
+                accessibilityState={{ expanded: showInfo }}
+              >
                 <Ionicons
                   name={showInfo ? "stats-chart" : "stats-chart-outline"}
                   size={20}
@@ -677,6 +683,8 @@ export default function SessionScreen() {
                 setAttachments([])
               }}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("session.banners.undo")}
             >
               <Text style={s.bannerAction}>{t("session.banners.undo")}</Text>
             </TouchableOpacity>
@@ -740,7 +748,12 @@ export default function SessionScreen() {
               </View>
             )}
             {showScrollButton && (
-              <TouchableOpacity style={[s.scrollBtn, isDark && s.scrollBtnDark]} onPress={() => scrollToBottom(true)}>
+              <TouchableOpacity
+                style={[s.scrollBtn, isDark && s.scrollBtnDark]}
+                onPress={() => scrollToBottom(true)}
+                accessibilityRole="button"
+                accessibilityLabel={t("session.scrollToBottom")}
+              >
                 <Ionicons name="chevron-down" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
               </TouchableOpacity>
             )}
@@ -787,6 +800,9 @@ export default function SessionScreen() {
               style={[s.agentChip, { borderColor: agentColor }]}
               onPress={() => cycleAgent()}
               onLongPress={() => cycleAgent(-1)}
+              accessibilityRole="button"
+              accessibilityLabel={agent || "build"}
+              accessibilityHint={t("session.toolbar.switchAgentHint")}
             >
               <View style={[s.agentDot, { backgroundColor: agentColor }]} />
               <Text style={[s.agentLabel, isDark && s.textWhite]}>{agent || "build"}</Text>
@@ -797,6 +813,8 @@ export default function SessionScreen() {
               style={[s.modelChip, isDark && s.modelChipDark]}
               onPress={() => modelSheetRef.current?.expand()}
               testID="model-chip"
+              accessibilityRole="button"
+              accessibilityLabel={`${t("session.toolbar.modelButton")}: ${modelLabel}`}
             >
               <Ionicons name="hardware-chip-outline" size={14} color={isDark ? "#8E8E93" : "#6E6E73"} />
               <Text style={[s.modelLabel, isDark && s.metaDark]} numberOfLines={1}>
@@ -809,6 +827,10 @@ export default function SessionScreen() {
                 style={[s.variantChip, isDark && s.variantChipDark, variant && s.variantChipActive]}
                 onPress={() => variantSheetRef.current?.expand()}
                 testID="variant-chip"
+                accessibilityRole="button"
+                accessibilityLabel={`${t("session.toolbar.variantButton")}: ${
+                  variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")
+                }`}
               >
                 <Ionicons name="flash-outline" size={14} color={variant ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"} />
                 <Text style={[s.variantLabel, isDark && s.metaDark, variant && s.variantLabelActive]} numberOfLines={1}>
@@ -827,12 +849,24 @@ export default function SessionScreen() {
           >
             <View style={s.inputRow}>
               {/* Attach button */}
-              <TouchableOpacity style={s.attachBtn} onPress={pickFromLibrary} onLongPress={pickFromCamera}>
+              <TouchableOpacity
+                style={s.attachBtn}
+                onPress={pickFromLibrary}
+                onLongPress={pickFromCamera}
+                accessibilityRole="button"
+                accessibilityLabel={t("session.input.attachButton")}
+                accessibilityHint={t("session.input.attachCameraHint")}
+              >
                 <Ionicons name="add-circle-outline" size={26} color={isDark ? "#8E8E93" : "#6E6E73"} />
               </TouchableOpacity>
 
               {/* Clipboard paste button */}
-              <TouchableOpacity style={s.attachBtn} onPress={pasteFromClipboard}>
+              <TouchableOpacity
+                style={s.attachBtn}
+                onPress={pasteFromClipboard}
+                accessibilityRole="button"
+                accessibilityLabel={t("session.input.pasteButton")}
+              >
                 <Ionicons name="clipboard-outline" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
               </TouchableOpacity>
 
@@ -852,28 +886,50 @@ export default function SessionScreen() {
                 multiline
                 maxLength={10000}
                 testID="chat-message-input"
+                accessibilityLabel={t("session.input.label")}
               />
               {/* Stop button: only when busy and no input */}
               {isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-                <TouchableOpacity style={s.stopBtn} onPress={abortSession}>
+                <TouchableOpacity
+                  style={s.stopBtn}
+                  onPress={abortSession}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("session.input.stopButton")}
+                >
                   <Ionicons name="stop" size={20} color="#ffffff" />
                 </TouchableOpacity>
               )}
               {/* Mic button: when no input, not sending, and not listening */}
               {!isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-                <TouchableOpacity style={s.micBtn} onPress={speech.start}>
+                <TouchableOpacity
+                  style={s.micBtn}
+                  onPress={speech.start}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("session.input.micButton")}
+                >
                   <Ionicons name="mic" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
                 </TouchableOpacity>
               )}
               {/* Listening indicator: tap to stop */}
               {speech.listening && (
-                <TouchableOpacity style={s.micBtnActive} onPress={speech.stop}>
+                <TouchableOpacity
+                  style={s.micBtnActive}
+                  onPress={speech.stop}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("session.input.stopListeningButton")}
+                >
                   <Ionicons name="mic" size={22} color="#ffffff" />
                 </TouchableOpacity>
               )}
               {/* Send button: when there's input */}
               {!speech.listening && (input.trim() || attachments.length > 0) && (
-                <TouchableOpacity style={s.sendBtn} onPress={handleSend} testID="chat-send-button">
+                <TouchableOpacity
+                  style={s.sendBtn}
+                  onPress={handleSend}
+                  testID="chat-send-button"
+                  accessibilityRole="button"
+                  accessibilityLabel={t("session.input.sendButton")}
+                >
                   <Ionicons name="send" size={20} color="#ffffff" />
                 </TouchableOpacity>
               )}

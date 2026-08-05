@@ -40,6 +40,19 @@ test("onboarding: complete persists then load returns true", async () => {
   assert.deepEqual(storage.calls, ["set:opencode_onboarding_completed=true", "get:opencode_onboarding_completed"])
 })
 
+test("onboarding: complete is idempotent", async () => {
+  const storage = fakeStorage()
+  const onboarding = createOnboardingStore(storage)
+  await onboarding.completeOnboarding()
+  await onboarding.completeOnboarding()
+  assert.equal(await onboarding.loadOnboardingCompleted(), true)
+  assert.deepEqual(storage.calls, [
+    "set:opencode_onboarding_completed=true",
+    "set:opencode_onboarding_completed=true",
+    "get:opencode_onboarding_completed",
+  ])
+})
+
 test("onboarding: load returns false when SecureStore read fails", async () => {
   const storage = fakeStorage()
   storage.failNext = true

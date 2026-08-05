@@ -103,15 +103,27 @@ export default function ConnectScanScreen() {
         <Text style={[styles.permissionTitle, isDark && styles.textDark]}>{t("connectScan.permissionTitle")}</Text>
         <Text style={[styles.permissionMessage, isDark && styles.hintDark]}>{t("connectScan.permissionMessage")}</Text>
         {permission.canAskAgain ? (
-          <TouchableOpacity style={styles.permissionButton} onPress={() => void requestPermission()}>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => void requestPermission()}
+            accessibilityRole="button"
+          >
             <Text style={styles.permissionButtonText}>{t("connectScan.permissionButton")}</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.permissionButton} onPress={() => void Linking.openSettings()}>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => void Linking.openSettings()}
+            accessibilityRole="button"
+          >
             <Text style={styles.permissionButtonText}>{t("connectScan.openSettings")}</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.cancelLink} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.cancelLink}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+        >
           <Text style={[styles.cancelLinkText, isDark && styles.hintDark]}>{t("connectScan.cancelButton")}</Text>
         </TouchableOpacity>
       </View>
@@ -145,7 +157,13 @@ export default function ConnectScanScreen() {
               <Text style={styles.invalidText}>{t("connectScan.invalidQr")}</Text>
             </View>
           )}
-          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()} testID="scan-cancel-button">
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.back()}
+            testID="scan-cancel-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("connectScan.cancelButton")}
+          >
             <Ionicons name="close" size={28} color="#ffffff" />
           </TouchableOpacity>
         </View>
@@ -177,12 +195,18 @@ export default function ConnectScanScreen() {
             autoCapitalize="none"
             autoCorrect={false}
             testID="scan-password-input"
+            accessibilityLabel={t("connectScan.passwordPlaceholder")}
           />
-          <TouchableOpacity style={styles.connectButton} onPress={handleConnectWithPassword} testID="scan-connect-button">
+          <TouchableOpacity
+            style={styles.connectButton}
+            onPress={handleConnectWithPassword}
+            testID="scan-connect-button"
+            accessibilityRole="button"
+          >
             <Ionicons name="flash" size={18} color="#ffffff" />
             <Text style={styles.connectButtonText}>{t("connectScan.connectButton")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.passwordCancel} onPress={backToScanning}>
+          <TouchableOpacity style={styles.passwordCancel} onPress={backToScanning} accessibilityRole="button">
             <Text style={[styles.passwordCancelText, isDark && styles.hintDark]}>{t("connectScan.cancelButton")}</Text>
           </TouchableOpacity>
         </View>

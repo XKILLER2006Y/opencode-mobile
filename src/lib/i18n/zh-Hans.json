@@ -6,6 +6,7 @@
     "delete": "删除",
     "retry": "重试",
     "save": "保存",
+    "close": "关闭",
     "shareReport": "分享报告"
   },
   "settings": {
@@ -75,8 +76,15 @@
   "session": {
     "titleFallback": "会话",
     "toolbar": {
-      "auto": "自动"
+      "auto": "自动",
+      "switchAgentHint": "点击切换代理",
+      "modelButton": "选择模型",
+      "variantButton": "选择推理强度"
     },
+    "header": {
+      "infoButton": "会话信息"
+    },
+    "scrollToBottom": "滚动到底部",
     "banners": {
       "reconnecting": "正在重新连接…（第 {{attempt}} 次尝试）",
       "connected": "已连接 ✓",
@@ -91,7 +99,15 @@
     "input": {
       "placeholderListening": "正在聆听...",
       "placeholderFollowUp": "发送后续消息...",
-      "placeholderDefault": "输入消息..."
+      "placeholderDefault": "输入消息...",
+      "label": "消息",
+      "sendButton": "发送",
+      "stopButton": "停止",
+      "micButton": "语音输入",
+      "stopListeningButton": "停止聆听",
+      "attachButton": "添加附件",
+      "attachCameraHint": "长按拍照",
+      "pasteButton": "从剪贴板粘贴"
     },
     "actions": {
       "editMessage": "编辑消息",
@@ -136,6 +152,7 @@
       "name": "名称",
       "namePlaceholder": "我的服务器",
       "serverUrl": "服务器地址",
+      "portLabel": "端口",
       "directoryOptional": "项目目录（可选）",
       "authentication": "身份验证",
       "username": "用户名",
@@ -179,6 +196,7 @@
       },
       "waitlist": {
         "successText": "您已加入候补名单 — OpenCode Connect 准备就绪时我们会通过邮件通知您。",
+        "emailLabel": "电子邮箱",
         "joinButton": "加入候补名单",
         "alertTitle": "加入候补名单",
         "fallbackMessage": "无法连接注册服务或打开邮件应用。请发送邮件至 support@agentlabs.cc，主题为 \"OpenCode Connect Waitlist\"。"
@@ -233,6 +251,7 @@
       "subtitle": "添加一个 OpenCode 服务器连接"
     },
     "header": "点击切换，长按查看更多选项",
+    "longPressHint": "长按显示更多操作",
     "scan": "扫码连接",
     "exposeCard": {
       "title": "通过互联网访问",
@@ -248,6 +267,7 @@
     "preferences": {
       "title": "偏好设置",
       "pageSizeLabel": "每页消息数",
+      "pageSizeOption": "每页{{size}}条",
       "pageSizeHint": "打开会话时加载的消息数量。数值越小加载越快。"
     }
   },
@@ -271,6 +291,7 @@
   },
   "sessionsList": {
     "untitledSession": "未命名会话",
+    "longPressHint": "长按显示更多操作",
     "time": {
       "justNow": "刚刚",
       "minutesAgo": "{{count}} 分钟前",
@@ -315,7 +336,9 @@
     },
     "renameModal": {
       "title": "重命名会话"
-    }
+    },
+    "fabLabel": "新建会话",
+    "fabOptionsHint": "长按查看更多新建选项"
   },
   "notifications": {
     "categories": {

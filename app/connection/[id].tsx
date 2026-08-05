@@ -203,6 +203,9 @@ export default function EditConnectionScreen() {
               type === opt.type && isDark && styles.typeOptionSelectedDark,
             ]}
             onPress={() => setType(opt.type)}
+            accessibilityRole="button"
+            accessibilityLabel={t(opt.labelKey)}
+            accessibilityState={{ selected: type === opt.type }}
           >
             <Ionicons
               name={opt.icon}
@@ -231,6 +234,7 @@ export default function EditConnectionScreen() {
         placeholderTextColor={isDark ? "#666666" : "#999999"}
         value={name}
         onChangeText={setName}
+        accessibilityLabel={t("connection.shared.name")}
       />
 
       {/* URL */}
@@ -244,6 +248,7 @@ export default function EditConnectionScreen() {
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"
+        accessibilityLabel={t("connection.shared.serverUrl")}
       />
 
       {/* Directory */}
@@ -256,6 +261,7 @@ export default function EditConnectionScreen() {
         onChangeText={setDirectory}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.directoryOptional")}
       />
       <Text style={[styles.hint, isDark && styles.hintDark]}>{t("connection.edit.directoryHint")}</Text>
 
@@ -271,6 +277,7 @@ export default function EditConnectionScreen() {
         onChangeText={setUsername}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.username")}
       />
 
       <Text style={[styles.label, isDark && styles.labelDark]}>{t("connection.edit.passwordLabel")}</Text>
@@ -281,6 +288,7 @@ export default function EditConnectionScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        accessibilityLabel={t("connection.edit.passwordLabel")}
       />
 
       {/* Actions */}
@@ -289,6 +297,8 @@ export default function EditConnectionScreen() {
           style={[styles.testButton, isDark && styles.testButtonDark]}
           onPress={handleTest}
           disabled={isTesting}
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.edit.testButton")}
         >
           {isTesting ? (
             <ActivityIndicator size="small" color={isDark ? "#ffffff" : "#0a0a0a"} />
@@ -304,6 +314,8 @@ export default function EditConnectionScreen() {
           style={[styles.saveButton, isDark && styles.saveButtonDark]}
           onPress={handleSave}
           disabled={isSaving}
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.edit.saveButton")}
         >
           {isSaving ? (
             <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
@@ -314,7 +326,12 @@ export default function EditConnectionScreen() {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDelete}
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.edit.deleteButton")}
+        >
           <Ionicons name="trash-outline" size={20} color="#ef4444" />
           <Text style={styles.deleteButtonText}>{t("connection.edit.deleteButton")}</Text>
         </TouchableOpacity>

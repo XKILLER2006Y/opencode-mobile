@@ -54,7 +54,11 @@ function SettingRow({
   )
 
   if (onPress) {
-    return <TouchableOpacity onPress={onPress}>{content}</TouchableOpacity>
+    return (
+      <TouchableOpacity onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
+        {content}
+      </TouchableOpacity>
+    )
   }
 
   return content
@@ -158,6 +162,7 @@ export default function SettingsScreen() {
               onValueChange={(value) => updateSettings({ requireBiometric: value })}
               disabled={!hasBiometrics}
               trackColor={{ false: "#767577", true: "#22c55e" }}
+              accessibilityLabel={t("settings.security.biometricOpen.label")}
             />
           }
         />
@@ -172,6 +177,7 @@ export default function SettingsScreen() {
               onValueChange={(value) => updateSettings({ requireBiometricForMessages: value })}
               disabled={!hasBiometrics || !settings.requireBiometric}
               trackColor={{ false: "#767577", true: "#22c55e" }}
+              accessibilityLabel={t("settings.security.biometricSend.label")}
             />
           }
         />
@@ -202,6 +208,7 @@ export default function SettingsScreen() {
                   value={notifications[category]}
                   onValueChange={(value) => handleToggle(category, value)}
                   trackColor={{ false: "#767577", true: "#22c55e" }}
+                  accessibilityLabel={t(meta.labelKey)}
                 />
               }
             />
@@ -228,6 +235,7 @@ export default function SettingsScreen() {
               onValueChange={handleCrashReportingToggle}
               disabled={telemetryUpdating}
               trackColor={{ false: "#767577", true: "#22c55e" }}
+              accessibilityLabel={t("settings.privacy.crashReporting.label")}
             />
           }
         />

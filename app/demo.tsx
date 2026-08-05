@@ -82,6 +82,8 @@ export default function DemoScreen() {
               style={s.connectButton}
               onPress={handleConnectPress}
               testID="demo-connect-button"
+              accessibilityRole="button"
+              accessibilityLabel={t("demo.connectButton")}
             >
               <Text style={s.connectButtonText}>{t("demo.connectButton")}</Text>
             </TouchableOpacity>
@@ -89,6 +91,8 @@ export default function DemoScreen() {
               style={s.hostedCtaLink}
               onPress={handleConnectPress}
               testID="demo-hosted-cta"
+              accessibilityRole="link"
+              accessibilityLabel={t("demo.hostedCtaLink")}
             >
               <Text style={s.hostedCtaLinkText}>{t("demo.hostedCtaLink")}</Text>
             </TouchableOpacity>
@@ -96,6 +100,8 @@ export default function DemoScreen() {
               style={s.setupGuideLink}
               onPress={() => Linking.openURL(SETUP_GUIDE_URL)}
               testID="demo-setup-guide-link"
+              accessibilityRole="link"
+              accessibilityLabel={t("demo.setupGuideLink")}
             >
               <Text style={s.setupGuideLinkText}>{t("demo.setupGuideLink")}</Text>
             </TouchableOpacity>

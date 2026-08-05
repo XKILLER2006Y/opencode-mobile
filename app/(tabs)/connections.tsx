@@ -51,12 +51,23 @@ function ConnectionItem({
       ]}
       onPress={onSelect}
       onLongPress={handleLongPress}
+      accessibilityRole="button"
+      accessibilityLabel={connection.name}
+      accessibilityHint={t("connectionsList.longPressHint")}
     >
       <View style={styles.connectionIcon}>
         <Ionicons name={typeIcon} size={24} color={isActive ? "#22c55e" : isDark ? "#888888" : "#666666"} />
         <View
           style={[styles.healthDot, isDark && styles.healthDotDark, { backgroundColor: dotColor }]}
           testID={`health-dot-${connection.id}`}
+          accessible={true}
+          accessibilityLabel={
+            health === true
+              ? t("connectionsList.health.healthy")
+              : health === false
+                ? t("connectionsList.health.unreachable")
+                : t("connectionsList.health.unknown")
+          }
         />
       </View>
       <View style={styles.connectionContent}>
@@ -103,7 +114,12 @@ function ConnectionItem({
           </Text>
         )}
       </View>
-      <TouchableOpacity onPress={onEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+      <TouchableOpacity
+        onPress={onEdit}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityRole="button"
+        accessibilityLabel={t("connectionsList.actionsAlert.edit")}
+      >
         <Ionicons name="ellipsis-vertical" size={20} color={isDark ? "#666666" : "#999999"} />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -138,7 +154,13 @@ function ExposeCard({ isDark }: { isDark: boolean }) {
             {INSTALL_COMMAND}
           </Text>
         </View>
-        <TouchableOpacity style={styles.copyButton} onPress={() => void handleCopy()} testID="expose-copy-button">
+        <TouchableOpacity
+          style={styles.copyButton}
+          onPress={() => void handleCopy()}
+          testID="expose-copy-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("connectionsList.exposeCard.copy")}
+        >
           <Ionicons name={copied ? "checkmark" : "copy-outline"} size={16} color="#6366f1" />
           <Text style={styles.copyButtonText}>
             {copied ? t("connectionsList.exposeCard.copied") : t("connectionsList.exposeCard.copy")}
@@ -219,6 +241,7 @@ export default function ConnectionsScreen() {
               style={[styles.scanButton, isDark && styles.scanButtonDark]}
               onPress={() => router.push("/connect/scan")}
               testID="scan-to-connect-button"
+              accessibilityRole="button"
             >
               <Ionicons name="qr-code-outline" size={20} color={isDark ? "#0a0a0a" : "#ffffff"} />
               <Text style={[styles.scanButtonText, isDark && styles.scanButtonTextDark]}>
@@ -253,6 +276,9 @@ export default function ConnectionsScreen() {
                       pageSize === size && isDark && styles.pageOptionActiveDark,
                     ]}
                     onPress={() => setPageSize(size)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("connectionsList.preferences.pageSizeOption", { size })}
+                    accessibilityState={{ selected: pageSize === size }}
                   >
                     <Text
                       style={[
@@ -276,7 +302,12 @@ export default function ConnectionsScreen() {
       />
 
       {/* FAB to add connection */}
-      <TouchableOpacity style={[styles.fab, isDark && styles.fabDark]} onPress={() => router.push("/connection/add")}>
+      <TouchableOpacity
+        style={[styles.fab, isDark && styles.fabDark]}
+        onPress={() => router.push("/connection/add")}
+        accessibilityRole="button"
+        accessibilityLabel={t("nav.addConnectionTitle")}
+      >
         <Ionicons name="add" size={28} color={isDark ? "#0a0a0a" : "#ffffff"} />
       </TouchableOpacity>
     </View>

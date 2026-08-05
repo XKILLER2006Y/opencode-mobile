@@ -80,6 +80,9 @@ function SessionItem({
       onPress={onPress}
       onLongPress={onLongPress}
       testID={`session-item-${session.id}`}
+      accessibilityRole="button"
+      accessibilityLabel={session.title || t("sessionsList.untitledSession")}
+      accessibilityHint={t("sessionsList.longPressHint")}
     >
       <View style={styles.sessionContent}>
         <View style={styles.sessionHeader}>
@@ -130,6 +133,9 @@ function GroupHeader({
       style={[styles.groupHeader, isDark && styles.groupHeaderDark]}
       onPress={onToggle}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${row.shortName}, ${row.count}`}
+      accessibilityState={{ expanded: !row.collapsed }}
     >
       <Ionicons name="folder-outline" size={16} color={isDark ? "#8b5cf6" : "#6d28d9"} />
       <Text style={[styles.groupHeaderText, isDark && styles.textDark]} numberOfLines={1}>
@@ -446,6 +452,8 @@ export default function SessionsScreen() {
           style={[styles.addButton, isDark && styles.addButtonDark]}
           onPress={() => router.push("/connection/add")}
           testID="add-connection-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("sessionsList.empty.addConnectionButton")}
         >
           <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>
             {t("sessionsList.empty.addConnectionButton")}
@@ -455,6 +463,8 @@ export default function SessionsScreen() {
           style={styles.setupGuideLink}
           onPress={() => Linking.openURL(SETUP_GUIDE_URL)}
           testID="setup-guide-link"
+          accessibilityRole="link"
+          accessibilityLabel={t("sessionsList.empty.setupGuideLink")}
         >
           <Text style={styles.setupGuideLinkText}>{t("sessionsList.empty.setupGuideLink")}</Text>
         </TouchableOpacity>
@@ -464,6 +474,8 @@ export default function SessionsScreen() {
           style={[styles.tryDemoButton, isDark && styles.tryDemoButtonDark]}
           onPress={() => router.push("/demo")}
           testID="try-demo-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("sessionsList.empty.tryDemoButton")}
         >
           <Ionicons name="play-circle-outline" size={16} color={isDark ? "#a78bfa" : "#6d28d9"} />
           <Text style={[styles.tryDemoButtonText, isDark && styles.tryDemoButtonTextDark]}>
@@ -491,6 +503,8 @@ export default function SessionsScreen() {
             style={[styles.addButton, isDark && styles.addButtonDark]}
             onPress={() => router.push(`/connection/${activeConnection.id}`)}
             testID="fix-connection-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("sessionsList.empty.checkCredentialsButton")}
           >
             <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>
               {t("sessionsList.empty.checkCredentialsButton")}
@@ -505,6 +519,8 @@ export default function SessionsScreen() {
               reconnect()
             }}
             testID="retry-connection-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("common.retry")}
           >
             <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>{t("common.retry")}</Text>
           </TouchableOpacity>
@@ -524,6 +540,9 @@ export default function SessionsScreen() {
         onLongPress={() => router.push("/(tabs)/connections")}
         activeOpacity={0.7}
         testID="connection-status-bar"
+        accessibilityRole="button"
+        accessibilityLabel={activeConnection.name}
+        accessibilityHint={t("sessionsList.longPressHint")}
       >
         <View style={styles.connectionInfo}>
           <View style={[styles.connectionDot, { backgroundColor: "#22c55e" }]} testID="connection-status-dot" />
@@ -587,6 +606,9 @@ export default function SessionsScreen() {
         onLongPress={onFabLongPress}
         delayLongPress={500}
         testID="new-session-fab"
+        accessibilityRole="button"
+        accessibilityLabel={t("sessionsList.fabLabel")}
+        accessibilityHint={t("sessionsList.fabOptionsHint")}
       >
         <Ionicons name="add" size={28} color={isDark ? "#0a0a0a" : "#ffffff"} />
       </TouchableOpacity>
@@ -594,11 +616,21 @@ export default function SessionsScreen() {
       {/* New Session Info Modal */}
       <Modal visible={showNewSession} animationType="slide" transparent>
         <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setShowNewSession(false)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setShowNewSession(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
           <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, isDark && styles.textDark]}>{t("sessionsList.newSessionModal.title")}</Text>
-              <TouchableOpacity onPress={() => setShowNewSession(false)}>
+              <TouchableOpacity
+                onPress={() => setShowNewSession(false)}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.close")}
+              >
                 <Ionicons name="close" size={24} color={isDark ? "#ffffff" : "#0a0a0a"} />
               </TouchableOpacity>
             </View>
@@ -612,6 +644,11 @@ export default function SessionsScreen() {
                 style={[styles.modalDirBox, isDark && styles.modalDirBoxDark]}
                 onPress={() => onCreateInDirectory()}
                 disabled={isCreating}
+                accessibilityRole="button"
+                accessibilityLabel={t("sessionsList.newSessionModal.currentProjectLabel")}
+                accessibilityHint={
+                  currentProject?.path?.absolute || activeConnection?.directory || t("sessionsList.newSessionModal.serverDefault")
+                }
               >
                 <Ionicons name="folder" size={20} color={isDark ? "#8b5cf6" : "#6d28d9"} />
                 <Text style={[styles.modalDirText, isDark && styles.textDark]} numberOfLines={2}>
@@ -640,6 +677,9 @@ export default function SessionsScreen() {
                         ]}
                         onPress={() => onCreateInDirectory(dir)}
                         disabled={isCreating}
+                        accessibilityRole="button"
+                        accessibilityLabel={short}
+                        accessibilityHint={dir}
                       >
                         <Ionicons
                           name="folder-outline"
@@ -684,6 +724,9 @@ export default function SessionsScreen() {
                           style={[styles.projectRow, isDark && styles.projectRowDark]}
                           onPress={() => onCreateInDirectory(p.path?.absolute)}
                           disabled={isCreating}
+                          accessibilityRole="button"
+                          accessibilityLabel={short}
+                          accessibilityHint={p.path?.absolute}
                         >
                           <Ionicons name="code-slash-outline" size={18} color={isDark ? "#888888" : "#666666"} />
                           <View style={styles.projectRowContent}>
@@ -710,6 +753,9 @@ export default function SessionsScreen() {
                 }
                 disabled={isCreating}
                 testID="browse-folders-button"
+                accessibilityRole="button"
+                accessibilityLabel={t("sessionsList.newSessionModal.browseFoldersLabel")}
+                accessibilityHint={t("sessionsList.newSessionModal.browseFoldersHint")}
               >
                 <Ionicons name="folder-open-outline" size={18} color={isDark ? "#8b5cf6" : "#6d28d9"} />
                 <View style={styles.projectRowContent}>
@@ -744,6 +790,7 @@ export default function SessionsScreen() {
                 }}
                 autoCapitalize="none"
                 autoCorrect={false}
+                accessibilityLabel={t("sessionsList.newSessionModal.enterPathLabel")}
               />
               {/* Quick path shortcuts */}
               {serverHome && (
@@ -751,12 +798,18 @@ export default function SessionsScreen() {
                   <TouchableOpacity
                     style={[styles.pathChip, isDark && styles.pathChipDark]}
                     onPress={() => setCustomDir(serverHome)}
+                    accessibilityRole="button"
+                    accessibilityLabel="~"
+                    accessibilityHint={serverHome}
                   >
                     <Text style={[styles.pathChipText, isDark && styles.pathChipTextDark]}>~</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.pathChip, isDark && styles.pathChipDark]}
                     onPress={() => setCustomDir(serverHome + "/")}
+                    accessibilityRole="button"
+                    accessibilityLabel="~/"
+                    accessibilityHint={serverHome + "/"}
                   >
                     <Text style={[styles.pathChipText, isDark && styles.pathChipTextDark]}>~/</Text>
                   </TouchableOpacity>
@@ -775,6 +828,10 @@ export default function SessionsScreen() {
                   ]}
                   onPress={() => onCreateInDirectory(customDir)}
                   disabled={isCreating}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("sessionsList.newSessionModal.createInButton", {
+                    dir: customDir.split("/").filter(Boolean).pop() || customDir,
+                  })}
                 >
                   {isCreating ? (
                     <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
@@ -796,6 +853,8 @@ export default function SessionsScreen() {
                   ]}
                   onPress={() => onCreateInDirectory()}
                   disabled={isCreating}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("sessionsList.newSessionModal.createSessionButton")}
                 >
                   {isCreating ? (
                     <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
@@ -817,7 +876,13 @@ export default function SessionsScreen() {
           style={[styles.modalOverlay, { justifyContent: "center" }]}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setRenaming(null)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setRenaming(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
           <View style={[styles.renameCard, isDark && styles.renameCardDark]}>
             <Text style={[styles.renameTitle, isDark && styles.textDark]}>{t("sessionsList.renameModal.title")}</Text>
             <TextInput
@@ -830,15 +895,23 @@ export default function SessionsScreen() {
               selectTextOnFocus
               autoCapitalize="sentences"
               autoCorrect={false}
+              accessibilityLabel={t("sessionsList.renameModal.title")}
             />
             <View style={styles.renameActions}>
-              <TouchableOpacity style={[styles.renameBtn, styles.renameBtnCancel]} onPress={() => setRenaming(null)}>
+              <TouchableOpacity
+                style={[styles.renameBtn, styles.renameBtnCancel]}
+                onPress={() => setRenaming(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.cancel")}
+              >
                 <Text style={styles.renameBtnCancelText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.renameBtn, styles.modalButtonPrimary, isDark && styles.modalButtonPrimaryDark]}
                 onPress={submitRename}
                 disabled={!renameText.trim()}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.save")}
               >
                 <Text style={[styles.modalButtonTextPrimary, isDark && styles.modalButtonTextPrimaryDark]}>
                   {t("common.save")}
@@ -846,7 +919,13 @@ export default function SessionsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setRenaming(null)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setRenaming(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
         </KeyboardAvoidingView>
       </Modal>
 

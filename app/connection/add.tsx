@@ -268,6 +268,7 @@ export default function AddConnectionScreen() {
             autoCorrect={false}
             keyboardType="url"
             testID="connect-ip-input"
+            accessibilityLabel={t("connection.add.quick.ipAddressLabel")}
           />
           <Text style={[styles.ipColon, isDark && styles.textDark]}>:</Text>
           <TextInput
@@ -278,6 +279,7 @@ export default function AddConnectionScreen() {
             onChangeText={setPort}
             keyboardType="number-pad"
             testID="connect-port-input"
+            accessibilityLabel={t("connection.shared.portLabel")}
           />
         </View>
 
@@ -289,6 +291,7 @@ export default function AddConnectionScreen() {
           placeholderTextColor={isDark ? "#666666" : "#999999"}
           value={name}
           onChangeText={setName}
+          accessibilityLabel={t("connection.add.quick.nameOptionalLabel")}
         />
 
         {/* Password if needed */}
@@ -301,12 +304,13 @@ export default function AddConnectionScreen() {
           onChangeText={setPassword}
           secureTextEntry
           testID="connect-password-input"
+          accessibilityLabel={t("connection.add.quick.passwordIfSetLabel")}
         />
         <Text style={[styles.usernameHint, isDark && styles.hintDark]}>
           {t("connection.add.quick.usernameHintPrefix")}
           <Text style={styles.code}>opencode</Text>
           {t("connection.add.quick.usernameHintMiddle")}
-          <Text style={styles.usernameHintLink} onPress={() => setMode("advanced")}>
+          <Text style={styles.usernameHintLink} onPress={() => setMode("advanced")} accessible={true}>
             {t("connection.add.quick.advancedOptionsLink")}
           </Text>
           {t("connection.add.quick.usernameHintSuffix")}
@@ -318,6 +322,8 @@ export default function AddConnectionScreen() {
           onPress={handleQuickConnect}
           disabled={isConnecting}
           testID="connect-submit-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.add.quick.connectButton")}
         >
           {isConnecting ? (
             <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
@@ -396,12 +402,15 @@ export default function AddConnectionScreen() {
                 keyboardType="email-address"
                 editable={waitlistState !== "submitting"}
                 testID="waitlist-email-input"
+                accessibilityLabel={t("connection.add.waitlist.emailLabel")}
               />
               <TouchableOpacity
                 style={styles.waitlistButton}
                 onPress={handleJoinWaitlist}
                 disabled={waitlistState === "submitting"}
                 testID="waitlist-submit-button"
+                accessibilityRole="button"
+                accessibilityLabel={t("connection.add.waitlist.joinButton")}
               >
                 {waitlistState === "submitting" ? (
                   <ActivityIndicator size="small" color="#ffffff" />
@@ -417,7 +426,12 @@ export default function AddConnectionScreen() {
         </View>
 
         {/* Advanced mode link */}
-        <TouchableOpacity style={styles.advancedLink} onPress={() => setMode("advanced")}>
+        <TouchableOpacity
+          style={styles.advancedLink}
+          onPress={() => setMode("advanced")}
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.add.quick.advancedLink")}
+        >
           <Text style={[styles.advancedLinkText, isDark && styles.hintDark]}>
             {t("connection.add.quick.advancedLink")}
           </Text>
@@ -434,7 +448,7 @@ export default function AddConnectionScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <TouchableOpacity style={styles.backToQuick} onPress={() => setMode("quick")}>
+      <TouchableOpacity style={styles.backToQuick} onPress={() => setMode("quick")} accessibilityRole="button">
         <Ionicons name="chevron-back" size={16} color={isDark ? "#888888" : "#666666"} />
         <Text style={[styles.backToQuickText, isDark && styles.hintDark]}>{t("connection.add.advanced.backToQuick")}</Text>
       </TouchableOpacity>
@@ -456,6 +470,9 @@ export default function AddConnectionScreen() {
               type === opt.type && isDark && styles.typeOptionSelectedDark,
             ]}
             onPress={() => setType(opt.type)}
+            accessibilityRole="button"
+            accessibilityLabel={opt.label}
+            accessibilityState={{ selected: type === opt.type }}
           >
             <Ionicons
               name={opt.icon}
@@ -484,6 +501,7 @@ export default function AddConnectionScreen() {
         placeholderTextColor={isDark ? "#666666" : "#999999"}
         value={name}
         onChangeText={setName}
+        accessibilityLabel={t("connection.shared.name")}
       />
 
       {/* URL */}
@@ -503,6 +521,7 @@ export default function AddConnectionScreen() {
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"
+        accessibilityLabel={t("connection.shared.serverUrl")}
       />
       <Text style={[styles.hint, isDark && styles.hintDark]}>
         {t("connection.add.advanced.urlHintPrefix")}
@@ -524,6 +543,7 @@ export default function AddConnectionScreen() {
         onChangeText={setDirectory}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.directoryOptional")}
       />
       <Text style={[styles.hint, isDark && styles.hintDark]}>{t("connection.add.advanced.directoryHint")}</Text>
 
@@ -539,6 +559,7 @@ export default function AddConnectionScreen() {
         onChangeText={setUsername}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.username")}
       />
 
       <Text style={[styles.label, isDark && styles.labelDark]}>{t("connection.shared.password")}</Text>
@@ -549,6 +570,7 @@ export default function AddConnectionScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        accessibilityLabel={t("connection.shared.password")}
       />
 
       {/* Save */}
@@ -556,6 +578,8 @@ export default function AddConnectionScreen() {
         style={[styles.connectButton, isDark && styles.connectButtonDark, { marginTop: 32 }]}
         onPress={handleAdvancedSave}
         disabled={isConnecting}
+        accessibilityRole="button"
+        accessibilityLabel={t("connection.add.advanced.saveButton")}
       >
         {isConnecting ? (
           <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />

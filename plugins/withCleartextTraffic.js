@@ -8,9 +8,9 @@
 // "CLEARTEXT communication ... not permitted by network security policy".
 //
 // This mirrors the debug manifest so release builds behave identically.
-const { withAndroidManifest } = require('@expo/config-plugins');
+import { withAndroidManifest } from '@expo/config-plugins';
 
-module.exports = function withCleartextTraffic(config) {
+export default function withCleartextTraffic(config) {
   return withAndroidManifest(config, (config) => {
     const app = config.modResults.manifest.application[0];
     if (app) {
@@ -18,4 +18,4 @@ module.exports = function withCleartextTraffic(config) {
     }
     return config;
   });
-};
+}

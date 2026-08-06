@@ -65,7 +65,9 @@ covers the welcome render and Skip completing onboarding + navigating to
 Full suite green (`npm test` 303/0, `npm run test:ui` 5/5, `tsc` clean,
 `eslint` clean); hex-literal grep guard found one leftover `#FFFFFF` in
 `app/onboarding.tsx` — tokenized (`fc2995c`). Branch pushed, PR #3 opened,
-CI: Build Android APK / iOS CI / Activation E2E running.
+all CI green on `feat/professional-polish`: Build Android APK ✅ (23m),
+iOS CI ✅ (4m51s), Activation E2E ✅ (28m, core flows; demo/diff-scroll
+newer flows remain non-blocking #104), typecheck + unit + component tests ✅.
 
 ---
 

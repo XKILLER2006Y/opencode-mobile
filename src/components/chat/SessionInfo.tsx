@@ -4,6 +4,10 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import type { Message, Session } from "../../lib/sdk"
 import type { Provider } from "../../stores/catalog"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   session: Session | null
@@ -53,6 +57,7 @@ export function SessionInfo({
   onClose,
 }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   // Match TUI: last assistant message tokens (context window), cumulative cost
   const stats = useMemo(() => {
     let cost = 0
@@ -98,7 +103,7 @@ export function SessionInfo({
       {/* Top row: tokens + context % + cost — matches TUI header */}
       <View style={s.row}>
         <View style={s.costRow}>
-          <Ionicons name="stats-chart-outline" size={14} color={isDark ? "#888888" : "#666666"} />
+          <Ionicons name="stats-chart-outline" size={14} color={colors.iconSecondary} />
           {hasTokens && (
             <Text style={[s.tokens, isDark && s.textDark]}>
               {stats.total.toLocaleString()}
@@ -110,8 +115,8 @@ export function SessionInfo({
             <Text style={[s.cost, isDark && s.dimDark]}>{t("chat.sessionInfo.noUsageData")}</Text>
           )}
         </View>
-        <TouchableOpacity onPress={onClose} hitSlop={8}>
-          <Ionicons name="close" size={16} color={isDark ? "#666666" : "#999999"} />
+        <TouchableOpacity onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t("common.close")}>
+          <Ionicons name="close" size={16} color={colors.iconSubtle} />
         </TouchableOpacity>
       </View>
 
@@ -131,19 +136,19 @@ export function SessionInfo({
       {/* Token breakdown pills */}
       {hasTokens && (
         <View style={s.breakdown}>
-          <TokenPill label={t("chat.sessionInfo.pills.in")} value={stats.input} color="#3b82f6" isDark={isDark} />
-          <TokenPill label={t("chat.sessionInfo.pills.out")} value={stats.output} color="#10b981" isDark={isDark} />
+          <TokenPill label={t("chat.sessionInfo.pills.in")} value={stats.input} color={colors.infoBlue} isDark={isDark} />
+          <TokenPill label={t("chat.sessionInfo.pills.out")} value={stats.output} color={colors.successGreen} isDark={isDark} />
           {stats.reasoning > 0 && (
-            <TokenPill label={t("chat.sessionInfo.pills.think")} value={stats.reasoning} color="#f59e0b" isDark={isDark} />
+            <TokenPill label={t("chat.sessionInfo.pills.think")} value={stats.reasoning} color={colors.amberPill} isDark={isDark} />
           )}
           {stats.cacheRead > 0 && (
-            <TokenPill label={t("chat.sessionInfo.pills.cacheRead")} value={stats.cacheRead} color="#8b5cf6" isDark={isDark} />
+            <TokenPill label={t("chat.sessionInfo.pills.cacheRead")} value={stats.cacheRead} color={colors.violet} isDark={isDark} />
           )}
           {stats.cacheWrite > 0 && (
             <TokenPill
               label={t("chat.sessionInfo.pills.cacheWrite")}
               value={stats.cacheWrite}
-              color="#ec4899"
+              color={colors.pinkPill}
               isDark={isDark}
             />
           )}
@@ -180,11 +185,18 @@ export function SessionInfo({
       {/* Navigation actions */}
       <View style={s.actions}>
         {hasMore && (
-          <TouchableOpacity style={[s.action, isDark && s.actionDark]} onPress={onLoadAll} disabled={loadingAll}>
+          <TouchableOpacity
+            style={[s.action, isDark && s.actionDark]}
+            onPress={onLoadAll}
+            disabled={loadingAll}
+            accessibilityRole="button"
+            accessibilityLabel={loadingAll ? t("chat.sessionInfo.loading") : t("chat.sessionInfo.loadAllMessages")}
+            accessibilityState={{ disabled: loadingAll }}
+          >
             {loadingAll ? (
-              <ActivityIndicator size="small" color={isDark ? "#888888" : "#666666"} />
+              <ActivityIndicator size="small" color={colors.iconSecondary} />
             ) : (
-              <Ionicons name="download-outline" size={14} color={isDark ? "#888888" : "#666666"} />
+              <Ionicons name="download-outline" size={14} color={colors.iconSecondary} />
             )}
             <Text style={[s.actionText, isDark && s.dimDark]}>
               {loadingAll ? t("chat.sessionInfo.loading") : t("chat.sessionInfo.loadAllMessages")}
@@ -192,8 +204,13 @@ export function SessionInfo({
           </TouchableOpacity>
         )}
         {messages.length > 0 && (
-          <TouchableOpacity style={[s.action, isDark && s.actionDark]} onPress={onScrollToTop}>
-            <Ionicons name="arrow-up-outline" size={14} color={isDark ? "#888888" : "#666666"} />
+          <TouchableOpacity
+            style={[s.action, isDark && s.actionDark]}
+            onPress={onScrollToTop}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.sessionInfo.jumpToBeginning")}
+          >
+            <Ionicons name="arrow-up-outline" size={14} color={colors.iconSecondary} />
             <Text style={[s.actionText, isDark && s.dimDark]}>{t("chat.sessionInfo.jumpToBeginning")}</Text>
           </TouchableOpacity>
         )}
@@ -203,9 +220,10 @@ export function SessionInfo({
 }
 
 function MetaItem({ icon, label, value, isDark }: { icon: string; label: string; value: string; isDark: boolean }) {
+  const colors = getTheme(isDark)
   return (
     <View style={s.metaItem}>
-      <Ionicons name={icon} size={12} color={isDark ? "#555555" : "#999999"} />
+      <Ionicons name={icon} size={12} color={isDark ? colors.iconFaint : colors.iconSubtle} />
       <Text style={[s.metaLabel, isDark && s.dimDark]}>{label}</Text>
       <Text style={[s.metaValue, isDark && s.metaValueDark]}>{value}</Text>
     </View>
@@ -227,13 +245,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
-    backgroundColor: "#fafafa",
+    borderBottomColor: light.separatorFixed,
+    backgroundColor: light.panelBg,
     gap: 8,
   },
   containerDark: {
-    borderBottomColor: "#1a1a1a",
-    backgroundColor: "#111111",
+    borderBottomColor: dark.hairline,
+    backgroundColor: dark.panelBg,
   },
   row: {
     flexDirection: "row",
@@ -248,7 +266,7 @@ const s = StyleSheet.create({
   tokens: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: light.textInk,
     fontVariant: ["tabular-nums"],
   },
   percent: {
@@ -257,25 +275,25 @@ const s = StyleSheet.create({
   },
   cost: {
     fontSize: 13,
-    color: "#999999",
+    color: light.dimText,
     fontVariant: ["tabular-nums"],
   },
   bar: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#e5e5e5",
+    backgroundColor: light.separatorFixed,
     overflow: "hidden",
   },
   barDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: dark.surfaceInput,
   },
   barFill: {
     height: "100%",
     borderRadius: 2,
   },
-  barOk: { backgroundColor: "#3b82f6" },
-  barMid: { backgroundColor: "#f59e0b" },
-  barWarn: { backgroundColor: "#ef4444" },
+  barOk: { backgroundColor: light.infoBlue },
+  barMid: { backgroundColor: light.amberPill },
+  barWarn: { backgroundColor: light.danger },
   breakdown: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -289,7 +307,7 @@ const s = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    backgroundColor: "#ffffff",
+    backgroundColor: light.white,
   },
   dot: {
     width: 6,
@@ -298,12 +316,12 @@ const s = StyleSheet.create({
   },
   pillLabel: {
     fontSize: 11,
-    color: "#666666",
+    color: light.iconSecondary,
   },
   pillValue: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: light.textInk,
     fontVariant: ["tabular-nums"],
   },
   meta: {
@@ -318,15 +336,15 @@ const s = StyleSheet.create({
   },
   metaLabel: {
     fontSize: 11,
-    color: "#999999",
+    color: light.dimText,
   },
   metaValue: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#666666",
+    color: light.iconSecondary,
   },
   metaValueDark: {
-    color: "#aaaaaa",
+    color: dark.metaStrong,
   },
   actions: {
     flexDirection: "row",
@@ -336,22 +354,22 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#ffffff",
+    backgroundColor: light.white,
     borderWidth: 1,
-    borderColor: "#e5e5e5",
+    borderColor: light.separatorFixed,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   actionDark: {
-    backgroundColor: "#1a1a1a",
-    borderColor: "#2a2a2a",
+    backgroundColor: dark.surfaceRaised,
+    borderColor: dark.surfaceInput,
   },
   actionText: {
     fontSize: 12,
-    color: "#666666",
+    color: light.iconSecondary,
     fontWeight: "500",
   },
-  textDark: { color: "#e5e5e5" },
-  dimDark: { color: "#666666" },
+  textDark: { color: dark.textInk },
+  dimDark: { color: dark.iconSubtle },
 })

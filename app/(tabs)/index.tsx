@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, useRef, useEffect } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -80,6 +81,9 @@ function SessionItem({
       onPress={onPress}
       onLongPress={onLongPress}
       testID={`session-item-${session.id}`}
+      accessibilityRole="button"
+      accessibilityLabel={session.title || t("sessionsList.untitledSession")}
+      accessibilityHint={t("sessionsList.longPressHint")}
     >
       <View style={styles.sessionContent}>
         <View style={styles.sessionHeader}>
@@ -98,13 +102,13 @@ function SessionItem({
           </Text>
           {shortDir && (
             <View style={styles.sessionDirBadge}>
-              <Ionicons name="folder-outline" size={12} color={isDark ? "#888888" : "#666666"} />
+              <Ionicons name="folder-outline" size={12} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
               <Text style={[styles.sessionDirText, isDark && styles.metaDark]}>{shortDir}</Text>
             </View>
           )}
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={isDark ? "#666666" : "#999999"} />
+      <Ionicons name="chevron-forward" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />
     </TouchableOpacity>
   )
 }
@@ -130,8 +134,11 @@ function GroupHeader({
       style={[styles.groupHeader, isDark && styles.groupHeaderDark]}
       onPress={onToggle}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${row.shortName}, ${row.count}`}
+      accessibilityState={{ expanded: !row.collapsed }}
     >
-      <Ionicons name="folder-outline" size={16} color={isDark ? "#8b5cf6" : "#6d28d9"} />
+      <Ionicons name="folder-outline" size={16} color={isDark ? theme.colors.dark.indigo : theme.colors.light.indigo} />
       <Text style={[styles.groupHeaderText, isDark && styles.textDark]} numberOfLines={1}>
         {row.shortName}
       </Text>
@@ -139,7 +146,7 @@ function GroupHeader({
       <Ionicons
         name={row.collapsed ? "chevron-forward" : "chevron-down"}
         size={16}
-        color={isDark ? "#666666" : "#999999"}
+        color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
       />
     </TouchableOpacity>
   )
@@ -437,7 +444,7 @@ export default function SessionsScreen() {
   if (!activeConnection) {
     return (
       <View style={[styles.emptyContainer, isDark && styles.containerDark]}>
-        <Ionicons name="server-outline" size={64} color={isDark ? "#444444" : "#cccccc"} />
+        <Ionicons name="server-outline" size={64} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.border} />
         <Text style={[styles.emptyTitle, isDark && styles.textDark]}>{t("sessionsList.empty.noConnectionTitle")}</Text>
         <Text style={[styles.emptySubtitle, isDark && styles.metaDark]}>
           {t("sessionsList.empty.noConnectionSubtitle")}
@@ -446,6 +453,8 @@ export default function SessionsScreen() {
           style={[styles.addButton, isDark && styles.addButtonDark]}
           onPress={() => router.push("/connection/add")}
           testID="add-connection-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("sessionsList.empty.addConnectionButton")}
         >
           <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>
             {t("sessionsList.empty.addConnectionButton")}
@@ -455,6 +464,8 @@ export default function SessionsScreen() {
           style={styles.setupGuideLink}
           onPress={() => Linking.openURL(SETUP_GUIDE_URL)}
           testID="setup-guide-link"
+          accessibilityRole="link"
+          accessibilityLabel={t("sessionsList.empty.setupGuideLink")}
         >
           <Text style={styles.setupGuideLinkText}>{t("sessionsList.empty.setupGuideLink")}</Text>
         </TouchableOpacity>
@@ -464,8 +475,10 @@ export default function SessionsScreen() {
           style={[styles.tryDemoButton, isDark && styles.tryDemoButtonDark]}
           onPress={() => router.push("/demo")}
           testID="try-demo-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("sessionsList.empty.tryDemoButton")}
         >
-          <Ionicons name="play-circle-outline" size={16} color={isDark ? "#a78bfa" : "#6d28d9"} />
+          <Ionicons name="play-circle-outline" size={16} color={isDark ? theme.colors.dark.indigo : theme.colors.light.indigo} />
           <Text style={[styles.tryDemoButtonText, isDark && styles.tryDemoButtonTextDark]}>
             {t("sessionsList.empty.tryDemoButton")}
           </Text>
@@ -481,7 +494,7 @@ export default function SessionsScreen() {
   if (authError) {
     return (
       <View style={[styles.emptyContainer, isDark && styles.containerDark]}>
-        <Ionicons name="lock-closed-outline" size={64} color={isDark ? "#444444" : "#cccccc"} />
+        <Ionicons name="lock-closed-outline" size={64} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.border} />
         <Text style={[styles.emptyTitle, isDark && styles.textDark]}>{t("sessionsList.empty.authFailedTitle")}</Text>
         <Text style={[styles.emptySubtitle, isDark && styles.metaDark]}>
           {t("sessionsList.empty.authFailedSubtitle", { name: activeConnection.name })}
@@ -491,6 +504,8 @@ export default function SessionsScreen() {
             style={[styles.addButton, isDark && styles.addButtonDark]}
             onPress={() => router.push(`/connection/${activeConnection.id}`)}
             testID="fix-connection-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("sessionsList.empty.checkCredentialsButton")}
           >
             <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>
               {t("sessionsList.empty.checkCredentialsButton")}
@@ -505,6 +520,8 @@ export default function SessionsScreen() {
               reconnect()
             }}
             testID="retry-connection-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("common.retry")}
           >
             <Text style={[styles.addButtonText, isDark && styles.addButtonTextDark]}>{t("common.retry")}</Text>
           </TouchableOpacity>
@@ -524,22 +541,25 @@ export default function SessionsScreen() {
         onLongPress={() => router.push("/(tabs)/connections")}
         activeOpacity={0.7}
         testID="connection-status-bar"
+        accessibilityRole="button"
+        accessibilityLabel={activeConnection.name}
+        accessibilityHint={t("sessionsList.longPressHint")}
       >
         <View style={styles.connectionInfo}>
-          <View style={[styles.connectionDot, { backgroundColor: "#22c55e" }]} testID="connection-status-dot" />
+          <View style={[styles.connectionDot, { backgroundColor: theme.colors.light.statusSuccess }]} testID="connection-status-dot" />
           <Text style={[styles.connectionName, isDark && styles.textDark]} numberOfLines={1}>
             {activeConnection.name}
           </Text>
           {shortPath && (
             <>
-              <Ionicons name="folder" size={14} color={isDark ? "#888888" : "#666666"} />
+              <Ionicons name="folder" size={14} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
               <Text style={[styles.projectPath, isDark && styles.metaDark]} numberOfLines={1}>
                 {shortPath}
               </Text>
             </>
           )}
         </View>
-        <Ionicons name="swap-horizontal-outline" size={16} color={isDark ? "#666666" : "#999999"} />
+        <Ionicons name="swap-horizontal-outline" size={16} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />
       </TouchableOpacity>
 
       {error && (
@@ -564,12 +584,12 @@ export default function SessionsScreen() {
           )
         }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? "#ffffff" : "#0a0a0a"} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
         }
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
+              <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
             </View>
           ) : (
             <View style={styles.emptyList}>
@@ -587,19 +607,32 @@ export default function SessionsScreen() {
         onLongPress={onFabLongPress}
         delayLongPress={500}
         testID="new-session-fab"
+        accessibilityRole="button"
+        accessibilityLabel={t("sessionsList.fabLabel")}
+        accessibilityHint={t("sessionsList.fabOptionsHint")}
       >
-        <Ionicons name="add" size={28} color={isDark ? "#0a0a0a" : "#ffffff"} />
+        <Ionicons name="add" size={28} color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
       </TouchableOpacity>
 
       {/* New Session Info Modal */}
       <Modal visible={showNewSession} animationType="slide" transparent>
         <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setShowNewSession(false)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setShowNewSession(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
           <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, isDark && styles.textDark]}>{t("sessionsList.newSessionModal.title")}</Text>
-              <TouchableOpacity onPress={() => setShowNewSession(false)}>
-                <Ionicons name="close" size={24} color={isDark ? "#ffffff" : "#0a0a0a"} />
+              <TouchableOpacity
+                onPress={() => setShowNewSession(false)}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.close")}
+              >
+                <Ionicons name="close" size={24} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
               </TouchableOpacity>
             </View>
 
@@ -612,12 +645,17 @@ export default function SessionsScreen() {
                 style={[styles.modalDirBox, isDark && styles.modalDirBoxDark]}
                 onPress={() => onCreateInDirectory()}
                 disabled={isCreating}
+                accessibilityRole="button"
+                accessibilityLabel={t("sessionsList.newSessionModal.currentProjectLabel")}
+                accessibilityHint={
+                  currentProject?.path?.absolute || activeConnection?.directory || t("sessionsList.newSessionModal.serverDefault")
+                }
               >
-                <Ionicons name="folder" size={20} color={isDark ? "#8b5cf6" : "#6d28d9"} />
+                <Ionicons name="folder" size={20} color={isDark ? theme.colors.dark.indigo : theme.colors.light.indigo} />
                 <Text style={[styles.modalDirText, isDark && styles.textDark]} numberOfLines={2}>
                   {currentProject?.path?.absolute || activeConnection?.directory || t("sessionsList.newSessionModal.serverDefault")}
                 </Text>
-                <Ionicons name="arrow-forward-circle" size={20} color={isDark ? "#8b5cf6" : "#6d28d9"} />
+                <Ionicons name="arrow-forward-circle" size={20} color={isDark ? theme.colors.dark.indigo : theme.colors.light.indigo} />
               </TouchableOpacity>
 
               {/* Recent projects */}
@@ -640,11 +678,14 @@ export default function SessionsScreen() {
                         ]}
                         onPress={() => onCreateInDirectory(dir)}
                         disabled={isCreating}
+                        accessibilityRole="button"
+                        accessibilityLabel={short}
+                        accessibilityHint={dir}
                       >
                         <Ionicons
                           name="folder-outline"
                           size={18}
-                          color={isCurrent ? "#8b5cf6" : isDark ? "#888888" : "#666666"}
+                          color={isCurrent ? theme.colors.light.indigo : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary}
                         />
                         <View style={styles.projectRowContent}>
                           <Text
@@ -661,7 +702,7 @@ export default function SessionsScreen() {
                             {dir}
                           </Text>
                         </View>
-                        {isCurrent && <Ionicons name="checkmark-circle" size={18} color="#8b5cf6" />}
+                        {isCurrent && <Ionicons name="checkmark-circle" size={18} color={theme.colors.light.indigo} />}
                       </TouchableOpacity>
                     )
                   })}
@@ -684,8 +725,11 @@ export default function SessionsScreen() {
                           style={[styles.projectRow, isDark && styles.projectRowDark]}
                           onPress={() => onCreateInDirectory(p.path?.absolute)}
                           disabled={isCreating}
+                          accessibilityRole="button"
+                          accessibilityLabel={short}
+                          accessibilityHint={p.path?.absolute}
                         >
-                          <Ionicons name="code-slash-outline" size={18} color={isDark ? "#888888" : "#666666"} />
+                          <Ionicons name="code-slash-outline" size={18} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                           <View style={styles.projectRowContent}>
                             <Text style={[styles.projectRowName, isDark && styles.textDark]} numberOfLines={1}>
                               {short}
@@ -710,8 +754,11 @@ export default function SessionsScreen() {
                 }
                 disabled={isCreating}
                 testID="browse-folders-button"
+                accessibilityRole="button"
+                accessibilityLabel={t("sessionsList.newSessionModal.browseFoldersLabel")}
+                accessibilityHint={t("sessionsList.newSessionModal.browseFoldersHint")}
               >
-                <Ionicons name="folder-open-outline" size={18} color={isDark ? "#8b5cf6" : "#6d28d9"} />
+                <Ionicons name="folder-open-outline" size={18} color={isDark ? theme.colors.dark.indigo : theme.colors.light.indigo} />
                 <View style={styles.projectRowContent}>
                   <Text style={[styles.projectRowName, isDark && styles.textDark]}>
                     {t("sessionsList.newSessionModal.browseFoldersLabel")}
@@ -720,7 +767,7 @@ export default function SessionsScreen() {
                     {t("sessionsList.newSessionModal.browseFoldersHint")}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={isDark ? "#666666" : "#999999"} />
+                <Ionicons name="chevron-forward" size={16} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />
               </TouchableOpacity>
 
               {/* Manual path input fallback */}
@@ -730,7 +777,7 @@ export default function SessionsScreen() {
               <TextInput
                 style={[styles.modalInput, isDark && styles.modalInputDark]}
                 placeholder={serverHome ? `${serverHome}/...` : "/path/to/project"}
-                placeholderTextColor={isDark ? "#666666" : "#999999"}
+                placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
                 value={customDir}
                 onChangeText={(text) => {
                   // Expand ~ to server home directory
@@ -744,6 +791,7 @@ export default function SessionsScreen() {
                 }}
                 autoCapitalize="none"
                 autoCorrect={false}
+                accessibilityLabel={t("sessionsList.newSessionModal.enterPathLabel")}
               />
               {/* Quick path shortcuts */}
               {serverHome && (
@@ -751,12 +799,18 @@ export default function SessionsScreen() {
                   <TouchableOpacity
                     style={[styles.pathChip, isDark && styles.pathChipDark]}
                     onPress={() => setCustomDir(serverHome)}
+                    accessibilityRole="button"
+                    accessibilityLabel="~"
+                    accessibilityHint={serverHome}
                   >
                     <Text style={[styles.pathChipText, isDark && styles.pathChipTextDark]}>~</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.pathChip, isDark && styles.pathChipDark]}
                     onPress={() => setCustomDir(serverHome + "/")}
+                    accessibilityRole="button"
+                    accessibilityLabel="~/"
+                    accessibilityHint={serverHome + "/"}
                   >
                     <Text style={[styles.pathChipText, isDark && styles.pathChipTextDark]}>~/</Text>
                   </TouchableOpacity>
@@ -775,9 +829,13 @@ export default function SessionsScreen() {
                   ]}
                   onPress={() => onCreateInDirectory(customDir)}
                   disabled={isCreating}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("sessionsList.newSessionModal.createInButton", {
+                    dir: customDir.split("/").filter(Boolean).pop() || customDir,
+                  })}
                 >
                   {isCreating ? (
-                    <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
+                    <ActivityIndicator size="small" color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
                   ) : (
                     <Text style={[styles.modalButtonTextPrimary, isDark && styles.modalButtonTextPrimaryDark]}>
                       {t("sessionsList.newSessionModal.createInButton", {
@@ -796,9 +854,11 @@ export default function SessionsScreen() {
                   ]}
                   onPress={() => onCreateInDirectory()}
                   disabled={isCreating}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("sessionsList.newSessionModal.createSessionButton")}
                 >
                   {isCreating ? (
-                    <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
+                    <ActivityIndicator size="small" color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
                   ) : (
                     <Text style={[styles.modalButtonTextPrimary, isDark && styles.modalButtonTextPrimaryDark]}>
                       {t("sessionsList.newSessionModal.createSessionButton")}
@@ -817,7 +877,13 @@ export default function SessionsScreen() {
           style={[styles.modalOverlay, { justifyContent: "center" }]}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setRenaming(null)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setRenaming(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
           <View style={[styles.renameCard, isDark && styles.renameCardDark]}>
             <Text style={[styles.renameTitle, isDark && styles.textDark]}>{t("sessionsList.renameModal.title")}</Text>
             <TextInput
@@ -830,15 +896,23 @@ export default function SessionsScreen() {
               selectTextOnFocus
               autoCapitalize="sentences"
               autoCorrect={false}
+              accessibilityLabel={t("sessionsList.renameModal.title")}
             />
             <View style={styles.renameActions}>
-              <TouchableOpacity style={[styles.renameBtn, styles.renameBtnCancel]} onPress={() => setRenaming(null)}>
+              <TouchableOpacity
+                style={[styles.renameBtn, styles.renameBtnCancel]}
+                onPress={() => setRenaming(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.cancel")}
+              >
                 <Text style={styles.renameBtnCancelText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.renameBtn, styles.modalButtonPrimary, isDark && styles.modalButtonPrimaryDark]}
                 onPress={submitRename}
                 disabled={!renameText.trim()}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.save")}
               >
                 <Text style={[styles.modalButtonTextPrimary, isDark && styles.modalButtonTextPrimaryDark]}>
                   {t("common.save")}
@@ -846,7 +920,13 @@ export default function SessionsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => setRenaming(null)} />
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setRenaming(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
+          />
         </KeyboardAvoidingView>
       </Modal>
 
@@ -880,10 +960,10 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   connectionBar: {
     flexDirection: "row",
@@ -892,10 +972,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
+    borderBottomColor: theme.colors.light.border,
   },
   connectionBarDark: {
-    borderBottomColor: "#1a1a1a",
+    borderBottomColor: theme.colors.dark.border,
   },
   connectionInfo: {
     flexDirection: "row",
@@ -910,25 +990,25 @@ const styles = StyleSheet.create({
   connectionName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   connectionUrl: {
     fontSize: 12,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   projectPath: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     flex: 1,
   },
   errorBar: {
-    backgroundColor: "#fef2f2",
+    backgroundColor: "rgba(255, 59, 48, 0.06)",
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#fecaca",
+    borderBottomColor: "rgba(255, 59, 48, 0.18)",
   },
   errorText: {
-    color: "#dc2626",
+    color: theme.colors.light.statusError,
     fontSize: 14,
   },
   groupHeader: {
@@ -937,28 +1017,28 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: theme.colors.light.borderSubtle,
     borderRadius: 10,
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: theme.colors.light.borderSubtle,
   },
   groupHeaderDark: {
-    backgroundColor: "#18181B",
-    borderColor: "#27272A",
+    backgroundColor: theme.colors.dark.surface,
+    borderColor: theme.colors.dark.surfaceElevated,
   },
   groupHeaderText: {
     flex: 1,
     fontSize: 13,
     fontWeight: "600",
-    color: "#09090B",
+    color: theme.colors.light.textPrimary,
   },
   groupHeaderCount: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
   },
   sessionItem: {
     flexDirection: "row",
@@ -967,13 +1047,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 4,
     borderRadius: 14,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.light.surface,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: theme.colors.light.borderSubtle,
   },
   sessionItemDark: {
-    backgroundColor: "#18181B",
-    borderColor: "#27272A",
+    backgroundColor: theme.colors.dark.surface,
+    borderColor: theme.colors.dark.surfaceElevated,
   },
   sessionContent: {
     flex: 1,
@@ -987,15 +1067,15 @@ const styles = StyleSheet.create({
   sessionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#09090B",
+    color: theme.colors.light.textPrimary,
     marginBottom: 4,
   },
   textDark: {
-    color: "#FAFAFA",
+    color: theme.colors.dark.textPrimary,
   },
   sessionMeta: {
     fontSize: 13,
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
   },
   sessionMetaRow: {
     flexDirection: "row",
@@ -1006,7 +1086,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: theme.colors.light.borderSubtle,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -1014,32 +1094,32 @@ const styles = StyleSheet.create({
   sessionDirText: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
   },
   metaDark: {
-    color: "#A1A1AA",
+    color: theme.colors.dark.textMuted,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: "600",
     marginTop: 16,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
   addButton: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1050,14 +1130,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   addButtonDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   addButtonText: {
-    color: "#ffffff",
+    color: theme.colors.light.surface,
     fontWeight: "600",
   },
   addButtonTextDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   setupGuideLink: {
     marginTop: 16,
@@ -1065,7 +1145,7 @@ const styles = StyleSheet.create({
   setupGuideLinkText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#6366f1",
+    color: theme.colors.light.indigo,
   },
   tryDemoButton: {
     flexDirection: "row",
@@ -1076,18 +1156,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#8b5cf6",
+    borderColor: theme.colors.light.indigo,
   },
   tryDemoButtonDark: {
-    borderColor: "#a78bfa",
+    borderColor: theme.colors.dark.indigo,
   },
   tryDemoButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#6d28d9",
+    color: theme.colors.light.indigo,
   },
   tryDemoButtonTextDark: {
-    color: "#a78bfa",
+    color: theme.colors.dark.indigo,
   },
   loadingContainer: {
     flex: 1,
@@ -1103,7 +1183,7 @@ const styles = StyleSheet.create({
   },
   emptyListText: {
     fontSize: 16,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   emptyContent: {
     flex: 1,
@@ -1115,17 +1195,17 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.light.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
   fabDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   // Modal styles
   modalOverlay: {
@@ -1137,14 +1217,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalContent: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 40,
   },
   modalContentDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   modalHeader: {
     flexDirection: "row",
@@ -1155,7 +1235,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   modalBody: {
     marginBottom: 24,
@@ -1171,14 +1251,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 11,
     borderRadius: 10,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     marginBottom: 6,
   },
   projectRowDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: theme.colors.dark.surfaceElevated,
   },
   projectRowActive: {
-    backgroundColor: "#f5f3ff",
+    backgroundColor: theme.colors.light.indigoBox,
   },
   projectRowContent: {
     flex: 1,
@@ -1186,20 +1266,20 @@ const styles = StyleSheet.create({
   projectRowName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   projectRowNameActive: {
-    color: "#8b5cf6",
+    color: theme.colors.light.indigo,
   },
   projectRowPath: {
     fontSize: 11,
-    color: "#999999",
+    color: theme.colors.light.textMuted,
     marginTop: 1,
   },
   modalLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginBottom: 8,
     textTransform: "uppercase",
   },
@@ -1207,29 +1287,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     padding: 16,
     borderRadius: 12,
   },
   modalDirBoxDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: theme.colors.dark.surfaceElevated,
   },
   modalDirText: {
     fontSize: 15,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     flex: 1,
   },
   modalInput: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   modalInputDark: {
-    backgroundColor: "#2a2a2a",
-    color: "#ffffff",
+    backgroundColor: theme.colors.dark.surfaceElevated,
+    color: theme.colors.dark.textPrimary,
   },
   pathChips: {
     flexDirection: "row",
@@ -1239,23 +1319,23 @@ const styles = StyleSheet.create({
   pathChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#e8e5f0",
+    backgroundColor: theme.colors.light.indigoBg,
     borderRadius: 16,
   },
   pathChipDark: {
-    backgroundColor: "#2a2040",
+    backgroundColor: theme.colors.dark.indigoBg,
   },
   pathChipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#6d28d9",
+    color: theme.colors.light.indigo,
   },
   pathChipTextDark: {
-    color: "#c4b5fd",
+    color: theme.colors.dark.indigo,
   },
   modalHint: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 12,
   },
   modalActions: {
@@ -1272,29 +1352,29 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   modalButtonSecondary: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
   },
   modalButtonSecondaryDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: theme.colors.dark.surfaceElevated,
   },
   modalButtonPrimary: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
   },
   modalButtonPrimaryDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   modalButtonText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   modalButtonTextPrimary: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   modalButtonTextPrimaryDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   modalButtonFull: {
     flex: 0,
@@ -1302,19 +1382,19 @@ const styles = StyleSheet.create({
   },
   // Rename modal
   renameCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
     borderRadius: 16,
     padding: 20,
     marginHorizontal: 32,
     gap: 16,
   },
   renameCardDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   renameTitle: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   renameActions: {
     flexDirection: "row",
@@ -1332,6 +1412,5 @@ const styles = StyleSheet.create({
   renameBtnCancelText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#888888",
-  },
-})
+    color: theme.colors.light.textMuted,
+  }})

@@ -6,6 +6,7 @@
     "delete": "Delete",
     "retry": "Retry",
     "save": "Save",
+    "close": "Close",
     "shareReport": "Share report"
   },
   "settings": {
@@ -75,8 +76,15 @@
   "session": {
     "titleFallback": "Session",
     "toolbar": {
-      "auto": "Auto"
+      "auto": "Auto",
+      "switchAgentHint": "Tap to cycle agents",
+      "modelButton": "Select model",
+      "variantButton": "Select reasoning effort"
     },
+    "header": {
+      "infoButton": "Session info"
+    },
+    "scrollToBottom": "Scroll to bottom",
     "banners": {
       "reconnecting": "Reconnecting… (attempt {{attempt}})",
       "connected": "Connected ✓",
@@ -91,7 +99,15 @@
     "input": {
       "placeholderListening": "Listening...",
       "placeholderFollowUp": "Send a follow-up...",
-      "placeholderDefault": "Type a message..."
+      "placeholderDefault": "Type a message...",
+      "label": "Message",
+      "sendButton": "Send",
+      "stopButton": "Stop",
+      "micButton": "Voice input",
+      "stopListeningButton": "Stop listening",
+      "attachButton": "Add attachment",
+      "attachCameraHint": "Long press to take a photo",
+      "pasteButton": "Paste from clipboard"
     },
     "actions": {
       "editMessage": "Edit message",
@@ -136,6 +152,7 @@
       "name": "Name",
       "namePlaceholder": "My Server",
       "serverUrl": "Server URL",
+      "portLabel": "Port",
       "directoryOptional": "Project Directory (Optional)",
       "authentication": "Authentication",
       "username": "Username",
@@ -179,6 +196,7 @@
       },
       "waitlist": {
         "successText": "You're on the list — we'll email you when OpenCode Connect is ready.",
+        "emailLabel": "Email address",
         "joinButton": "Join Waitlist",
         "alertTitle": "Join Waitlist",
         "fallbackMessage": "Could not reach the signup service or open an email app. Please email support@agentlabs.cc with subject \"OpenCode Connect Waitlist\"."
@@ -233,6 +251,7 @@
       "subtitle": "Add a connection to your OpenCode server"
     },
     "header": "Tap to switch, long press for options",
+    "longPressHint": "Long press for actions",
     "scan": "Scan to connect",
     "exposeCard": {
       "title": "Expose over internet",
@@ -248,6 +267,7 @@
     "preferences": {
       "title": "Preferences",
       "pageSizeLabel": "Messages per page",
+      "pageSizeOption": "{{size}} per page",
       "pageSizeHint": "How many messages to load when opening a session. Lower = faster."
     }
   },
@@ -271,6 +291,7 @@
   },
   "sessionsList": {
     "untitledSession": "Untitled Session",
+    "longPressHint": "Long press for actions",
     "time": {
       "justNow": "Just now",
       "minutesAgo": "{{count}}m ago",
@@ -315,7 +336,9 @@
     },
     "renameModal": {
       "title": "Rename Session"
-    }
+    },
+    "fabLabel": "New session",
+    "fabOptionsHint": "Long press for new session options"
   },
   "notifications": {
     "categories": {
@@ -414,7 +437,9 @@
       "serverDefaultLabel": "Server Default",
       "browseLabel": "Browse…",
       "recentProjectsLabel": "Recent Projects",
-      "usesServerDir": "Uses server's working directory"
+      "usesServerDir": "Uses server's working directory",
+      "inputLabel": "Project directory",
+      "goButton": "Open directory"
     },
     "directoryBrowserSheet": {
       "noActiveConnection": "No active connection",
@@ -424,7 +449,9 @@
       "noSubfolders": "No subfolders here",
       "enterPathHint": "Enter a path above to start browsing",
       "useFolderButton": "Use {{folder}}",
-      "thisFolderFallback": "this folder"
+      "thisFolderFallback": "this folder",
+      "goButton": "Go",
+      "upButton": "Go up"
     },
     "reasoningBlock": {
       "label": "Thinking"
@@ -460,6 +487,9 @@
         "hoursAgo": "{{count}}h ago",
         "daysAgo": "{{count}}d ago"
       }
+    },
+    "imageAttachments": {
+      "removeButton": "Remove {{name}}"
     }
   },
   "demo": {
@@ -469,6 +499,24 @@
     "ctaSubtitle": "This was a scripted demo. Connect your own opencode server to do this for real.",
     "connectButton": "Connect your own server",
     "setupGuideLink": "How to set up a server",
-    "hostedCtaLink": "No server? Join the OpenCode Connect waitlist — hosted, no setup"
+    "hostedCtaLink": "No server? Join the OpenCode Connect waitlist – hosted, no setup"
+  },
+  "onboarding": {
+    "welcomeTitle": "Control your opencode server from anywhere",
+    "welcomeSubtitle": "Your PC runs opencode. This app lets you drive it from your phone — sessions, commands, and files on the go.",
+    "feature1": "Chat with your coding agent from anywhere",
+    "feature2": "Run commands and open files on your PC",
+    "feature3": "Pair instantly with a QR code",
+    "getStarted": "Get Started",
+    "skip": "Skip",
+    "helperTitle": "Connect your server",
+    "helperSubtitle": "Add the opencode server running on your computer.",
+    "scanQr": "Scan QR code",
+    "addManually": "Add manually",
+    "health": {
+      "healthy": "Server reachable",
+      "unreachable": "Server unreachable",
+      "unknown": "Server status unknown"
+    }
   }
 }

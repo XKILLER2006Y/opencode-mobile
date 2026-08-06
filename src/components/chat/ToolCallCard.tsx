@@ -4,6 +4,11 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import type { Part } from "../../lib/sdk"
 import { DiffView } from "./DiffView"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
+type Palette = ReturnType<typeof getTheme>
 
 const TOOL_ICONS: Record<string, string> = {
   read: "glasses-outline",
@@ -25,11 +30,11 @@ const TOOL_ICONS: Record<string, string> = {
 
 const mono = Platform.OS === "ios" ? "Menlo" : "monospace"
 
-function statusColor(status: string, isDark: boolean): string {
-  if (status === "completed") return isDark ? "#30D158" : "#34C759"
-  if (status === "error") return isDark ? "#FF453A" : "#FF3B30"
-  if (status === "running") return isDark ? "#FF9F0A" : "#FF9500"
-  return "#8E8E93"
+function statusColor(status: string, colors: Palette): string {
+  if (status === "completed") return colors.statusSuccess
+  if (status === "error") return colors.statusError
+  if (status === "running") return colors.statusWarning
+  return colors.footnoteText
 }
 
 // --- Tool-specific detail renderers ---
@@ -175,11 +180,12 @@ function GlobGrepDetail({ input, output, isDark }: { input: unknown; output: unk
 }
 
 function WebfetchDetail({ input, isDark }: { input: unknown; isDark: boolean }) {
+  const colors = getTheme(isDark)
   const url = typeof input === "object" && input !== null ? (input as Record<string, unknown>).url : undefined
   return (
     <View style={s.detailSection}>
       {typeof url === "string" && (
-        <Text style={[s.detailFile, isDark && s.detailFileDark, { color: isDark ? "#0A84FF" : "#0071E3" }]} selectable numberOfLines={3}>
+        <Text style={[s.detailFile, isDark && s.detailFileDark, { color: colors.accent }]} selectable numberOfLines={3}>
           {url}
         </Text>
       )}
@@ -206,6 +212,7 @@ function TaskDetail({ input, isDark }: { input: unknown; isDark: boolean }) {
 }
 
 function TodoDetail({ input, isDark }: { input: unknown; isDark: boolean }) {
+  const colors = getTheme(isDark)
   const todos = typeof input === "object" && input !== null ? (input as Record<string, unknown>).todos : undefined
   if (!Array.isArray(todos)) return null
   return (
@@ -218,7 +225,7 @@ function TodoDetail({ input, isDark }: { input: unknown; isDark: boolean }) {
             <Ionicons
               name={done ? "checkbox" : "square-outline"}
               size={16}
-              color={done ? (isDark ? "#30D158" : "#34C759") : isDark ? "#6E6E73" : "#8E8E93"}
+              color={done ? colors.statusSuccess : isDark ? colors.roleText : colors.footnoteText}
             />
             <Text style={[s.todoText, isDark && s.todoTextDark, done && s.todoDone]} numberOfLines={2}>
               {String(item.content || item.title || "")}
@@ -286,9 +293,10 @@ function ToolDetail({ tool, isDark }: { tool: Part; isDark: boolean }) {
 
 // --- Error display ---
 function ErrorBanner({ message, isDark }: { message: string; isDark: boolean }) {
+  const colors = getTheme(isDark)
   return (
     <View style={[s.errorBanner, isDark && s.errorBannerDark]}>
-      <Ionicons name="alert-circle" size={14} color={isDark ? "#FF453A" : "#FF3B30"} />
+      <Ionicons name="alert-circle" size={14} color={colors.statusError} />
       <Text style={s.errorText} numberOfLines={3} selectable>
         {message}
       </Text>
@@ -313,17 +321,20 @@ interface Props {
 export const ToolCallCard = memo(
   function ToolCallCard({ tool, isDark }: Props) {
     const { t } = useTranslation()
+    const colors = getTheme(isDark)
     const [expanded, setExpanded] = useState(false)
     const icon = (tool.tool && TOOL_ICONS[tool.tool]) || "extension-puzzle-outline"
     const status = tool.state?.status || "pending"
-    const color = statusColor(status, isDark)
+    const color = statusColor(status, colors)
     const error = tool.state?.error?.message
     const elapsed = duration(tool.state?.time?.start, tool.state?.time?.end)
     const hasDetail = tool.state?.input !== undefined || tool.state?.output !== undefined || error
 
     const toggle = useCallback(() => {
       if (hasDetail) setExpanded((v) => !v)
-    }, [hasDetail])
+      // setExpanded is a stable useState setter — listed so the React Compiler
+      // can preserve this manual memoization unchanged.
+    }, [hasDetail, setExpanded])
 
     return (
       <TouchableOpacity
@@ -335,6 +346,11 @@ export const ToolCallCard = memo(
         ]}
         onPress={toggle}
         activeOpacity={hasDetail ? 0.7 : 1}
+        accessibilityRole="button"
+        accessibilityLabel={`${tool.state?.title || tool.tool || t("chat.toolCallCard.fallbackTitle")}${
+          status !== "pending" ? `, ${status}` : ""
+        }`}
+        accessibilityState={{ expanded }}
       >
         {/* Header row */}
         <View style={s.header}>
@@ -347,13 +363,13 @@ export const ToolCallCard = memo(
           </View>
           <View style={s.headerRight}>
             {status === "running" && <ActivityIndicator size="small" color={color} />}
-            {status === "completed" && <Ionicons name="checkmark-circle" size={16} color={isDark ? "#30D158" : "#34C759"} />}
-            {status === "error" && <Ionicons name="close-circle" size={16} color={isDark ? "#FF453A" : "#FF3B30"} />}
+            {status === "completed" && <Ionicons name="checkmark-circle" size={16} color={colors.statusSuccess} />}
+            {status === "error" && <Ionicons name="close-circle" size={16} color={colors.statusError} />}
             {hasDetail && (
               <Ionicons
                 name={expanded ? "chevron-up" : "chevron-down"}
                 size={16}
-                color={isDark ? "#6E6E73" : "#8E8E93"}
+                color={isDark ? colors.roleText : colors.footnoteText}
               />
             )}
           </View>
@@ -377,16 +393,16 @@ export const ToolCallCard = memo(
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#F2F2F7",
+    backgroundColor: light.cardBg,
     padding: 12,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: "#C6C6C8",
+    borderColor: light.border,
   },
-  cardDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E" },
-  cardError: { borderColor: "rgba(255, 59, 48, 0.3)", backgroundColor: "rgba(255, 59, 48, 0.06)" },
-  cardErrorDark: { borderColor: "rgba(255, 69, 58, 0.35)", backgroundColor: "rgba(255, 69, 58, 0.1)" },
+  cardDark: { backgroundColor: dark.surface, borderColor: dark.borderSubtle },
+  cardError: { borderColor: light.errorBorder, backgroundColor: light.errorBg },
+  cardErrorDark: { borderColor: dark.errorBorder, backgroundColor: dark.errorBg },
 
   header: {
     flexDirection: "row",
@@ -395,10 +411,10 @@ const s = StyleSheet.create({
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 6 },
-  name: { fontSize: 13, fontWeight: "600", color: "#000000", flex: 1 },
-  nameDark: { color: "#FFFFFF" },
-  elapsed: { fontSize: 11, fontWeight: "500", color: "#6E6E73" },
-  elapsedDark: { color: "#AEAEB2" },
+  name: { fontSize: 13, fontWeight: "600", color: light.textPrimary, flex: 1 },
+  nameDark: { color: dark.textPrimary },
+  elapsed: { fontSize: 11, fontWeight: "500", color: light.roleText },
+  elapsedDark: { color: dark.todoDoneText },
 
   // Error
   errorBanner: {
@@ -407,13 +423,13 @@ const s = StyleSheet.create({
     gap: 6,
     marginTop: 8,
     padding: 10,
-    backgroundColor: "rgba(255, 59, 48, 0.08)",
+    backgroundColor: light.errorBannerBg,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(255, 59, 48, 0.2)",
+    borderColor: light.errorBannerBorder,
   },
-  errorBannerDark: { backgroundColor: "rgba(255, 69, 58, 0.12)" },
-  errorText: { fontSize: 12, color: "#FF3B30", flex: 1, lineHeight: 18, fontWeight: "500" },
+  errorBannerDark: { backgroundColor: dark.errorBannerBg },
+  errorText: { fontSize: 12, color: light.statusError, flex: 1, lineHeight: 18, fontWeight: "500" },
 
   // Detail
   detailScroll: { maxHeight: 300, marginTop: 8 },
@@ -421,34 +437,34 @@ const s = StyleSheet.create({
   detailFile: {
     fontSize: 12,
     fontFamily: mono,
-    color: "#0071E3",
-    backgroundColor: "rgba(0, 113, 227, 0.08)",
+    color: light.accent,
+    backgroundColor: light.accentSoft,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
     overflow: "hidden",
   },
-  detailFileDark: { color: "#0A84FF", backgroundColor: "rgba(10, 132, 255, 0.15)" },
-  detailMeta: { fontSize: 12, color: "#6E6E73", lineHeight: 18 },
-  detailMetaDark: { color: "#AEAEB2" },
+  detailFileDark: { color: dark.accent, backgroundColor: dark.accentSoft },
+  detailMeta: { fontSize: 12, color: light.roleText, lineHeight: 18 },
+  detailMetaDark: { color: dark.todoDoneText },
 
   // Code block
   codeBlock: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: light.white,
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#C6C6C8",
+    borderColor: light.border,
   },
-  codeBlockDark: { backgroundColor: "#000000", borderColor: "#2C2C2E" },
+  codeBlockDark: { backgroundColor: dark.bg, borderColor: dark.borderSubtle },
   codePre: {
     fontSize: 12,
     fontFamily: mono,
-    color: "#000000",
+    color: light.textPrimary,
     lineHeight: 18,
   },
-  codePteDark: { color: "#FFFFFF" },
-  codePrompt: { color: "#0071E3", fontWeight: "700" },
+  codePteDark: { color: dark.textPrimary },
+  codePrompt: { color: light.accent, fontWeight: "700" },
 
   // Todo
   todoRow: {
@@ -457,7 +473,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 3,
   },
-  todoText: { fontSize: 13, color: "#000000", flex: 1, lineHeight: 20 },
-  todoTextDark: { color: "#FFFFFF" },
-  todoDone: { textDecorationLine: "line-through", color: "#AEAEB2" },
+  todoText: { fontSize: 13, color: light.textPrimary, flex: 1, lineHeight: 20 },
+  todoTextDark: { color: dark.textPrimary },
+  todoDone: { textDecorationLine: "line-through", color: light.todoDoneText },
 })

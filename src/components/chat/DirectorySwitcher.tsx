@@ -4,6 +4,10 @@ import { Ionicons } from "@expo/vector-icons"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetTextInput } from "@gorhom/bottom-sheet"
 import { useTranslation } from "react-i18next"
 import { nameOf } from "../../lib/path-utils"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   sheetRef: React.RefObject<BottomSheet | null>
@@ -19,6 +23,7 @@ interface Props {
 
 export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDark, onSwitch, onBrowse }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   const [custom, setCustom] = useState("")
 
   const handleSelect = useCallback(
@@ -64,7 +69,7 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       backgroundStyle={isDark ? s.sheetDark : s.sheet}
-      handleIndicatorStyle={{ backgroundColor: isDark ? "#666666" : "#cccccc" }}
+      handleIndicatorStyle={{ backgroundColor: colors.handleIndicator }}
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
       )}
@@ -76,7 +81,7 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
         <Text style={[s.title, isDark && s.white]}>{t("chat.directorySwitcher.title")}</Text>
         {shortCurrent && (
           <View style={s.current}>
-            <Ionicons name="folder" size={14} color="#8b5cf6" />
+            <Ionicons name="folder" size={14} color={colors.violet} />
             <Text style={s.currentText} numberOfLines={1}>
               {shortCurrent}
             </Text>
@@ -89,7 +94,7 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
         <BottomSheetTextInput
           style={[s.input, isDark && s.inputDark]}
           placeholder={serverHome ? `${serverHome}/...` : "/path/to/project"}
-          placeholderTextColor={isDark ? "#666666" : "#999999"}
+          placeholderTextColor={colors.iconSubtle}
           value={custom}
           onChangeText={(text) => {
             if (serverHome && text === "~") setCustom(serverHome)
@@ -100,10 +105,16 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
           returnKeyType="go"
           autoCapitalize="none"
           autoCorrect={false}
+          accessibilityLabel={t("chat.directorySwitcher.inputLabel")}
         />
         {custom.trim() && (
-          <TouchableOpacity style={[s.goBtn, isDark && s.goBtnDark]} onPress={handleCustomSubmit}>
-            <Ionicons name="arrow-forward" size={18} color={isDark ? "#0a0a0a" : "#ffffff"} />
+          <TouchableOpacity
+            style={[s.goBtn, isDark && s.goBtnDark]}
+            onPress={handleCustomSubmit}
+            accessibilityRole="button"
+            accessibilityLabel={t("chat.directorySwitcher.goButton")}
+          >
+            <Ionicons name="arrow-forward" size={18} color={isDark ? colors.textInk : colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -113,10 +124,20 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
         <View style={s.chips}>
           {serverHome && (
             <>
-              <TouchableOpacity style={[s.chip, isDark && s.chipDark]} onPress={() => setCustom(serverHome)}>
+              <TouchableOpacity
+                style={[s.chip, isDark && s.chipDark]}
+                onPress={() => setCustom(serverHome)}
+                accessibilityRole="button"
+                accessibilityLabel={serverHome}
+              >
                 <Text style={[s.chipText, isDark && s.chipTextDark]}>~</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[s.chip, isDark && s.chipDark]} onPress={() => setCustom(serverHome + "/")}>
+              <TouchableOpacity
+                style={[s.chip, isDark && s.chipDark]}
+                onPress={() => setCustom(serverHome + "/")}
+                accessibilityRole="button"
+                accessibilityLabel={`${serverHome}/`}
+              >
                 <Text style={[s.chipText, isDark && s.chipTextDark]}>~/</Text>
               </TouchableOpacity>
             </>
@@ -128,8 +149,10 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
                 sheetRef.current?.close()
                 onBrowse()
               }}
+              accessibilityRole="button"
+              accessibilityLabel={t("chat.directorySwitcher.browseLabel")}
             >
-              <Ionicons name="folder-open-outline" size={14} color={isDark ? "#8b5cf6" : "#6d28d9"} />
+              <Ionicons name="folder-open-outline" size={14} color={isDark ? colors.violet : colors.violetStrong} />
               <Text style={[s.chipText, isDark && s.chipTextDark]}>{t("chat.directorySwitcher.browseLabel")}</Text>
             </TouchableOpacity>
           )}
@@ -144,12 +167,19 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
           <TouchableOpacity
             style={[s.row, isDark && s.rowDark, item.active && s.rowActive]}
             onPress={() => handleSelect(item.dir)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.dir
+                ? `${item.label}, ${item.dir}`
+                : `${item.label}, ${t("chat.directorySwitcher.usesServerDir")}`
+            }
+            accessibilityState={{ selected: item.active }}
           >
             <View style={s.rowIcon}>
               <Ionicons
                 name={item.dir ? "folder-outline" : "server-outline"}
                 size={20}
-                color={item.active ? "#8b5cf6" : isDark ? "#888888" : "#666666"}
+                color={item.active ? colors.violet : colors.iconSecondary}
               />
             </View>
             <View style={s.rowContent}>
@@ -165,7 +195,7 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
                 <Text style={[s.rowPath, isDark && s.dimDark]}>{t("chat.directorySwitcher.usesServerDir")}</Text>
               )}
             </View>
-            {item.active && <Ionicons name="checkmark-circle" size={20} color="#8b5cf6" />}
+            {item.active && <Ionicons name="checkmark-circle" size={20} color={colors.violet} />}
           </TouchableOpacity>
         )}
         contentContainerStyle={s.list}
@@ -180,11 +210,11 @@ export function DirectorySwitcher({ sheetRef, current, recents, serverHome, isDa
 }
 
 const s = StyleSheet.create({
-  sheet: { backgroundColor: "#ffffff" },
-  sheetDark: { backgroundColor: "#1a1a1a" },
+  sheet: { backgroundColor: light.white },
+  sheetDark: { backgroundColor: dark.surfaceRaised },
   header: { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },
-  title: { fontSize: 18, fontWeight: "700", color: "#0a0a0a" },
-  white: { color: "#ffffff" },
+  title: { fontSize: 18, fontWeight: "700", color: light.textInk },
+  white: { color: dark.textPrimary },
   current: {
     flexDirection: "row",
     alignItems: "center",
@@ -192,7 +222,7 @@ const s = StyleSheet.create({
   },
   currentText: {
     fontSize: 13,
-    color: "#8b5cf6",
+    color: light.violet,
     fontWeight: "500",
   },
   inputWrap: {
@@ -211,11 +241,11 @@ const s = StyleSheet.create({
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#e8e5f0",
+    backgroundColor: light.chipBg,
     borderRadius: 16,
   },
   chipDark: {
-    backgroundColor: "#2a2040",
+    backgroundColor: dark.chipBg,
   },
   chipBrowse: {
     flexDirection: "row",
@@ -225,56 +255,56 @@ const s = StyleSheet.create({
   chipText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#6d28d9",
+    color: light.violetStrong,
   },
   chipTextDark: {
-    color: "#c4b5fd",
+    color: dark.violetSoft,
   },
   input: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: light.surfaceInput,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: "#0a0a0a",
+    color: light.textInk,
   },
-  inputDark: { backgroundColor: "#2a2a2a", color: "#ffffff" },
+  inputDark: { backgroundColor: dark.surfaceInput, color: dark.textPrimary },
   goBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: light.textInk,
     justifyContent: "center",
     alignItems: "center",
   },
-  goBtnDark: { backgroundColor: "#ffffff" },
+  goBtnDark: { backgroundColor: light.white },
   list: { paddingBottom: 40 },
   section: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#999999",
+    color: light.dimText,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 8,
   },
-  dimDark: { color: "#666666" },
+  dimDark: { color: dark.hintText },
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e5e5",
+    borderBottomColor: light.separatorFixed,
     gap: 12,
   },
-  rowDark: { borderBottomColor: "#2a2a2a" },
-  rowActive: { backgroundColor: "#f5f3ff" },
+  rowDark: { borderBottomColor: dark.surfaceInput },
+  rowActive: { backgroundColor: light.rowSelected },
   rowIcon: { width: 28, alignItems: "center" },
   rowContent: { flex: 1 },
-  rowLabel: { fontSize: 15, fontWeight: "500", color: "#0a0a0a" },
-  rowLabelActive: { color: "#8b5cf6" },
-  rowPath: { fontSize: 12, color: "#999999", marginTop: 1 },
+  rowLabel: { fontSize: 15, fontWeight: "500", color: light.textInk },
+  rowLabelActive: { color: light.violet },
+  rowPath: { fontSize: 12, color: light.dimText, marginTop: 1 },
 })

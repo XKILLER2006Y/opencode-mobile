@@ -2,6 +2,10 @@ import { useMemo } from "react"
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 export interface SlashCommand {
   trigger: string
@@ -20,6 +24,7 @@ interface Props {
 
 export function SlashPopover({ query, commands, isDark, onSelect }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
     return commands.filter((c) => c.trigger.toLowerCase().startsWith(q) || c.title.toLowerCase().includes(q))
@@ -31,11 +36,17 @@ export function SlashPopover({ query, commands, isDark, onSelect }: Props) {
     <View style={[s.popover, isDark && s.popoverDark]}>
       <ScrollView keyboardShouldPersistTaps="always" style={s.scroll}>
         {filtered.map((cmd) => (
-          <TouchableOpacity key={cmd.trigger} style={[s.item, isDark && s.itemDark]} onPress={() => onSelect(cmd)}>
+          <TouchableOpacity
+            key={cmd.trigger}
+            style={[s.item, isDark && s.itemDark]}
+            onPress={() => onSelect(cmd)}
+            accessibilityRole="button"
+            accessibilityLabel={cmd.description ? `/${cmd.trigger}, ${cmd.description}` : `/${cmd.trigger}`}
+          >
             <Ionicons
               name={cmd.icon}
               size={18}
-              color={cmd.type === "custom" ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"}
+              color={cmd.type === "custom" ? colors.accent : isDark ? colors.footnoteText : colors.roleText}
             />
             <View style={s.textCol}>
               <Text style={[s.trigger, isDark && s.textWhite]}>/{cmd.trigger}</Text>
@@ -59,12 +70,12 @@ export function SlashPopover({ query, commands, isDark, onSelect }: Props) {
 
 const s = StyleSheet.create({
   popover: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: light.white,
     borderTopWidth: 1,
-    borderTopColor: "#C6C6C8",
+    borderTopColor: light.border,
     maxHeight: 220,
   },
-  popoverDark: { backgroundColor: "#1C1C1E", borderTopColor: "#2C2C2E" },
+  popoverDark: { backgroundColor: dark.surface, borderTopColor: dark.borderSubtle },
   scroll: { paddingVertical: 4 },
   item: {
     flexDirection: "row",
@@ -75,16 +86,16 @@ const s = StyleSheet.create({
   },
   itemDark: {},
   textCol: { flex: 1 },
-  trigger: { fontSize: 14, fontWeight: "600", color: "#000000" },
-  textWhite: { color: "#FFFFFF" },
-  desc: { fontSize: 12, color: "#6E6E73", marginTop: 1 },
-  metaDark: { color: "#AEAEB2" },
+  trigger: { fontSize: 14, fontWeight: "600", color: light.textPrimary },
+  textWhite: { color: dark.textPrimary },
+  desc: { fontSize: 12, color: light.roleText, marginTop: 1 },
+  metaDark: { color: dark.todoDoneText },
   badge: {
-    backgroundColor: "rgba(0, 113, 227, 0.12)",
+    backgroundColor: light.accentSelectedBg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  badgeDark: { backgroundColor: "rgba(10, 132, 255, 0.2)" },
-  badgeText: { fontSize: 10, color: "#0071E3", fontWeight: "600" },
+  badgeDark: { backgroundColor: dark.accentSelectedBg },
+  badgeText: { fontSize: 10, color: light.accent, fontWeight: "600" },
 })

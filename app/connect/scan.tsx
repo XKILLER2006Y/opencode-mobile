@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -15,7 +16,9 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera"
 import { useConnections } from "../../src/stores/connections"
+import { useOnboarding } from "../../src/stores/onboarding"
 import { parseConnectPayload, type ConnectPayload } from "../../src/lib/connect-qr"
+import { hapticSuccess, hapticError } from "../../src/lib/haptics"
 
 export default function ConnectScanScreen() {
   const colorScheme = useColorScheme()
@@ -46,8 +49,15 @@ export default function ConnectScanScreen() {
         },
         pw,
       )
+      hapticSuccess()
+      // First-launch flow: a successful connection counts as onboarding
+      // completion. complete() flips the root gate to the normal Stack
+      // before back() lands — the modal stays valid (both Stacks register
+      // connect/scan), then back pops onto (tabs).
+      await useOnboarding.getState().complete()
       router.back()
     } catch {
+      hapticError()
       setIsConnecting(false)
       handledRef.current = false
       setPayload(null)
@@ -85,7 +95,7 @@ export default function ConnectScanScreen() {
   if (!permission) {
     return (
       <View style={[styles.container, styles.centered, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
+        <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
       </View>
     )
   }
@@ -93,19 +103,31 @@ export default function ConnectScanScreen() {
   if (!permission.granted) {
     return (
       <View style={[styles.container, styles.centered, styles.permissionWrap, isDark && styles.containerDark]}>
-        <Ionicons name="scan-outline" size={56} color={isDark ? "#ffffff" : "#0a0a0a"} />
+        <Ionicons name="scan-outline" size={56} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
         <Text style={[styles.permissionTitle, isDark && styles.textDark]}>{t("connectScan.permissionTitle")}</Text>
         <Text style={[styles.permissionMessage, isDark && styles.hintDark]}>{t("connectScan.permissionMessage")}</Text>
         {permission.canAskAgain ? (
-          <TouchableOpacity style={styles.permissionButton} onPress={() => void requestPermission()}>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => void requestPermission()}
+            accessibilityRole="button"
+          >
             <Text style={styles.permissionButtonText}>{t("connectScan.permissionButton")}</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.permissionButton} onPress={() => void Linking.openSettings()}>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={() => void Linking.openSettings()}
+            accessibilityRole="button"
+          >
             <Text style={styles.permissionButtonText}>{t("connectScan.openSettings")}</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.cancelLink} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.cancelLink}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+        >
           <Text style={[styles.cancelLinkText, isDark && styles.hintDark]}>{t("connectScan.cancelButton")}</Text>
         </TouchableOpacity>
       </View>
@@ -135,19 +157,25 @@ export default function ConnectScanScreen() {
           <Text style={styles.hint}>{t("connectScan.hint")}</Text>
           {invalidQr && (
             <View style={styles.invalidBox}>
-              <Ionicons name="alert-circle" size={16} color="#fbbf24" />
+              <Ionicons name="alert-circle" size={16} color={theme.colors.light.healthWarn} />
               <Text style={styles.invalidText}>{t("connectScan.invalidQr")}</Text>
             </View>
           )}
-          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()} testID="scan-cancel-button">
-            <Ionicons name="close" size={28} color="#ffffff" />
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.back()}
+            testID="scan-cancel-button"
+            accessibilityRole="button"
+            accessibilityLabel={t("connectScan.cancelButton")}
+          >
+            <Ionicons name="close" size={28} color={theme.colors.light.surface} />
           </TouchableOpacity>
         </View>
       )}
 
       {isConnecting && (
         <View style={[styles.container, styles.centered, isDark && styles.containerDark]}>
-          <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#0a0a0a"} />
+          <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
           <Text style={[styles.connectingText, isDark && styles.textDark]}>{t("connectScan.connecting")}</Text>
         </View>
       )}
@@ -164,19 +192,25 @@ export default function ConnectScanScreen() {
           <TextInput
             style={[styles.passwordInput, isDark && styles.inputDark]}
             placeholder={t("connectScan.passwordPlaceholder")}
-            placeholderTextColor={isDark ? "#666666" : "#999999"}
+            placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             testID="scan-password-input"
+            accessibilityLabel={t("connectScan.passwordPlaceholder")}
           />
-          <TouchableOpacity style={styles.connectButton} onPress={handleConnectWithPassword} testID="scan-connect-button">
-            <Ionicons name="flash" size={18} color="#ffffff" />
+          <TouchableOpacity
+            style={styles.connectButton}
+            onPress={handleConnectWithPassword}
+            testID="scan-connect-button"
+            accessibilityRole="button"
+          >
+            <Ionicons name="flash" size={18} color={theme.colors.light.surface} />
             <Text style={styles.connectButtonText}>{t("connectScan.connectButton")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.passwordCancel} onPress={backToScanning}>
+          <TouchableOpacity style={styles.passwordCancel} onPress={backToScanning} accessibilityRole="button">
             <Text style={[styles.passwordCancelText, isDark && styles.hintDark]}>{t("connectScan.cancelButton")}</Text>
           </TouchableOpacity>
         </View>
@@ -188,10 +222,10 @@ export default function ConnectScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: theme.colors.light.textPrimary,
   },
   containerDark: {
-    backgroundColor: "#000000",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   centered: {
     justifyContent: "center",
@@ -199,30 +233,30 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   textDark: {
-    color: "#ffffff",
+    color: theme.colors.dark.textPrimary,
   },
   hintDark: {
-    color: "#888888",
+    color: theme.colors.dark.textMuted,
   },
   permissionWrap: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   permissionTitle: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 16,
   },
   permissionMessage: {
     fontSize: 15,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     textAlign: "center",
     lineHeight: 22,
     marginTop: 8,
     marginBottom: 24,
   },
   permissionButton: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -232,14 +266,14 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   cancelLink: {
     paddingVertical: 16,
   },
   cancelLinkText: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   overlay: {
     position: "absolute",
@@ -258,7 +292,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 36,
     height: 36,
-    borderColor: "#ffffff",
+    borderColor: theme.colors.light.surface,
   },
   cornerTL: {
     top: 0,
@@ -290,7 +324,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 15,
-    color: "#ffffff",
+    color: theme.colors.light.surface,
     textAlign: "center",
     paddingHorizontal: 32,
     marginTop: 28,
@@ -312,7 +346,7 @@ const styles = StyleSheet.create({
   invalidText: {
     flex: 1,
     fontSize: 13,
-    color: "#ffffff",
+    color: theme.colors.light.surface,
     lineHeight: 18,
   },
   cancelButton: {
@@ -330,7 +364,7 @@ const styles = StyleSheet.create({
   },
   connectingText: {
     fontSize: 15,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 12,
   },
   passwordSheet: {
@@ -339,45 +373,45 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 24,
     borderRadius: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
     padding: 20,
-    shadowColor: "#000000",
+    shadowColor: theme.colors.light.textPrimary,
     shadowOpacity: 0.25,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   passwordSheetDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   passwordTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   passwordHint: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     lineHeight: 20,
     marginTop: 6,
   },
   passwordUrl: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 4,
     marginBottom: 14,
   },
   passwordInput: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   inputDark: {
-    backgroundColor: "#2a2a2a",
-    color: "#ffffff",
+    backgroundColor: theme.colors.dark.surfaceElevated,
+    color: theme.colors.dark.textPrimary,
   },
   connectButton: {
     flexDirection: "row",
@@ -386,13 +420,13 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 14,
     borderRadius: 10,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     marginTop: 12,
   },
   connectButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   passwordCancel: {
     alignItems: "center",
@@ -400,6 +434,5 @@ const styles = StyleSheet.create({
   },
   passwordCancelText: {
     fontSize: 14,
-    color: "#666666",
-  },
-})
+    color: theme.colors.light.textSecondary,
+  }})

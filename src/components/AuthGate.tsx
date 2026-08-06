@@ -3,6 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from "react-
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "../stores/auth"
+import { getTheme, theme } from "../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   children: ReactNode
@@ -11,6 +15,7 @@ interface Props {
 export function AuthGate({ children }: Props) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
+  const colors = getTheme(isDark)
   const { t } = useTranslation()
 
   const { isAuthenticated, settings, hasBiometrics, biometricType, authenticate, error } = useAuth()
@@ -46,14 +51,19 @@ export function AuthGate({ children }: Props) {
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
       <View style={styles.content}>
-        <Ionicons name={iconName} size={64} color={isDark ? "#ffffff" : "#0a0a0a"} />
+        <Ionicons name={iconName} size={64} color={isDark ? colors.textPrimary : colors.ink} />
         <Text style={[styles.title, isDark && styles.textDark]}>{t("authGate.title")}</Text>
         <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>{t("authGate.subtitle")}</Text>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <TouchableOpacity style={[styles.button, isDark && styles.buttonDark]} onPress={authenticate}>
-          <Ionicons name={iconName} size={24} color={isDark ? "#0a0a0a" : "#ffffff"} />
+        <TouchableOpacity
+          style={[styles.button, isDark && styles.buttonDark]}
+          onPress={authenticate}
+          accessibilityRole="button"
+          accessibilityLabel={t("authGate.unlockButton")}
+        >
+          <Ionicons name={iconName} size={24} color={isDark ? colors.ink : colors.white} />
           <Text style={[styles.buttonText, isDark && styles.buttonTextDark]}>{t("authGate.unlockButton")}</Text>
         </TouchableOpacity>
       </View>
@@ -64,12 +74,12 @@ export function AuthGate({ children }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: light.white,
     justifyContent: "center",
     alignItems: "center",
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: dark.ink,
   },
   content: {
     alignItems: "center",
@@ -79,29 +89,29 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "600",
     marginTop: 24,
-    color: "#0a0a0a",
+    color: light.ink,
   },
   textDark: {
-    color: "#ffffff",
+    color: dark.textPrimary,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666666",
+    color: light.iconSecondary,
     marginTop: 8,
     textAlign: "center",
   },
   subtitleDark: {
-    color: "#888888",
+    color: dark.hintText,
   },
   error: {
-    color: "#ef4444",
+    color: light.danger,
     marginTop: 16,
     fontSize: 14,
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: light.ink,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
@@ -109,14 +119,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   buttonDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: dark.white,
   },
   buttonText: {
-    color: "#ffffff",
+    color: light.white,
     fontSize: 18,
     fontWeight: "600",
   },
   buttonTextDark: {
-    color: "#0a0a0a",
+    color: dark.ink,
   },
 })

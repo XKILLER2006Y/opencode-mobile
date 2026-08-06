@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -43,7 +44,7 @@ function SettingRow({
   const content = (
     <View style={[styles.settingRow, isDark && styles.settingRowDark]}>
       <View style={[styles.settingIcon, isDark && styles.settingIconDark]}>
-        <Ionicons name={icon} size={22} color={isDark ? "#ffffff" : "#0a0a0a"} />
+        <Ionicons name={icon} size={22} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
       </View>
       <View style={styles.settingContent}>
         <Text style={[styles.settingLabel, isDark && styles.textDark]}>{label}</Text>
@@ -54,7 +55,11 @@ function SettingRow({
   )
 
   if (onPress) {
-    return <TouchableOpacity onPress={onPress}>{content}</TouchableOpacity>
+    return (
+      <TouchableOpacity onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
+        {content}
+      </TouchableOpacity>
+    )
   }
 
   return content
@@ -157,7 +162,8 @@ export default function SettingsScreen() {
               value={settings.requireBiometric}
               onValueChange={(value) => updateSettings({ requireBiometric: value })}
               disabled={!hasBiometrics}
-              trackColor={{ false: "#767577", true: "#22c55e" }}
+              trackColor={{ false: theme.colors.light.textMuted, true: theme.colors.light.statusSuccess }}
+              accessibilityLabel={t("settings.security.biometricOpen.label")}
             />
           }
         />
@@ -171,7 +177,8 @@ export default function SettingsScreen() {
               value={settings.requireBiometricForMessages}
               onValueChange={(value) => updateSettings({ requireBiometricForMessages: value })}
               disabled={!hasBiometrics || !settings.requireBiometric}
-              trackColor={{ false: "#767577", true: "#22c55e" }}
+              trackColor={{ false: theme.colors.light.textMuted, true: theme.colors.light.statusSuccess }}
+              accessibilityLabel={t("settings.security.biometricSend.label")}
             />
           }
         />
@@ -182,7 +189,7 @@ export default function SettingsScreen() {
             description={t("settings.security.lockNow.description")}
             isDark={isDark}
             onPress={lock}
-            right={<Ionicons name="chevron-forward" size={20} color={isDark ? "#666666" : "#999999"} />}
+            right={<Ionicons name="chevron-forward" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />}
           />
         )}
       </SettingSection>
@@ -201,7 +208,8 @@ export default function SettingsScreen() {
                 <Switch
                   value={notifications[category]}
                   onValueChange={(value) => handleToggle(category, value)}
-                  trackColor={{ false: "#767577", true: "#22c55e" }}
+                  trackColor={{ false: theme.colors.light.textMuted, true: theme.colors.light.statusSuccess }}
+                  accessibilityLabel={t(meta.labelKey)}
                 />
               }
             />
@@ -209,7 +217,7 @@ export default function SettingsScreen() {
         })}
         {osGranted === false && (
           <View style={[styles.settingRow, isDark && styles.settingRowDark]}>
-            <Text style={[styles.settingDescription, { color: "#ef4444", paddingLeft: 48 }]}>
+            <Text style={[styles.settingDescription, { color: theme.colors.light.statusError, paddingLeft: 48 }]}>
               {t("settings.notifications.disabledNotice")}
             </Text>
           </View>
@@ -227,7 +235,8 @@ export default function SettingsScreen() {
               value={crashReporting}
               onValueChange={handleCrashReportingToggle}
               disabled={telemetryUpdating}
-              trackColor={{ false: "#767577", true: "#22c55e" }}
+              trackColor={{ false: theme.colors.light.textMuted, true: theme.colors.light.statusSuccess }}
+              accessibilityLabel={t("settings.privacy.crashReporting.label")}
             />
           }
         />
@@ -237,7 +246,7 @@ export default function SettingsScreen() {
           description={t("settings.privacy.privacyPolicy.description")}
           isDark={isDark}
           onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
-          right={<Ionicons name="open-outline" size={20} color={isDark ? "#666666" : "#999999"} />}
+          right={<Ionicons name="open-outline" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />}
         />
       </SettingSection>
 
@@ -248,7 +257,7 @@ export default function SettingsScreen() {
           description={localeLabels[locale]}
           isDark={isDark}
           onPress={handleLanguagePress}
-          right={<Ionicons name="chevron-forward" size={20} color={isDark ? "#666666" : "#999999"} />}
+          right={<Ionicons name="chevron-forward" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />}
         />
         <SettingRow icon="information-circle" label={t("settings.about.version")} description="1.0.0" isDark={isDark} />
         <SettingRow
@@ -257,7 +266,7 @@ export default function SettingsScreen() {
           description={t("settings.about.github.description")}
           isDark={isDark}
           onPress={() => Linking.openURL("https://github.com/anomalyco/opencode")}
-          right={<Ionicons name="open-outline" size={20} color={isDark ? "#666666" : "#999999"} />}
+          right={<Ionicons name="open-outline" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />}
         />
         <SettingRow
           icon="document-text"
@@ -265,7 +274,7 @@ export default function SettingsScreen() {
           description={t("settings.about.docs.description")}
           isDark={isDark}
           onPress={() => Linking.openURL("https://opencode.ai/docs")}
-          right={<Ionicons name="open-outline" size={20} color={isDark ? "#666666" : "#999999"} />}
+          right={<Ionicons name="open-outline" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />}
         />
       </SettingSection>
 
@@ -280,10 +289,10 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   content: {
     paddingBottom: 32,
@@ -295,25 +304,25 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
     marginLeft: 4,
     marginBottom: 8,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   sectionTitleDark: {
-    color: "#A1A1AA",
+    color: theme.colors.dark.textMuted,
   },
   sectionContent: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.light.surface,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: theme.colors.light.borderSubtle,
     overflow: "hidden",
   },
   sectionContentDark: {
-    backgroundColor: "#18181B",
-    borderColor: "#27272A",
+    backgroundColor: theme.colors.dark.surface,
+    borderColor: theme.colors.dark.surfaceElevated,
   },
   settingRow: {
     flexDirection: "row",
@@ -321,22 +330,22 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F4F4F5",
+    borderBottomColor: theme.colors.light.borderSubtle,
   },
   settingRowDark: {
-    borderBottomColor: "#27272A",
+    borderBottomColor: theme.colors.dark.surfaceElevated,
   },
   settingIcon: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: theme.colors.light.borderSubtle,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   settingIconDark: {
-    backgroundColor: "#27272A",
+    backgroundColor: theme.colors.dark.surfaceElevated,
   },
   settingContent: {
     flex: 1,
@@ -344,18 +353,18 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 15,
     fontWeight: "500",
-    color: "#09090B",
+    color: theme.colors.light.textPrimary,
   },
   textDark: {
-    color: "#FAFAFA",
+    color: theme.colors.dark.textPrimary,
   },
   settingDescription: {
     fontSize: 13,
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
     marginTop: 2,
   },
   metaDark: {
-    color: "#A1A1AA",
+    color: theme.colors.dark.textMuted,
   },
   footer: {
     alignItems: "center",
@@ -363,7 +372,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
-    color: "#A1A1AA",
+    color: theme.colors.light.textMuted,
     textAlign: "center",
-  },
-})
+  }})

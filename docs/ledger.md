@@ -22,6 +22,55 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-05 — Professional polish: onboarding, a11y, theme tokens, haptics, component tests
+
+Branch: `feat/professional-polish` → `main` (PR #3, open)
+Plan: `docs/superpowers/plans/2026-08-05-professional-polish.md`
+
+Sequential implementation plan covering the onboarding flow (welcome screen,
+helper screen, persistence via `src/lib/onboarding-secure.ts` +
+`src/stores/onboarding.ts`), accessibility labels/roles across app screens and
+chat components, consolidation of hardcoded colors/typography/spacing into
+design tokens (`src/lib/theme.ts`), tactile haptics on connect/send actions,
+and a jest-expo + React Native Testing Library harness with component tests.
+
+### Task 8 — Theme tokens in components (`704ed70`)
+
+`refactor(theme): design tokens in components` — replaced hex literals across
+20 components + `src/lib/theme.ts` with `theme.colors`/`theme.spacing`/
+`theme.radius`/`theme.typography` tokens; fixed eslint hook deps in
+`chat/ToolCallCard.tsx` and `chat/DirectoryBrowserSheet.tsx`.
+
+### Task 9 — Haptics (`52adf80`)
+
+`feat(haptics): tactile feedback on connect and send actions` — added
+`src/lib/haptics.ts` (`hapticTap`/`hapticSuccess`/`hapticError`) wired into
+the connect FAB, scan/add-success, failure paths, and send action.
+
+### Task 10 — Jest + RTL infra (`0dd4a02`)
+
+`test(ui): jest-expo + RTL infra and CI wiring` — `jest.config.js`,
+`jest.setup.js`, `test:ui` script, `TelemetryConsentModal.test.tsx`, and CI
+wiring in build.yml/ios-ci.yml. `react-test-renderer` is a bad fit on React
+19.2; RNTL v14 needs `test-renderer@1.2`.
+
+### Task 11 — Component tests (`9329cdb`)
+
+`test(ui): onboarding flow component tests` — `src/lib/onboarding-flow.test.tsx`
+covers the welcome render and Skip completing onboarding + navigating to
+`(tabs)`; added jest globals to eslint for `jest.setup.js`.
+
+### Task 12 — Final verification
+
+Full suite green (`npm test` 303/0, `npm run test:ui` 5/5, `tsc` clean,
+`eslint` clean); hex-literal grep guard found one leftover `#FFFFFF` in
+`app/onboarding.tsx` — tokenized (`fc2995c`). Branch pushed, PR #3 opened,
+all CI green on `feat/professional-polish`: Build Android APK ✅ (23m),
+iOS CI ✅ (4m51s), Activation E2E ✅ (28m, core flows; demo/diff-scroll
+newer flows remain non-blocking #104), typecheck + unit + component tests ✅.
+
+---
+
 ## 2026-08-05 — Remote connectivity: opencode-remote CLI + QR pairing
 
 Branch: `feat/remote-connectivity` → `main`

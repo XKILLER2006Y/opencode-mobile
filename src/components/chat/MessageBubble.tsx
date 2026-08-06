@@ -6,6 +6,10 @@ import { ToolCallCard } from "./ToolCallCard"
 import { ReasoningBlock } from "./ReasoningBlock"
 import { useBatchedText } from "../../lib/use-batched-text.ts"
 import type { Message, Part } from "../../lib/sdk"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 
@@ -28,6 +32,7 @@ interface Props {
 export const MessageBubble = memo(
   function MessageBubble({ message, parts, isDark, onLongPress }: Props) {
     const isUser = message.role === "user"
+    const colors = getTheme(isDark)
 
     const { text, reasoning, toolParts, fileParts } = useMemo(() => {
       let tAcc = ""
@@ -72,13 +77,18 @@ export const MessageBubble = memo(
           !isUser && isDark && s.assistantDark,
         ]}
         testID={`chat-bubble-${message.role}`}
+        accessibilityRole="button"
+        accessibilityLabel={
+          renderText ? `${isUser ? "You" : "Assistant"}: ${renderText}` : isUser ? "You" : "Assistant"
+        }
+        accessibilityHint={isUser && onLongPress ? "Long press for actions" : undefined}
       >
         {/* Role indicator */}
         <View style={s.header}>
           <Ionicons
             name={isUser ? "person" : "sparkles"}
             size={14}
-            color={isUser ? "#FFFFFF" : "#0071E3"}
+            color={isUser ? colors.white : colors.accent}
           />
           <Text style={[s.role, isUser && s.roleUser, isUser && isDark && s.roleUserDark]}>
             {isUser ? "You" : "Assistant"}
@@ -164,37 +174,35 @@ const s = StyleSheet.create({
     borderRadius: 20, // uniform, no tail — iOS 18+ Messages
     maxWidth: "75%",
   },
-  user: { backgroundColor: "#0071E3", alignSelf: "flex-end" },
-  userDark: { backgroundColor: "#0A84FF" },
-  assistant: { backgroundColor: "#E9E9EB", alignSelf: "flex-start" },
-  assistantDark: { backgroundColor: "#2C2C2E" },
+  user: { backgroundColor: light.accent, alignSelf: "flex-end" },
+  userDark: { backgroundColor: dark.accent },
+  assistant: { backgroundColor: light.borderSubtle, alignSelf: "flex-start" },
+  assistantDark: { backgroundColor: dark.borderSubtle },
 
   header: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
-  role: { fontSize: 13, fontWeight: "600", color: "#6E6E73" },
-  roleUser: { color: "rgba(255,255,255,0.85)" },
-  roleUserDark: { color: "rgba(255,255,255,0.85)" },
-  textWhite: { color: "#FFFFFF" },
-  textWhiteDark: { color: "#FFFFFF" },
+  role: { fontSize: 13, fontWeight: "600", color: light.roleText },
+  roleUser: { color: light.roleUserFade },
+  roleUserDark: { color: dark.roleUserFade },
 
   modelTag: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#6E6E73",
-    backgroundColor: "#F2F2F7",
+    color: light.roleText,
+    backgroundColor: light.cardBg,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     overflow: "hidden",
   },
-  modelTagDark: { backgroundColor: "#1C1C1E", color: "#AEAEB2" },
+  modelTagDark: { backgroundColor: dark.surface, color: dark.todoDoneText },
 
-  messageText: { fontSize: 17, lineHeight: 22, color: "#000000" },
-  messageTextUser: { color: "#FFFFFF" },
-  messageTextUserDark: { color: "#FFFFFF" },
+  messageText: { fontSize: 17, lineHeight: 22, color: light.textPrimary },
+  messageTextUser: { color: light.white },
+  messageTextUserDark: { color: dark.white },
   markdownWrap: { marginHorizontal: -4 },
 
-  tokens: { fontSize: 11, color: "#8E8E93", marginTop: 8 },
-  tokensDark: { color: "#8E8E93" },
+  tokens: { fontSize: 11, color: light.footnoteText, marginTop: 8 },
+  tokensDark: { color: dark.footnoteText },
 
   // Images
   imageScroll: { marginBottom: 8 },
@@ -204,8 +212,8 @@ const s = StyleSheet.create({
     width: Math.min(200, SCREEN_WIDTH * 0.5),
     height: Math.min(200, SCREEN_WIDTH * 0.5),
     borderRadius: 12,
-    backgroundColor: "#E9E9EB",
+    backgroundColor: light.borderSubtle,
   },
-  imageLabel: { fontSize: 10, color: "#6E6E73", marginTop: 4, maxWidth: 200 },
-  imageLabelDark: { color: "#AEAEB2" },
+  imageLabel: { fontSize: 10, color: light.roleText, marginTop: 4, maxWidth: 200 },
+  imageLabelDark: { color: dark.todoDoneText },
 })

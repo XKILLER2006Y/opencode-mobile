@@ -6,6 +6,7 @@
     "delete": "删除",
     "retry": "重试",
     "save": "保存",
+    "close": "关闭",
     "shareReport": "分享报告"
   },
   "settings": {
@@ -75,8 +76,15 @@
   "session": {
     "titleFallback": "会话",
     "toolbar": {
-      "auto": "自动"
+      "auto": "自动",
+      "switchAgentHint": "点击切换代理",
+      "modelButton": "选择模型",
+      "variantButton": "选择推理强度"
     },
+    "header": {
+      "infoButton": "会话信息"
+    },
+    "scrollToBottom": "滚动到底部",
     "banners": {
       "reconnecting": "正在重新连接…（第 {{attempt}} 次尝试）",
       "connected": "已连接 ✓",
@@ -91,7 +99,15 @@
     "input": {
       "placeholderListening": "正在聆听...",
       "placeholderFollowUp": "发送后续消息...",
-      "placeholderDefault": "输入消息..."
+      "placeholderDefault": "输入消息...",
+      "label": "消息",
+      "sendButton": "发送",
+      "stopButton": "停止",
+      "micButton": "语音输入",
+      "stopListeningButton": "停止聆听",
+      "attachButton": "添加附件",
+      "attachCameraHint": "长按拍照",
+      "pasteButton": "从剪贴板粘贴"
     },
     "actions": {
       "editMessage": "编辑消息",
@@ -136,6 +152,7 @@
       "name": "名称",
       "namePlaceholder": "我的服务器",
       "serverUrl": "服务器地址",
+      "portLabel": "端口",
       "directoryOptional": "项目目录（可选）",
       "authentication": "身份验证",
       "username": "用户名",
@@ -179,6 +196,7 @@
       },
       "waitlist": {
         "successText": "您已加入候补名单 — OpenCode Connect 准备就绪时我们会通过邮件通知您。",
+        "emailLabel": "电子邮箱",
         "joinButton": "加入候补名单",
         "alertTitle": "加入候补名单",
         "fallbackMessage": "无法连接注册服务或打开邮件应用。请发送邮件至 support@agentlabs.cc，主题为 \"OpenCode Connect Waitlist\"。"
@@ -233,6 +251,7 @@
       "subtitle": "添加一个 OpenCode 服务器连接"
     },
     "header": "点击切换，长按查看更多选项",
+    "longPressHint": "长按显示更多操作",
     "scan": "扫码连接",
     "exposeCard": {
       "title": "通过互联网访问",
@@ -248,6 +267,7 @@
     "preferences": {
       "title": "偏好设置",
       "pageSizeLabel": "每页消息数",
+      "pageSizeOption": "每页{{size}}条",
       "pageSizeHint": "打开会话时加载的消息数量。数值越小加载越快。"
     }
   },
@@ -271,6 +291,7 @@
   },
   "sessionsList": {
     "untitledSession": "未命名会话",
+    "longPressHint": "长按显示更多操作",
     "time": {
       "justNow": "刚刚",
       "minutesAgo": "{{count}} 分钟前",
@@ -315,7 +336,9 @@
     },
     "renameModal": {
       "title": "重命名会话"
-    }
+    },
+    "fabLabel": "新建会话",
+    "fabOptionsHint": "长按查看更多新建选项"
   },
   "notifications": {
     "categories": {
@@ -414,7 +437,9 @@
       "serverDefaultLabel": "服务器默认",
       "browseLabel": "浏览…",
       "recentProjectsLabel": "最近项目",
-      "usesServerDir": "使用服务器的工作目录"
+      "usesServerDir": "使用服务器的工作目录",
+      "inputLabel": "项目目录",
+      "goButton": "打开目录"
     },
     "directoryBrowserSheet": {
       "noActiveConnection": "没有活动连接",
@@ -424,7 +449,9 @@
       "noSubfolders": "此处没有子文件夹",
       "enterPathHint": "在上方输入路径以开始浏览",
       "useFolderButton": "使用 {{folder}}",
-      "thisFolderFallback": "此文件夹"
+      "thisFolderFallback": "此文件夹",
+      "goButton": "跳转",
+      "upButton": "上一级"
     },
     "reasoningBlock": {
       "label": "思考中"
@@ -460,6 +487,9 @@
         "hoursAgo": "{{count}} 小时前",
         "daysAgo": "{{count}} 天前"
       }
+    },
+    "imageAttachments": {
+      "removeButton": "移除 {{name}}"
     }
   },
   "demo": {
@@ -470,5 +500,23 @@
     "connectButton": "连接您自己的服务器",
     "setupGuideLink": "如何设置服务器",
     "hostedCtaLink": "没有服务器？加入 OpenCode Connect 候补名单 — 托管，无需搭建"
+  },
+  "onboarding": {
+    "welcomeTitle": "随时随地控制您的 opencode 服务器",
+    "welcomeSubtitle": "您的电脑运行 opencode。这款应用让您可以在手机上操控它 — 会话、命令和文件随时可用。",
+    "feature1": "随时随地与您的编程代理聊天",
+    "feature2": "在电脑上运行命令并打开文件",
+    "feature3": "使用二维码即时配对",
+    "getStarted": "开始使用",
+    "skip": "跳过",
+    "helperTitle": "连接您的服务器",
+    "helperSubtitle": "添加您电脑上运行的 opencode 服务器。",
+    "scanQr": "扫描二维码",
+    "addManually": "手动添加",
+    "health": {
+      "healthy": "服务器可访问",
+      "unreachable": "服务器不可访问",
+      "unknown": "服务器状态未知"
+    }
   }
 }

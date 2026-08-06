@@ -3,6 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetSectionList, BottomSheetTextInput } from "@gorhom/bottom-sheet"
 import { useTranslation } from "react-i18next"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface ModelItem {
   providerID: string
@@ -27,6 +31,7 @@ interface Props {
 
 export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   const [search, setSearch] = useState("")
 
   const sections = useMemo(() => {
@@ -92,7 +97,7 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       backgroundStyle={isDark ? s.sheetDark : s.sheet}
-      handleIndicatorStyle={{ backgroundColor: isDark ? "#666666" : "#cccccc" }}
+      handleIndicatorStyle={{ backgroundColor: colors.handleIndicator }}
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
       )}
@@ -105,11 +110,12 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
         <BottomSheetTextInput
           style={[s.search, isDark && s.searchDark]}
           placeholder={t("chat.modelPicker.searchPlaceholder")}
-          placeholderTextColor={isDark ? "#666666" : "#999999"}
+          placeholderTextColor={colors.iconSubtle}
           value={search}
           onChangeText={setSearch}
           autoCorrect={false}
           autoCapitalize="none"
+          accessibilityLabel={t("chat.modelPicker.searchPlaceholder")}
         />
       </View>
       <BottomSheetSectionList
@@ -127,6 +133,9 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
               style={[s.row, isDark && s.rowDark, active && (isDark ? s.rowSelectedDark : s.rowSelected)]}
               onPress={() => handleSelect(item.providerID, item.modelID)}
               testID={`model-option-${item.providerID}-${item.modelID}`}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.modelName || item.modelID}, ${item.providerName || item.providerID}`}
+              accessibilityState={{ selected: active }}
             >
               <View style={s.rowText}>
                 <Text style={[s.rowName, isDark && s.textWhite]} numberOfLines={1}>
@@ -134,7 +143,7 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
                 </Text>
                 <Text style={[s.rowProvider, isDark && s.metaDark]}>{item.providerName || item.providerID}</Text>
               </View>
-              {active && <Ionicons name="checkmark-circle" size={20} color="#8b5cf6" />}
+              {active && <Ionicons name="checkmark-circle" size={20} color={colors.violet} />}
             </TouchableOpacity>
           )
         }}
@@ -146,47 +155,47 @@ export function ModelPicker({ providers, selected, isDark, onSelect, sheetRef }:
 }
 
 const s = StyleSheet.create({
-  sheet: { backgroundColor: "#ffffff" },
-  sheetDark: { backgroundColor: "#1a1a1a" },
+  sheet: { backgroundColor: light.white },
+  sheetDark: { backgroundColor: dark.surfaceRaised },
   header: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  title: { fontSize: 18, fontWeight: "700", color: "#0a0a0a" },
-  textWhite: { color: "#ffffff" },
+  title: { fontSize: 18, fontWeight: "700", color: light.textInk },
+  textWhite: { color: dark.textPrimary },
   search: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: light.surfaceInput,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: "#0a0a0a",
+    color: light.textInk,
   },
-  searchDark: { backgroundColor: "#2a2a2a", color: "#ffffff" },
+  searchDark: { backgroundColor: dark.surfaceInput, color: dark.textPrimary },
   content: { paddingBottom: 40 },
   sectionHeader: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: light.surfaceInput,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  sectionHeaderDark: { backgroundColor: "#111111" },
+  sectionHeaderDark: { backgroundColor: dark.sectionHeaderBg },
   sectionTitle: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#999999",
+    color: light.dimText,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  metaDark: { color: "#666666" },
+  metaDark: { color: dark.hintText },
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e5e5",
+    borderBottomColor: light.separatorFixed,
   },
-  rowDark: { borderBottomColor: "#2a2a2a" },
-  rowSelected: { backgroundColor: "#f5f3ff" },
-  rowSelectedDark: { backgroundColor: "#1f1a2e" },
+  rowDark: { borderBottomColor: dark.surfaceInput },
+  rowSelected: { backgroundColor: light.rowSelected },
+  rowSelectedDark: { backgroundColor: dark.rowSelected },
   rowText: { flex: 1 },
-  rowName: { fontSize: 15, fontWeight: "500", color: "#0a0a0a" },
-  rowProvider: { fontSize: 12, color: "#999999", marginTop: 1 },
+  rowName: { fontSize: 15, fontWeight: "500", color: light.textInk },
+  rowProvider: { fontSize: 12, color: light.dimText, marginTop: 1 },
 })

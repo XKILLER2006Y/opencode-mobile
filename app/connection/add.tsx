@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import { router } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { useConnections } from "../../src/stores/connections"
+import { useOnboarding } from "../../src/stores/onboarding"
 import type { ConnectionType } from "../../src/lib/types"
 import { probeConnection, shareReport } from "../../src/lib/diagnostics"
 import { captureDiagnostic } from "../../src/lib/sentry"
@@ -22,6 +24,7 @@ import { parseUrl } from "../../src/lib/diagnostics-classify"
 import { buildAuth } from "../../src/lib/auth"
 import { AnalyticsEvent, track } from "../../src/lib/analytics"
 import { submitWaitlistSignup, buildWaitlistMailtoUrl } from "../../src/lib/waitlist"
+import { hapticSuccess, hapticError } from "../../src/lib/haptics"
 
 export default function AddConnectionScreen() {
   const colorScheme = useColorScheme()
@@ -103,9 +106,15 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        hapticSuccess()
+        // First-launch flow: a successful connection completes onboarding.
+        // complete() flips the root gate to the normal Stack before back()
+        // lands — connection/add stays registered in both Stack configs.
+        await useOnboarding.getState().complete()
         setIsConnecting(false)
         router.back()
       } catch {
+        hapticError()
         setIsConnecting(false)
         Alert.alert(
           t("connection.shared.alerts.saveFailedTitle"),
@@ -179,9 +188,13 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        hapticSuccess()
+        // First-launch flow: successful connection completes onboarding.
+        await useOnboarding.getState().complete()
         setIsConnecting(false)
         router.back()
       } catch {
+        hapticError()
         setIsConnecting(false)
         Alert.alert(
           t("connection.shared.alerts.saveFailedTitle"),
@@ -243,7 +256,7 @@ export default function AddConnectionScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.quickHeader}>
-          <Ionicons name="wifi" size={48} color={isDark ? "#ffffff" : "#0a0a0a"} />
+          <Ionicons name="wifi" size={48} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
           <Text style={[styles.quickTitle, isDark && styles.textDark]}>{t("connection.add.quick.title")}</Text>
           <Text style={[styles.quickSubtitle, isDark && styles.hintDark]}>{t("connection.add.quick.subtitle")}</Text>
         </View>
@@ -254,23 +267,25 @@ export default function AddConnectionScreen() {
           <TextInput
             style={[styles.input, styles.ipInput, isDark && styles.inputDark]}
             placeholder="192.168.1.100"
-            placeholderTextColor={isDark ? "#666666" : "#999999"}
+            placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
             value={ip}
             onChangeText={setIp}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"
             testID="connect-ip-input"
+            accessibilityLabel={t("connection.add.quick.ipAddressLabel")}
           />
           <Text style={[styles.ipColon, isDark && styles.textDark]}>:</Text>
           <TextInput
             style={[styles.input, styles.portInput, isDark && styles.inputDark]}
             placeholder="4096"
-            placeholderTextColor={isDark ? "#666666" : "#999999"}
+            placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
             value={port}
             onChangeText={setPort}
             keyboardType="number-pad"
             testID="connect-port-input"
+            accessibilityLabel={t("connection.shared.portLabel")}
           />
         </View>
 
@@ -279,9 +294,10 @@ export default function AddConnectionScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder={t("connection.add.quick.namePlaceholder")}
-          placeholderTextColor={isDark ? "#666666" : "#999999"}
+          placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
           value={name}
           onChangeText={setName}
+          accessibilityLabel={t("connection.add.quick.nameOptionalLabel")}
         />
 
         {/* Password if needed */}
@@ -289,17 +305,18 @@ export default function AddConnectionScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder={t("connection.add.quick.passwordPlaceholder")}
-          placeholderTextColor={isDark ? "#666666" : "#999999"}
+          placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           testID="connect-password-input"
+          accessibilityLabel={t("connection.add.quick.passwordIfSetLabel")}
         />
         <Text style={[styles.usernameHint, isDark && styles.hintDark]}>
           {t("connection.add.quick.usernameHintPrefix")}
           <Text style={styles.code}>opencode</Text>
           {t("connection.add.quick.usernameHintMiddle")}
-          <Text style={styles.usernameHintLink} onPress={() => setMode("advanced")}>
+          <Text style={styles.usernameHintLink} onPress={() => setMode("advanced")} accessible={true}>
             {t("connection.add.quick.advancedOptionsLink")}
           </Text>
           {t("connection.add.quick.usernameHintSuffix")}
@@ -311,12 +328,14 @@ export default function AddConnectionScreen() {
           onPress={handleQuickConnect}
           disabled={isConnecting}
           testID="connect-submit-button"
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.add.quick.connectButton")}
         >
           {isConnecting ? (
-            <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
+            <ActivityIndicator size="small" color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
           ) : (
             <>
-              <Ionicons name="flash" size={20} color={isDark ? "#0a0a0a" : "#ffffff"} />
+              <Ionicons name="flash" size={20} color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
               <Text style={[styles.connectButtonText, isDark && styles.connectButtonTextDark]}>
                 {t("connection.add.quick.connectButton")}
               </Text>
@@ -356,7 +375,7 @@ export default function AddConnectionScreen() {
         {/* OpenCode Connect — Coming Soon */}
         <View style={[styles.connectCard, isDark && styles.connectCardDark]}>
           <View style={styles.connectCardHeader}>
-            <Ionicons name="cloud-done-outline" size={28} color="#6366f1" />
+            <Ionicons name="cloud-done-outline" size={28} color={theme.colors.light.indigo} />
             <View style={styles.connectCardTitles}>
               <Text style={[styles.connectCardTitle, isDark && styles.textDark]}>
                 {t("connection.add.quick.connectCardTitle")}
@@ -371,7 +390,7 @@ export default function AddConnectionScreen() {
           </Text>
           {waitlistState === "joined" ? (
             <View style={styles.waitlistSuccess} testID="waitlist-success">
-              <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
+              <Ionicons name="checkmark-circle" size={20} color={theme.colors.light.statusSuccess} />
               <Text style={[styles.waitlistSuccessText, isDark && styles.textDark]}>
                 {t("connection.add.waitlist.successText")}
               </Text>
@@ -381,7 +400,7 @@ export default function AddConnectionScreen() {
               <TextInput
                 style={[styles.input, isDark && styles.inputDark, { marginTop: 12 }]}
                 placeholder="your@email.com"
-                placeholderTextColor={isDark ? "#666666" : "#999999"}
+                placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
                 value={waitlistEmail}
                 onChangeText={setWaitlistEmail}
                 autoCapitalize="none"
@@ -389,18 +408,21 @@ export default function AddConnectionScreen() {
                 keyboardType="email-address"
                 editable={waitlistState !== "submitting"}
                 testID="waitlist-email-input"
+                accessibilityLabel={t("connection.add.waitlist.emailLabel")}
               />
               <TouchableOpacity
                 style={styles.waitlistButton}
                 onPress={handleJoinWaitlist}
                 disabled={waitlistState === "submitting"}
                 testID="waitlist-submit-button"
+                accessibilityRole="button"
+                accessibilityLabel={t("connection.add.waitlist.joinButton")}
               >
                 {waitlistState === "submitting" ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={theme.colors.light.surface} />
                 ) : (
                   <>
-                    <Ionicons name="mail-outline" size={16} color="#ffffff" />
+                    <Ionicons name="mail-outline" size={16} color={theme.colors.light.surface} />
                     <Text style={styles.waitlistButtonText}>{t("connection.add.waitlist.joinButton")}</Text>
                   </>
                 )}
@@ -410,11 +432,16 @@ export default function AddConnectionScreen() {
         </View>
 
         {/* Advanced mode link */}
-        <TouchableOpacity style={styles.advancedLink} onPress={() => setMode("advanced")}>
+        <TouchableOpacity
+          style={styles.advancedLink}
+          onPress={() => setMode("advanced")}
+          accessibilityRole="button"
+          accessibilityLabel={t("connection.add.quick.advancedLink")}
+        >
           <Text style={[styles.advancedLinkText, isDark && styles.hintDark]}>
             {t("connection.add.quick.advancedLink")}
           </Text>
-          <Ionicons name="chevron-forward" size={16} color={isDark ? "#888888" : "#666666"} />
+          <Ionicons name="chevron-forward" size={16} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
         </TouchableOpacity>
       </ScrollView>
     )
@@ -427,8 +454,8 @@ export default function AddConnectionScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <TouchableOpacity style={styles.backToQuick} onPress={() => setMode("quick")}>
-        <Ionicons name="chevron-back" size={16} color={isDark ? "#888888" : "#666666"} />
+      <TouchableOpacity style={styles.backToQuick} onPress={() => setMode("quick")} accessibilityRole="button">
+        <Ionicons name="chevron-back" size={16} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
         <Text style={[styles.backToQuickText, isDark && styles.hintDark]}>{t("connection.add.advanced.backToQuick")}</Text>
       </TouchableOpacity>
 
@@ -449,11 +476,14 @@ export default function AddConnectionScreen() {
               type === opt.type && isDark && styles.typeOptionSelectedDark,
             ]}
             onPress={() => setType(opt.type)}
+            accessibilityRole="button"
+            accessibilityLabel={opt.label}
+            accessibilityState={{ selected: type === opt.type }}
           >
             <Ionicons
               name={opt.icon}
               size={20}
-              color={type === opt.type ? (isDark ? "#0a0a0a" : "#ffffff") : isDark ? "#888888" : "#666666"}
+              color={type === opt.type ? (isDark ? theme.colors.dark.bgApp : theme.colors.light.surface) : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary}
             />
             <Text
               style={[
@@ -474,9 +504,10 @@ export default function AddConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder={t("connection.shared.namePlaceholder")}
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={name}
         onChangeText={setName}
+        accessibilityLabel={t("connection.shared.name")}
       />
 
       {/* URL */}
@@ -490,12 +521,13 @@ export default function AddConnectionScreen() {
               ? "https://your-tunnel.trycloudflare.com"
               : "https://api.opencode.ai"
         }
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={url}
         onChangeText={setUrl}
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"
+        accessibilityLabel={t("connection.shared.serverUrl")}
       />
       <Text style={[styles.hint, isDark && styles.hintDark]}>
         {t("connection.add.advanced.urlHintPrefix")}
@@ -512,11 +544,12 @@ export default function AddConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="/path/to/project"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={directory}
         onChangeText={setDirectory}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.directoryOptional")}
       />
       <Text style={[styles.hint, isDark && styles.hintDark]}>{t("connection.add.advanced.directoryHint")}</Text>
 
@@ -527,21 +560,23 @@ export default function AddConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="admin"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={t("connection.shared.username")}
       />
 
       <Text style={[styles.label, isDark && styles.labelDark]}>{t("connection.shared.password")}</Text>
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="password"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        accessibilityLabel={t("connection.shared.password")}
       />
 
       {/* Save */}
@@ -549,9 +584,11 @@ export default function AddConnectionScreen() {
         style={[styles.connectButton, isDark && styles.connectButtonDark, { marginTop: 32 }]}
         onPress={handleAdvancedSave}
         disabled={isConnecting}
+        accessibilityRole="button"
+        accessibilityLabel={t("connection.add.advanced.saveButton")}
       >
         {isConnecting ? (
-          <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
+          <ActivityIndicator size="small" color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
         ) : (
           <Text style={[styles.connectButtonText, isDark && styles.connectButtonTextDark]}>
             {t("connection.add.advanced.saveButton")}
@@ -565,10 +602,10 @@ export default function AddConnectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   content: {
     padding: 16,
@@ -582,12 +619,12 @@ const styles = StyleSheet.create({
   quickTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 16,
   },
   quickSubtitle: {
     fontSize: 15,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
@@ -602,7 +639,7 @@ const styles = StyleSheet.create({
   ipColon: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   portInput: {
     width: 80,
@@ -614,55 +651,55 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     marginTop: 24,
   },
   connectButtonDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   connectButtonText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   connectButtonTextDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   helpBox: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginTop: 24,
   },
   helpBoxDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   helpTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginBottom: 8,
   },
   helpText: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     lineHeight: 20,
   },
   code: {
     fontFamily: "monospace",
-    backgroundColor: "#e5e5e5",
+    backgroundColor: theme.colors.light.border,
     paddingHorizontal: 4,
     borderRadius: 4,
   },
   usernameHint: {
     fontSize: 12,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 6,
     marginBottom: 4,
     lineHeight: 18,
   },
   usernameHintLink: {
-    color: "#6366f1",
+    color: theme.colors.light.indigo,
     fontWeight: "600",
   },
   advancedLink: {
@@ -675,7 +712,7 @@ const styles = StyleSheet.create({
   },
   advancedLinkText: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   backToQuick: {
     flexDirection: "row",
@@ -685,18 +722,18 @@ const styles = StyleSheet.create({
   },
   backToQuickText: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   // Original styles
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 16,
     marginBottom: 8,
   },
   labelDark: {
-    color: "#ffffff",
+    color: theme.colors.dark.textPrimary,
   },
   typeContainer: {
     flexDirection: "row",
@@ -709,70 +746,70 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     gap: 6,
   },
   typeOptionDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   typeOptionSelected: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
   },
   typeOptionSelectedDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   typeLabel: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   textDark: {
-    color: "#ffffff",
+    color: theme.colors.dark.textPrimary,
   },
   typeLabelSelected: {
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   typeLabelSelectedDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   hint: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 8,
   },
   hintDark: {
-    color: "#888888",
+    color: theme.colors.dark.textMuted,
   },
   input: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   inputDark: {
-    backgroundColor: "#1a1a1a",
-    color: "#ffffff",
+    backgroundColor: theme.colors.dark.border,
+    color: theme.colors.dark.textPrimary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 32,
     marginBottom: 8,
   },
   connectCard: {
-    backgroundColor: "#f0f0ff",
+    backgroundColor: theme.colors.light.indigoBg,
     borderRadius: 12,
     padding: 16,
     marginTop: 24,
     borderWidth: 1,
-    borderColor: "#c7d2fe",
+    borderColor: theme.colors.light.indigo,
   },
   connectCardDark: {
-    backgroundColor: "#1e1b4b",
-    borderColor: "#3730a3",
+    backgroundColor: theme.colors.dark.indigoBg,
+    borderColor: theme.colors.dark.indigo,
   },
   connectCardHeader: {
     flexDirection: "row",
@@ -789,22 +826,22 @@ const styles = StyleSheet.create({
   connectCardTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   connectCardBadge: {
-    backgroundColor: "#6366f1",
+    backgroundColor: theme.colors.light.indigo,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   connectCardBadgeText: {
-    color: "#ffffff",
+    color: theme.colors.light.surface,
     fontSize: 11,
     fontWeight: "600",
   },
   connectCardDesc: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     lineHeight: 20,
   },
   waitlistButton: {
@@ -814,13 +851,13 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#6366f1",
+    backgroundColor: theme.colors.light.indigo,
     marginTop: 12,
   },
   waitlistButtonText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   waitlistSuccess: {
     flexDirection: "row",
@@ -831,7 +868,6 @@ const styles = StyleSheet.create({
   waitlistSuccessText: {
     flex: 1,
     fontSize: 13,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     lineHeight: 20,
-  },
-})
+  }})

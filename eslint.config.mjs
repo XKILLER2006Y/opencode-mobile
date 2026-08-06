@@ -31,6 +31,13 @@ export default tseslint.config(
       ],
     },
   },
+  // Jest setup runs under the Jest runtime — teach no-undef about jest globals.
+  {
+    files: ["jest.setup.js"],
+    languageOptions: {
+      globals: { ...globals.jest },
+    },
+  },
   // Node scripts (plain JS, no TS) run under the Node runtime — teach
   // no-undef about Node globals instead of flagging every console/process.
   {

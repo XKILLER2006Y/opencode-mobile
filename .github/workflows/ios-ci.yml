@@ -52,6 +52,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Component tests (jest-expo + RTL)
+        run: npm run test:ui
+
   ios-build:
     name: Unsigned iOS Simulator build
     needs: test

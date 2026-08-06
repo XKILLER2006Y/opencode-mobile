@@ -2,6 +2,10 @@ import { useMemo, type ReactNode } from "react"
 import { View, Text, useColorScheme, Platform, type StyleProp, type ViewStyle, type TextStyle } from "react-native"
 import { useMarkdown, Renderer } from "react-native-marked"
 import { CodeBlock } from "./CodeBlock"
+import { theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 // react-native-marked's base Renderer hardcodes `selectable` on every plain
 // text node it produces (text/strong/em/del/heading/codespan). On Android,
@@ -59,23 +63,23 @@ class CustomRenderer extends Renderer {
 const mono = Platform.OS === "ios" ? "Menlo" : "monospace"
 
 const lightTheme = {
-  text: { color: "#09090B", fontSize: 15, lineHeight: 22 },
+  text: { color: light.markdownText, fontSize: 15, lineHeight: 22 },
   paragraph: { marginTop: 0, marginBottom: 8 },
-  h1: { fontSize: 22, fontWeight: "700" as const, color: "#09090B", marginBottom: 8, marginTop: 12 },
-  h2: { fontSize: 19, fontWeight: "600" as const, color: "#09090B", marginBottom: 6, marginTop: 10 },
-  h3: { fontSize: 16, fontWeight: "600" as const, color: "#09090B", marginBottom: 4, marginTop: 8 },
-  link: { color: "#7C3AED" },
+  h1: { fontSize: 22, fontWeight: "700" as const, color: light.markdownText, marginBottom: 8, marginTop: 12 },
+  h2: { fontSize: 19, fontWeight: "600" as const, color: light.markdownText, marginBottom: 6, marginTop: 10 },
+  h3: { fontSize: 16, fontWeight: "600" as const, color: light.markdownText, marginBottom: 4, marginTop: 8 },
+  link: { color: light.markdownLink },
   blockquote: {
     backgroundColor: "transparent",
     borderLeftWidth: 3,
-    borderLeftColor: "#E4E4E7",
+    borderLeftColor: light.markdownBlockquoteBorder,
     paddingLeft: 12,
     paddingVertical: 2,
     marginVertical: 4,
   },
   code: {
-    backgroundColor: "rgba(124, 58, 237, 0.08)",
-    color: "#7C3AED",
+    backgroundColor: light.markdownCodeBg,
+    color: light.markdownCode,
     fontFamily: mono,
     fontSize: 13,
     paddingHorizontal: 5,
@@ -83,8 +87,8 @@ const lightTheme = {
     borderRadius: 4,
   },
   codespan: {
-    backgroundColor: "rgba(124, 58, 237, 0.08)",
-    color: "#7C3AED",
+    backgroundColor: light.markdownCodeBg,
+    color: light.markdownCode,
     fontFamily: mono,
     fontSize: 13,
     paddingHorizontal: 4,
@@ -93,7 +97,7 @@ const lightTheme = {
   },
   list: { marginBottom: 4 },
   li: { marginBottom: 2 },
-  hr: { backgroundColor: "#E4E4E7", height: 1, marginVertical: 12 },
+  hr: { backgroundColor: light.markdownHr, height: 1, marginVertical: 12 },
   strong: { fontWeight: "700" as const },
   em: { fontStyle: "italic" as const },
   strikethrough: { textDecorationLine: "line-through" as const },
@@ -102,26 +106,26 @@ const lightTheme = {
 
 const darkTheme = {
   ...lightTheme,
-  text: { ...lightTheme.text, color: "#FAFAFA" },
-  h1: { ...lightTheme.h1, color: "#FAFAFA" },
-  h2: { ...lightTheme.h2, color: "#FAFAFA" },
-  h3: { ...lightTheme.h3, color: "#FAFAFA" },
-  link: { color: "#8B5CF6" },
+  text: { ...lightTheme.text, color: dark.markdownText },
+  h1: { ...lightTheme.h1, color: dark.markdownText },
+  h2: { ...lightTheme.h2, color: dark.markdownText },
+  h3: { ...lightTheme.h3, color: dark.markdownText },
+  link: { color: dark.markdownLink },
   blockquote: {
     ...lightTheme.blockquote,
-    borderLeftColor: "#3F3F46",
+    borderLeftColor: dark.markdownBlockquoteBorder,
   },
   code: {
     ...lightTheme.code,
-    backgroundColor: "rgba(139, 92, 246, 0.15)",
-    color: "#A78BFA",
+    backgroundColor: dark.markdownCodeBg,
+    color: dark.markdownCode,
   },
   codespan: {
     ...lightTheme.codespan,
-    backgroundColor: "rgba(139, 92, 246, 0.15)",
-    color: "#A78BFA",
+    backgroundColor: dark.markdownCodeBg,
+    color: dark.markdownCode,
   },
-  hr: { ...lightTheme.hr, backgroundColor: "#27272A" },
+  hr: { ...lightTheme.hr, backgroundColor: dark.markdownHr },
 }
 
 interface Props {

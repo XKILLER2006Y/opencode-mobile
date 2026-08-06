@@ -18,6 +18,7 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "ex
 import { useConnections } from "../../src/stores/connections"
 import { useOnboarding } from "../../src/stores/onboarding"
 import { parseConnectPayload, type ConnectPayload } from "../../src/lib/connect-qr"
+import { hapticSuccess, hapticError } from "../../src/lib/haptics"
 
 export default function ConnectScanScreen() {
   const colorScheme = useColorScheme()
@@ -48,6 +49,7 @@ export default function ConnectScanScreen() {
         },
         pw,
       )
+      hapticSuccess()
       // First-launch flow: a successful connection counts as onboarding
       // completion. complete() flips the root gate to the normal Stack
       // before back() lands — the modal stays valid (both Stacks register
@@ -55,6 +57,7 @@ export default function ConnectScanScreen() {
       await useOnboarding.getState().complete()
       router.back()
     } catch {
+      hapticError()
       setIsConnecting(false)
       handledRef.current = false
       setPayload(null)

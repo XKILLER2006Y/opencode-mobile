@@ -24,6 +24,7 @@ import { parseUrl } from "../../src/lib/diagnostics-classify"
 import { buildAuth } from "../../src/lib/auth"
 import { AnalyticsEvent, track } from "../../src/lib/analytics"
 import { submitWaitlistSignup, buildWaitlistMailtoUrl } from "../../src/lib/waitlist"
+import { hapticSuccess, hapticError } from "../../src/lib/haptics"
 
 export default function AddConnectionScreen() {
   const colorScheme = useColorScheme()
@@ -105,6 +106,7 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        hapticSuccess()
         // First-launch flow: a successful connection completes onboarding.
         // complete() flips the root gate to the normal Stack before back()
         // lands — connection/add stays registered in both Stack configs.
@@ -112,6 +114,7 @@ export default function AddConnectionScreen() {
         setIsConnecting(false)
         router.back()
       } catch {
+        hapticError()
         setIsConnecting(false)
         Alert.alert(
           t("connection.shared.alerts.saveFailedTitle"),
@@ -185,11 +188,13 @@ export default function AddConnectionScreen() {
           },
           password || undefined,
         )
+        hapticSuccess()
         // First-launch flow: successful connection completes onboarding.
         await useOnboarding.getState().complete()
         setIsConnecting(false)
         router.back()
       } catch {
+        hapticError()
         setIsConnecting(false)
         Alert.alert(
           t("connection.shared.alerts.saveFailedTitle"),

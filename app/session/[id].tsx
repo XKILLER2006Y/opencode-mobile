@@ -44,6 +44,7 @@ import { useAuth } from "../../src/stores/auth"
 import { useCatalog } from "../../src/stores/catalog"
 import { useSpeech } from "../../src/lib/speech"
 import { nameOf } from "../../src/lib/path-utils"
+import { hapticTap } from "../../src/lib/haptics"
 
 // --- Builtin slash commands ---
 const BUILTIN_COMMANDS: SlashCommand[] = [
@@ -432,6 +433,7 @@ export default function SessionScreen() {
   // --- Send ---
   const handleSend = async () => {
     if (!input.trim() && attachments.length === 0) return
+    hapticTap()
     const authenticated = await authenticateForMessage()
     if (!authenticated) {
       Alert.alert(t("session.alerts.authRequiredTitle"), t("session.alerts.authRequiredMessage"))

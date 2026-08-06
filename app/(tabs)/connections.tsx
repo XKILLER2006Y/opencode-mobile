@@ -9,6 +9,7 @@ import { useConnections } from "../../src/stores/connections"
 import { useSettings } from "../../src/stores/settings"
 import type { ServerConnection } from "../../src/lib/types"
 import { INSTALL_COMMAND } from "../../src/lib/connect-qr"
+import { hapticTap } from "../../src/lib/haptics"
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 200] as const
 
@@ -305,7 +306,10 @@ export default function ConnectionsScreen() {
       {/* FAB to add connection */}
       <TouchableOpacity
         style={[styles.fab, isDark && styles.fabDark]}
-        onPress={() => router.push("/connection/add")}
+        onPress={() => {
+          hapticTap()
+          router.push("/connection/add")
+        }}
         accessibilityRole="button"
         accessibilityLabel={t("nav.addConnectionTitle")}
       >

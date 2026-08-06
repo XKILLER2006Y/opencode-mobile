@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import type { Part } from "../../lib/sdk"
 import { DiffView } from "./DiffView"
 import { getTheme, theme } from "../../lib/theme"
+import { useLiveNow } from "../../lib/live-elapsed"
 
 const dark = theme.colors.dark
 const light = theme.colors.light
@@ -322,19 +323,28 @@ export const ToolCallCard = memo(
   function ToolCallCard({ tool, isDark }: Props) {
     const { t } = useTranslation()
     const colors = getTheme(isDark)
-    const [expanded, setExpanded] = useState(false)
+    const [userExpanded, setUserExpanded] = useState(false)
     const icon = (tool.tool && TOOL_ICONS[tool.tool]) || "extension-puzzle-outline"
     const status = tool.state?.status || "pending"
     const color = statusColor(status, colors)
+    const isRunning = status === "running"
+    const liveNow = useLiveNow(isRunning)
     const error = tool.state?.error?.message
-    const elapsed = duration(tool.state?.time?.start, tool.state?.time?.end)
+    const elapsed =
+      isRunning && tool.state?.time?.start
+        ? `${Math.max(1, Math.floor((liveNow - tool.state.time.start) / 1000))}s`
+        : duration(tool.state?.time?.start, tool.state?.time?.end)
     const hasDetail = tool.state?.input !== undefined || tool.state?.output !== undefined || error
 
+    // Running tools are always open so live progress is visible; manual
+    // expand/collapse only applies once the tool is no longer running.
+    const open = isRunning || userExpanded
+
     const toggle = useCallback(() => {
-      if (hasDetail) setExpanded((v) => !v)
-      // setExpanded is a stable useState setter — listed so the React Compiler
-      // can preserve this manual memoization unchanged.
-    }, [hasDetail, setExpanded])
+      if (hasDetail && !isRunning) setUserExpanded((v) => !v)
+      // setUserExpanded is a stable useState setter — listed so the React
+      // Compiler can preserve this manual memoization unchanged.
+    }, [hasDetail, isRunning, setUserExpanded])
 
     return (
       <TouchableOpacity
@@ -343,6 +353,7 @@ export const ToolCallCard = memo(
           isDark && s.cardDark,
           status === "error" && s.cardError,
           status === "error" && isDark && s.cardErrorDark,
+          isRunning && { borderColor: isDark ? dark.statusWarning : light.statusWarning },
         ]}
         onPress={toggle}
         activeOpacity={hasDetail ? 0.7 : 1}
@@ -350,7 +361,7 @@ export const ToolCallCard = memo(
         accessibilityLabel={`${tool.state?.title || tool.tool || t("chat.toolCallCard.fallbackTitle")}${
           status !== "pending" ? `, ${status}` : ""
         }`}
-        accessibilityState={{ expanded }}
+        accessibilityState={{ expanded: open }}
       >
         {/* Header row */}
         <View style={s.header}>
@@ -365,9 +376,9 @@ export const ToolCallCard = memo(
             {status === "running" && <ActivityIndicator size="small" color={color} />}
             {status === "completed" && <Ionicons name="checkmark-circle" size={16} color={colors.statusSuccess} />}
             {status === "error" && <Ionicons name="close-circle" size={16} color={colors.statusError} />}
-            {hasDetail && (
+            {hasDetail && !isRunning && (
               <Ionicons
-                name={expanded ? "chevron-up" : "chevron-down"}
+                name={open ? "chevron-up" : "chevron-down"}
                 size={16}
                 color={isDark ? colors.roleText : colors.footnoteText}
               />
@@ -376,10 +387,10 @@ export const ToolCallCard = memo(
         </View>
 
         {/* Error banner */}
-        {error && !expanded && <ErrorBanner message={error} isDark={isDark} />}
+        {error && !open && <ErrorBanner message={error} isDark={isDark} />}
 
         {/* Expanded detail */}
-        {expanded && (
+        {open && (
           <ScrollView style={s.detailScroll} nestedScrollEnabled showsVerticalScrollIndicator={false}>
             {error && <ErrorBanner message={error} isDark={isDark} />}
             <ToolDetail tool={tool} isDark={isDark} />

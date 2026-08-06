@@ -35,6 +35,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Component tests (jest-expo + RTL)
+        run: npm run test:ui
+
   build:
     runs-on: ubuntu-latest
     env:

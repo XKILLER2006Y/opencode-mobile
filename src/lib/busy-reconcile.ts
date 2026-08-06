@@ -40,3 +40,20 @@ export function busySessionCandidates(
   }
   return [...ids]
 }
+
+/**
+ * Is THIS session currently running (busy), for list rows that want a
+ * live "working" badge without computing the whole candidate set?
+ *
+ * Semantically identical to `busySessionCandidates(...).includes(id)` but
+ * O(1) per call — the sessions list renders one row per session, so building
+ * the full union per row would be O(n*m).
+ */
+export function isSessionRunning(
+  sessionStatus: Record<string, SessionStatus>,
+  sending: Record<string, boolean>,
+  sessionID: string,
+): boolean {
+  if (sessionStatus[sessionID]?.type === "busy") return true
+  return sending[sessionID] === true
+}

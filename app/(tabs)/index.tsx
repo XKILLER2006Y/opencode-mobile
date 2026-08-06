@@ -30,6 +30,8 @@ import { DirectorySwitcher, DirectoryBrowserSheet } from "../../src/components/c
 import { groupByDirectory } from "../../src/lib/session-grouping"
 import { nameOf } from "../../src/lib/path-utils"
 import { SETUP_GUIDE_URL } from "../../src/lib/links"
+import { connectionDotState, connectionDotLabelKey } from "../../src/lib/connection-status"
+import { isSessionRunning } from "../../src/lib/busy-reconcile"
 
 function formatTime(timestamp: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const date = new Date(timestamp)
@@ -47,11 +49,13 @@ function formatTime(timestamp: number, t: (key: string, opts?: Record<string, un
 function SessionItem({
   session,
   isDark,
+  running,
   onRename,
   onDelete,
 }: {
   session: Session
   isDark: boolean
+  running: boolean
   onRename: () => void
   onDelete: () => void
 }) {
@@ -92,14 +96,29 @@ function SessionItem({
           </Text>
         </View>
         <View style={styles.sessionMetaRow}>
-          <Text style={[styles.sessionMeta, isDark && styles.metaDark]}>
-            {formatTime(session.time.updated, t)}
-            {/* summary is always present but files defaults to 0 until the
-                server populates it — only show the count when it's meaningful,
-                matching the SessionInfo panel's `summary.files > 0` guard (#55) */}
-            {session.summary && session.summary.files > 0 &&
-              ` · ${t("sessionsList.filesCount", { count: session.summary.files })}`}
-          </Text>
+          <View style={styles.sessionMetaLeft}>
+            <Text style={[styles.sessionMeta, isDark && styles.metaDark]}>
+              {formatTime(session.time.updated, t)}
+              {/* summary is always present but files defaults to 0 until the
+                  server populates it — only show the count when it's meaningful,
+                  matching the SessionInfo panel's `summary.files > 0` guard (#55) */}
+              {session.summary && session.summary.files > 0 &&
+                ` · ${t("sessionsList.filesCount", { count: session.summary.files })}`}
+            </Text>
+            {/* Live "working" badge — lets a remote watcher see which session
+                is still running on the server without opening it (#remote). */}
+            {running && (
+              <View
+                style={[styles.sessionRunningBadge, isDark && styles.sessionRunningBadgeDark]}
+                accessibilityLabel={t("sessionsList.running")}
+              >
+                <View style={[styles.sessionRunningDot, isDark && styles.sessionRunningDotDark]} />
+                <Text style={[styles.sessionRunningText, isDark && styles.sessionRunningTextDark]}>
+                  {t("sessionsList.running")}
+                </Text>
+              </View>
+            )}
+          </View>
           {shortDir && (
             <View style={styles.sessionDirBadge}>
               <Ionicons name="folder-outline" size={12} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
@@ -192,6 +211,10 @@ export default function SessionsScreen() {
     recentDirectories,
   } = useConnections()
   const authError = useEvents((s) => s.authError)
+  const connected = useEvents((s) => s.connected)
+  const reconnectAttempts = useEvents((s) => s.reconnectAttempts)
+  const sessionStatus = useEvents((s) => s.sessionStatus)
+  const sending = useSessions((s) => s.sending)
   const reconnect = useEvents((s) => s.connect)
   const loadCatalog = useCatalog((s) => s.load)
   const dirSheetRef = useRef<BottomSheet>(null)
@@ -532,6 +555,17 @@ export default function SessionsScreen() {
 
   const shortPath = getShortPath(currentProject)
 
+  // Reflect the LIVE SSE state instead of a hardcoded green — for a remote
+  // watcher a "connected" dot while the stream is actually down/reconnecting
+  // is a silent lie about whether the agent is still progressing.
+  const dotState = connectionDotState(connected, reconnectAttempts, authError)
+  const dotColor = {
+    online: isDark ? theme.colors.dark.statusSuccess : theme.colors.light.statusSuccess,
+    reconnecting: isDark ? theme.colors.dark.statusWarning : theme.colors.light.statusWarning,
+    auth_error: isDark ? theme.colors.dark.statusError : theme.colors.light.statusError,
+    offline: isDark ? theme.colors.dark.statusIdle : theme.colors.light.statusIdle,
+  }[dotState]
+
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
       {/* Connection indicator — tap to switch project */}
@@ -542,11 +576,15 @@ export default function SessionsScreen() {
         activeOpacity={0.7}
         testID="connection-status-bar"
         accessibilityRole="button"
-        accessibilityLabel={activeConnection.name}
+        accessibilityLabel={`${activeConnection.name}, ${t(connectionDotLabelKey(dotState))}`}
         accessibilityHint={t("sessionsList.longPressHint")}
       >
         <View style={styles.connectionInfo}>
-          <View style={[styles.connectionDot, { backgroundColor: theme.colors.light.statusSuccess }]} testID="connection-status-dot" />
+          <View
+            style={[styles.connectionDot, { backgroundColor: dotColor }]}
+            testID="connection-status-dot"
+            accessibilityLabel={t(connectionDotLabelKey(dotState))}
+          />
           <Text style={[styles.connectionName, isDark && styles.textDark]} numberOfLines={1}>
             {activeConnection.name}
           </Text>
@@ -578,6 +616,7 @@ export default function SessionsScreen() {
             <SessionItem
               session={row.session}
               isDark={isDark}
+              running={isSessionRunning(sessionStatus, sending, row.session.id)}
               onRename={() => handleRename(row.session)}
               onDelete={() => handleDelete(row.session)}
             />
@@ -1081,6 +1120,41 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  sessionMetaLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 1,
+  },
+  sessionRunningBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.light.borderSubtle,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  sessionRunningBadgeDark: {
+    backgroundColor: theme.colors.dark.borderSubtle,
+  },
+  sessionRunningDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.light.statusBusy,
+  },
+  sessionRunningDotDark: {
+    backgroundColor: theme.colors.dark.statusBusy,
+  },
+  sessionRunningText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.light.statusBusy,
+  },
+  sessionRunningTextDark: {
+    color: theme.colors.dark.statusBusy,
   },
   sessionDirBadge: {
     flexDirection: "row",

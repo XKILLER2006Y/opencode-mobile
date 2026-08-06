@@ -289,6 +289,14 @@
       "saveFailedMessage": "已扫描服务器但无法保存，请重试。"
     }
   },
+  "connectionBar": {
+    "status": {
+      "online": "已连接",
+      "reconnecting": "重新连接中…",
+      "authError": "认证失败",
+      "offline": "离线"
+    }
+  },
   "sessionsList": {
     "untitledSession": "未命名会话",
     "longPressHint": "长按显示更多操作",
@@ -299,6 +307,7 @@
       "daysAgo": "{{count}} 天前"
     },
     "filesCount": "{{count}} 个文件",
+    "running": "运行中…",
     "actions": {
       "rename": "重命名"
     },

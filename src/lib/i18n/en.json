@@ -289,6 +289,14 @@
       "saveFailedMessage": "The server was scanned but could not be saved. Please try again."
     }
   },
+  "connectionBar": {
+    "status": {
+      "online": "Connected",
+      "reconnecting": "Reconnecting…",
+      "authError": "Auth failed",
+      "offline": "Offline"
+    }
+  },
   "sessionsList": {
     "untitledSession": "Untitled Session",
     "longPressHint": "Long press for actions",
@@ -299,6 +307,7 @@
       "daysAgo": "{{count}}d ago"
     },
     "filesCount": "{{count}} files",
+    "running": "Working…",
     "actions": {
       "rename": "Rename"
     },

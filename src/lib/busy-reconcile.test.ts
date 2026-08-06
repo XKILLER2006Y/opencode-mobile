@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { busySessionCandidates } from "./busy-reconcile.ts"
+import { busySessionCandidates, isSessionRunning } from "./busy-reconcile.ts"
 import type { SessionStatus } from "./sdk.ts"
 
 test("no busy flags -> no candidates to reconcile", () => {
@@ -44,4 +44,29 @@ test("mixed: busy sessionStatus + a stuck sending flag are both reconciled", () 
     "gotBusyEvent",
     "gotStuckSending",
   ])
+})
+
+test("isSessionRunning: busy sessionStatus counts as running", () => {
+  const status: Record<string, SessionStatus> = { s1: { type: "busy" } }
+  assert.equal(isSessionRunning(status, {}, "s1"), true)
+})
+
+test("isSessionRunning: optimistic sending flag counts as running", () => {
+  // Mirrors the candidate semantics: a prompt in flight (before SSE busy lands)
+  // is just as "working" for a remote watcher as an SSE-confirmed busy state.
+  assert.equal(isSessionRunning({}, { s1: true }, "s1"), true)
+})
+
+test("isSessionRunning: idle / retry / sending:false are NOT running", () => {
+  const status: Record<string, SessionStatus> = {
+    s1: { type: "idle" },
+    s2: { type: "retry", attempt: 1, message: "queued" },
+  }
+  assert.equal(isSessionRunning(status, { s3: false }, "s1"), false)
+  assert.equal(isSessionRunning(status, { s3: false }, "s2"), false)
+  assert.equal(isSessionRunning(status, { s3: false }, "s3"), false)
+})
+
+test("isSessionRunning: unknown session is NOT running", () => {
+  assert.equal(isSessionRunning({}, {}, "ghost"), false)
 })

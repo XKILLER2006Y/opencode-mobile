@@ -5,6 +5,40 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-06 — Remote monitoring: live connection state + running session badges
+
+Motivation (user pain): "har ek cheez ke liye pc pe bhaagna pade" — the app is
+meant to be the remote control so you don't have to run to the PC, but two
+monitoring signals lied or were missing.
+
+1. **Connection dot was hardcoded green.** The sessions home bar always rendered
+   `theme.colors.light.statusSuccess` even when the SSE stream was down or
+   reconnecting — a remote watcher saw "connected" while the agent was silently
+   stalled.
+   - `src/lib/connection-status.ts` (new): `connectionDotState(connected,
+     reconnectAttempts, authError)` → `online | reconnecting | auth_error |
+     offline`, plus a label-key helper. Order: auth_error > online >
+     reconnecting > offline.
+   - `app/(tabs)/index.tsx`: dot color + accessibilityLabel now follow the live
+     state (green/amber/red/grey, scheme-aware). `useEvents` selectors for
+     `connected` / `reconnectAttempts` added.
+
+2. **No way to tell which session is still running at a glance.** You had to open
+   each session to see the StatusIndicator.
+   - `src/lib/busy-reconcile.ts`: added `isSessionRunning(sessionStatus, sending,
+     sessionID)` — O(1) per row, semantically the union of
+     `busySessionCandidates` for one id.
+   - `app/(tabs)/index.tsx`: `SessionItem` gains a live "Working…" badge (pulsing
+     dot + label) when the session is busy in either flag.
+   - i18n: new `connectionBar.status.*` group + `sessionsList.running` in
+     `en.json` and `zh-Hans.json` (catalog-parity preserved).
+
+Full gate: `npm test` 319/319, `npx jest --ci` 5/5, `tsc --noEmit` clean,
+`eslint .` clean. Version bumped 0.4.14 (41) → 0.4.15 (42) across app.json,
+package.json, android/app/build.gradle for the tagged release.
+
+---
+
 ## 2026-08-06 — Fix: stale busy/processing spinner on resilient reconnects
 
 Bug: a session could stay marked busy — endless 'processing' spinner — after

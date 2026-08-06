@@ -62,8 +62,18 @@ export const MessageBubble = memo(
     // plain <Text>, so renderText passes it through unbuffered (zero added
     // latency) — the hook runs unconditionally (initial state === text, and a
     // stable user message never pushes, so it's a no-op there).
+    // Reasoning streams token-by-token too; a per-token re-render of the
+    // collapsible block is wasted work, so batch it on the same window. User
+    // messages carry no reasoning, so renderReasoning is a no-op for them.
     const batchedText = useBatchedText(text)
+    const batchedReasoning = useBatchedText(reasoning)
     const renderText = isUser ? text : batchedText
+    const renderReasoning = isUser ? "" : batchedReasoning
+    // Message has no `streaming`/`done` flag; `time.completed` is absent while
+    // a message is still streaming (same heuristic session-status-reconcile
+    // uses for session idle detection). So a reasoning block is "live" exactly
+    // while its message hasn't completed yet.
+    const isLive = !isUser && !message.time?.completed
 
     return (
       <TouchableOpacity
@@ -119,7 +129,9 @@ export const MessageBubble = memo(
         )}
 
         {/* Reasoning (collapsible) */}
-        {reasoning.length > 0 && <ReasoningBlock text={reasoning} isDark={isDark} />}
+        {renderReasoning.length > 0 && (
+          <ReasoningBlock text={renderReasoning} isDark={isDark} live={isLive} />
+        )}
 
         {/* Message text */}
         {renderText.length > 0 &&

@@ -5,6 +5,43 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-06 — Upstream parity audit (dzianisv/opencode-mobile main)
+
+Line-level audit of all 45 meaningful changed files between our fork and
+upstream `main` (285 commits, 221 files, no shared merge base). Result:
+**nothing critical left to port** — every upstream runtime/UX/security fix is
+already present in our fork, and where we differ we are equal or ahead.
+
+Verified as **already present / identical or better**, with evidence:
+- `session-load-reconcile.ts`, `sse.ts`, `message-merge.ts`, `speech.ts`,
+  `analytics.ts`, `diagnostics-classify.ts`, `session-status-reconcile.ts`,
+  `src/stores/events.ts` rotation + per-session permission/question filtering,
+  `product-intelligence.yml` — **file-identical** to upstream (0 diff lines).
+- Recent sessions grouping, reasoning-effort picker, filesystem-roots browser
+  (`/file/roots`), `summary.files > 0` guard (no "0 files"), toolbar-above-
+  keyboard `KeyboardAvoidingView`, revert/edit messages, per-session
+  permission/question keys, `apiErrorFor` auth classification — **all present**.
+- CI: `check-version-parity.mjs` wired, Maestro diagnostics archive + upload,
+  progressive-failure streak classification, `build-fdroid` stripped artifact
+  job — **already in our workflows**.
+- i18n `en.json`/`zh-Hans.json`: full key parity; the few upstream-only keys
+  are waitlist/growth copy we intentionally do not ship.
+
+Deliberately NOT ported (out of scope for a personal Android fork): growth/
+marketing layer (founding-member leads, SEO landing pages, OpenCode Connect
+waitlist funnel, Chatwoot, PostHog funnel scripts, store-review prompts) and
+iOS/Play metadata that only applies to the owner's accounts.
+
+Infra where our fork is AHEAD of upstream:
+- Android Gradle **9.3.1** vs upstream 8.14.3; JVM heap **4096m** vs 2048m;
+  `edgeToEdgeEnabled=true` present.
+- `expo-notifications ~57.0.8` vs upstream `~0.32.16` (modern FCM patch layout
+  `com/google/firebase/messaging/` matches our SDK; upstream's `notifications/`
+  layout targets its older SDK).
+- `versionCode 41` / `0.4.14` vs upstream `main` 0.4.12.
+
+---
+
 ## 2026-08-05 — Merged: remote connectivity + CI keystore fix
 
 - PR #2 `fix/ci-keytool-keystore` → main (`43c2b11`): `rm -f

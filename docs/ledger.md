@@ -22,9 +22,20 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-05 — Merged: professional polish (onboarding, a11y, theme tokens, haptics, component tests)
+
+- PR #3 `feat/professional-polish` → main (`cdf4a17`, fast-forward merge),
+  entry below. All CI green on the branch: Build Android APK ✅ (23m),
+  iOS CI ✅ (4m51s), Activation E2E ✅ (28m, core flows; demo/diff-scroll
+  newer flows remain non-blocking #104). Full suite green on merged main:
+  `npm test` 303/0, `npm run test:ui` 5/5, tsc clean, eslint clean.
+- CUA Smoke deferred to human as before (needs Azure secrets + Mac emulator).
+
+---
+
 ## 2026-08-05 — Professional polish: onboarding, a11y, theme tokens, haptics, component tests
 
-Branch: `feat/professional-polish` → `main` (PR #3, open)
+Branch: `feat/professional-polish` → `main` (merged, PR #3)
 Plan: `docs/superpowers/plans/2026-08-05-professional-polish.md`
 
 Sequential implementation plan covering the onboarding flow (welcome screen,

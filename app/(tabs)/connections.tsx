@@ -300,7 +300,9 @@ export default function ConnectionsScreen() {
             </Text>
           </View>
         }
-        contentContainerStyle={connections.length === 0 ? styles.emptyContent : undefined}
+        contentContainerStyle={
+          connections.length === 0 ? [styles.emptyContent, styles.fabClearance] : styles.fabClearance
+        }
       />
 
       {/* FAB to add connection */}
@@ -446,6 +448,11 @@ const styles = StyleSheet.create({
   },
   emptyContent: {
     flex: 1,
+  },
+  // Absolute FAB (56px + 16px bottom inset) floats over list content; without
+  // this, the footer (page-size pills / last connection) sits under the FAB.
+  fabClearance: {
+    paddingBottom: 96,
   },
   fab: {
     position: "absolute",

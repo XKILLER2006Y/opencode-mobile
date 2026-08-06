@@ -92,4 +92,8 @@ test("connect-qr: INSTALL_COMMAND is the curl pipe documented in the CLI", () =>
   assert.ok(INSTALL_COMMAND.startsWith("curl -fsSL "))
   assert.ok(INSTALL_COMMAND.includes("opencode-remote/cli.mjs"))
   assert.ok(INSTALL_COMMAND.includes("node -- start"))
+  // Branding guard: the install URL must reference this project's repo, not
+  // the upstream author's, so distributed builds stay self-consistent.
+  assert.ok(INSTALL_COMMAND.includes("XKILLER2006Y/opencode-mobile"))
+  assert.ok(!INSTALL_COMMAND.includes("dzianisv"))
 })

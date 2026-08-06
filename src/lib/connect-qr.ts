@@ -19,8 +19,10 @@ export interface ConnectPayload {
 const MAX_NAME_LENGTH = 64
 
 // One-line install command shown on the Connections screen and by the CLI.
+// Points at this project's repo (not the upstream author) so distributed
+// builds install the CLI from the same source they were released from.
 export const INSTALL_COMMAND =
-  'curl -fsSL https://raw.githubusercontent.com/dzianisv/opencode-mobile/main/scripts/opencode-remote/cli.mjs | node -- start'
+  'curl -fsSL https://raw.githubusercontent.com/XKILLER2006Y/opencode-mobile/main/scripts/opencode-remote/cli.mjs | node -- start'
 
 export function buildConnectPayload(input: Omit<ConnectPayload, "type"> & { type?: "opencode-connection" }): string {
   const payload: ConnectPayload = {

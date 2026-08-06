@@ -5,6 +5,33 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-06 — UI polish: branding leak, FAB overlap, clean app icon
+
+Follow-up to the UI screenshot review. Three verified issues fixed:
+
+1. **Branding leak in install command.** `INSTALL_COMMAND` in
+   `src/lib/connect-qr.ts` pointed at `dzianisv/opencode-mobile` (upstream
+   author's repo). Distributed builds now install the CLI from this project's
+   own repo (`XKILLER2006Y/opencode-mobile`) so the app is self-consistent.
+   Test hardened with a branding guard (asserts owner + absence of upstream).
+
+2. **FAB overlapped page-size pills.** Connections screen FAB is absolutely
+   positioned (bottom:16/right:16) and the FlatList had no bottom padding, so
+   the footer (preferences / last connection) scrolled under it. Added
+   `fabClearance` (paddingBottom: 96) to the content container in both states.
+
+3. **App icon wordmark garbled on launchers.** The adaptive icon had a baked-in
+   "opencode" wordmark under the terminal chevron; Android's circular mask
+   cropped it into unreadable text ("pencod"). Regenerated all four icon assets
+   (`icon.png`, `adaptive-icon.png`, `splash-icon.png`, `icon-appstore.png`)
+   via `scripts/gen-icon.mjs` (pngjs only): clean `>_` terminal prompt, mint
+   on `#0F172A`, fully opaque squares for App Store compliance. Generator is
+   committed so future icon changes are reproducible.
+
+Note: the "(tabs)" header seen in old screenshots was already fixed upstream
+(`headerShown: false` for the group in `app/_layout.tsx`, since the onboarding
+root gate) — no code change needed; it only appears on pre-fix installs.
+
 ## 2026-08-06 — Remote monitoring: live connection state + running session badges
 
 Motivation (user pain): "har ek cheez ke liye pc pe bhaagna pade" — the app is

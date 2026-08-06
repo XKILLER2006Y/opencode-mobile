@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import type { Message, Session } from "../../lib/sdk"
 import type { Provider } from "../../stores/catalog"
+import { createSessionStatsAccumulator } from "../../lib/session-stats"
 import { getTheme, theme } from "../../lib/theme"
 
 const dark = theme.colors.dark
@@ -58,36 +59,27 @@ export function SessionInfo({
 }: Props) {
   const { t } = useTranslation()
   const colors = getTheme(isDark)
-  // Match TUI: last assistant message tokens (context window), cumulative cost
+  // Session-wide usage: cumulative cost + cumulative token breakdown, with
+  // the context limit taken from the last assistant message's model. Built
+  // incrementally O(1)/push instead of re-scanning all messages on every
+  // store update (which was O(n²) over a long streaming session).
   const stats = useMemo(() => {
-    let cost = 0
+    const acc = createSessionStatsAccumulator()
     let last: Message | null = null
-
     for (const msg of messages) {
-      if (msg.role !== "assistant") continue
-      if (msg.cost) cost += msg.cost
-      if (msg.tokens && msg.tokens.output > 0) last = msg
+      acc.push(msg)
+      if (msg.role === "assistant" && msg.tokens && msg.tokens.output > 0) last = msg
     }
 
-    // Last assistant message token breakdown (what the TUI shows)
-    const tokens = last?.tokens
-    const input = tokens?.input || 0
-    const output = tokens?.output || 0
-    const reasoning = tokens?.reasoning || 0
-    const cacheRead = tokens?.cache?.read || 0
-    const cacheWrite = tokens?.cache?.write || 0
-    const total = input + output + reasoning + cacheRead + cacheWrite
-
-    // Find context limit from provider catalog
+    // Find context limit from provider catalog (last assistant message's model)
     let context = 0
     if (last?.providerID && last?.modelID) {
       const provider = providers.find((p) => p.id === last!.providerID)
       const model = provider?.models.find((m) => m.id === last!.modelID)
       context = model?.limit?.context || 0
     }
-    const percent = context > 0 ? Math.round((total / context) * 100) : 0
-
-    return { cost, input, output, reasoning, cacheRead, cacheWrite, total, percent, context }
+    acc.setContext(context)
+    return acc.get()
   }, [messages, providers])
 
   if (!visible) return null

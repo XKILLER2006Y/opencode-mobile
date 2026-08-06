@@ -69,7 +69,7 @@ export default function OnboardingScreen() {
               accessibilityRole="button"
               accessibilityLabel={t("onboarding.getStarted")}
             >
-              <Text style={styles.primaryButtonText}>{t("onboarding.getStarted")}</Text>
+              <Text style={[styles.primaryButtonText, { color: colors.white }]}>{t("onboarding.getStarted")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     ...theme.typography.headline,
-    color: "#FFFFFF",
   },
   skipButton: {
     marginTop: theme.spacing.lg,

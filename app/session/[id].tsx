@@ -45,6 +45,7 @@ import { useCatalog } from "../../src/stores/catalog"
 import { useSpeech } from "../../src/lib/speech"
 import { nameOf } from "../../src/lib/path-utils"
 import { hapticTap } from "../../src/lib/haptics"
+import { JumpToLatest } from "../../src/components/session/JumpToLatest"
 
 // --- Builtin slash commands ---
 const BUILTIN_COMMANDS: SlashCommand[] = [
@@ -750,16 +751,7 @@ export default function SessionScreen() {
                 <Text style={[s.emptyHint, isDark && s.metaDark]}>{t("session.empty.hint")}</Text>
               </View>
             )}
-            {showScrollButton && (
-              <TouchableOpacity
-                style={[s.scrollBtn, isDark && s.scrollBtnDark]}
-                onPress={() => scrollToBottom(true)}
-                accessibilityRole="button"
-                accessibilityLabel={t("session.scrollToBottom")}
-              >
-                <Ionicons name="chevron-down" size={24} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
-              </TouchableOpacity>
-            )}
+            {showScrollButton && <JumpToLatest visible onPress={() => scrollToBottom(true)} isDark={isDark} />}
           </View>
         )}
 
@@ -971,25 +963,6 @@ const s = StyleSheet.create({
 
   // Messages
   messageList: { padding: 16, paddingBottom: 8 },
-
-  // Scroll button
-  scrollBtn: {
-    position: "absolute",
-    bottom: 16,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.light.surface,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: theme.colors.light.textPrimary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  scrollBtnDark: { backgroundColor: theme.colors.dark.surfaceElevated },
 
   // Loading more (appears at top in inverted list = ListFooterComponent)
   loadingMore: {

@@ -1,6 +1,10 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 export interface Attachment {
   uri: string
@@ -19,6 +23,7 @@ interface Props {
 
 export function ImageAttachments({ attachments, isDark, onRemove }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   if (attachments.length === 0) return null
 
   return (
@@ -34,7 +39,7 @@ export function ImageAttachments({ attachments, isDark, onRemove }: Props) {
               accessibilityLabel={t("chat.imageAttachments.removeButton", { name: att.filename || `#${idx + 1}` })}
               hitSlop={8}
             >
-              <Ionicons name="close" size={14} color="#ffffff" />
+              <Ionicons name="close" size={14} color={colors.white} />
             </TouchableOpacity>
             {att.filename && (
               <Text style={[s.label, isDark && s.labelDark]} numberOfLines={1}>
@@ -53,17 +58,17 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
-    backgroundColor: "#ffffff",
+    borderTopColor: light.separatorFixed,
+    backgroundColor: light.surfaceAlt,
   },
-  containerDark: { backgroundColor: "#0a0a0a", borderTopColor: "#1a1a1a" },
+  containerDark: { backgroundColor: dark.surfaceAlt, borderTopColor: dark.hairline },
   scroll: { gap: 8 },
   thumb: { position: "relative" },
   image: {
     width: 72,
     height: 72,
     borderRadius: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: light.imagePlaceholder,
   },
   remove: {
     position: "absolute",
@@ -72,19 +77,19 @@ const s = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: dark.surfaceAlt,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#ffffff",
+    borderColor: light.white,
   },
-  removeDark: { backgroundColor: "#ef4444", borderColor: "#0a0a0a" },
+  removeDark: { backgroundColor: light.danger, borderColor: dark.surfaceAlt },
   label: {
     fontSize: 10,
-    color: "#666666",
+    color: light.iconSecondary,
     marginTop: 2,
     maxWidth: 72,
     textAlign: "center",
   },
-  labelDark: { color: "#888888" },
+  labelDark: { color: dark.iconSecondary },
 })

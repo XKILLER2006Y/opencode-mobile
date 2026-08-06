@@ -2,6 +2,10 @@ import { useMemo } from "react"
 import { View, Text, StyleSheet, Platform, ScrollView } from "react-native"
 import { WIDE_CONTENT_SCROLL_CONFIG } from "../../lib/scroll-config"
 import { computeDiff } from "./diff-compute"
+import { theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 const mono = Platform.OS === "ios" ? "Menlo" : "monospace"
 
@@ -55,39 +59,39 @@ const s = StyleSheet.create({
   container: {
     borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: light.diffContainer,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: light.diffBorder,
   },
-  containerDark: { backgroundColor: "#09090B", borderColor: "#27272A" },
+  containerDark: { backgroundColor: dark.diffContainer, borderColor: dark.diffBorder },
 
   line: {
     flexDirection: "row",
     paddingHorizontal: 8,
     paddingVertical: 1,
   },
-  add: { backgroundColor: "#dcfce7" },
-  addDark: { backgroundColor: "#052e16" },
-  remove: { backgroundColor: "#fee2e2" },
-  removeDark: { backgroundColor: "#2a0a0a" },
+  add: { backgroundColor: light.diffAddBg },
+  addDark: { backgroundColor: dark.diffAddBg },
+  remove: { backgroundColor: light.diffRemoveBg },
+  removeDark: { backgroundColor: dark.diffRemoveBg },
 
   prefix: {
     width: 16,
     fontSize: 12,
     fontFamily: mono,
-    color: "#999999",
+    color: light.dimText,
     lineHeight: 20,
   },
-  prefixDark: { color: "#666666" },
+  prefixDark: { color: dark.iconSubtle },
 
   text: {
     fontSize: 12,
     fontFamily: mono,
-    color: "#0a0a0a",
+    color: light.textInk,
     lineHeight: 20,
   },
-  textDark: { color: "#e5e5e5" },
-  addText: { color: "#16a34a" },
-  removeText: { color: "#dc2626" },
+  textDark: { color: dark.textInk },
+  addText: { color: light.successStrong },
+  removeText: { color: light.dangerStrong },
 })

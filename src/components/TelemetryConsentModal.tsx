@@ -13,6 +13,10 @@ import { View, Text, TouchableOpacity, StyleSheet, useColorScheme, Modal, Linkin
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { PRIVACY_POLICY_URL } from "../lib/links"
+import { theme } from "../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   visible: boolean
@@ -31,7 +35,7 @@ export function TelemetryConsentModal({ visible, onAllow, onDecline }: Props) {
         <View style={[styles.card, isDark && styles.cardDark]} testID="telemetry-consent-card">
           {/* Icon */}
           <View style={[styles.iconWrap, isDark && styles.iconWrapDark]}>
-            <Ionicons name="bug-outline" size={40} color="#3b82f6" />
+            <Ionicons name="bug-outline" size={40} color={light.infoBlue} />
           </View>
 
           {/* Title */}
@@ -125,7 +129,7 @@ function BulletRow({
       <Ionicons
         name={icon}
         size={18}
-        color={positive ? "#22c55e" : "#ef4444"}
+        color={positive ? light.success : light.danger}
         style={styles.bulletIcon}
       />
       <Text style={[styles.bulletText, isDark && styles.bodyDark]}>{text}</Text>
@@ -136,58 +140,58 @@ function BulletRow({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: light.overlay,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
   },
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: light.white,
     borderRadius: 20,
     padding: 28,
     width: "100%",
     maxWidth: 440,
-    shadowColor: "#000",
+    shadowColor: light.black,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.24,
     shadowRadius: 16,
     elevation: 10,
   },
   cardDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: dark.surfaceRaised,
   },
   iconWrap: {
     width: 72,
     height: 72,
     borderRadius: 18,
-    backgroundColor: "#eff6ff",
+    backgroundColor: light.telemIconBg,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
     marginBottom: 16,
   },
   iconWrapDark: {
-    backgroundColor: "#1e293b",
+    backgroundColor: dark.telemIconBg,
   },
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: light.ink,
     textAlign: "center",
     marginBottom: 12,
   },
   textDark: {
-    color: "#f8fafc",
+    color: dark.telemTitle,
   },
   body: {
     fontSize: 15,
-    color: "#374151",
+    color: light.telemBody,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 20,
   },
   bodyDark: {
-    color: "#94a3b8",
+    color: dark.telemBody,
   },
   bullets: {
     marginBottom: 16,
@@ -204,12 +208,12 @@ const styles = StyleSheet.create({
   },
   bulletText: {
     fontSize: 14,
-    color: "#374151",
+    color: light.telemBody,
     flex: 1,
     lineHeight: 20,
   },
   privacyLink: {
-    color: "#3b82f6",
+    color: light.infoBlue,
     fontSize: 14,
     textAlign: "center",
     marginBottom: 24,
@@ -228,33 +232,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btnDecline: {
-    backgroundColor: "#f1f5f9",
+    backgroundColor: light.telemBtnBg,
   },
   btnDeclineDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: dark.telemBtnBg,
   },
   btnDeclineText: {
-    color: "#374151",
+    color: light.telemBody,
     fontWeight: "600",
     fontSize: 16,
   },
   btnDeclineTextDark: {
-    color: "#94a3b8",
+    color: dark.telemBody,
   },
   btnAllow: {
-    backgroundColor: "#3b82f6",
+    backgroundColor: light.infoBlue,
   },
   btnAllowText: {
-    color: "#ffffff",
+    color: light.white,
     fontWeight: "700",
     fontSize: 16,
   },
   footnote: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: light.telemFootnote,
     textAlign: "center",
   },
   footnoteDark: {
-    color: "#64748b",
+    color: dark.telemFootnote,
   },
 })

@@ -2,6 +2,10 @@ import { useRef, useState } from "react"
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface QuestionOption {
   label: string
@@ -28,6 +32,7 @@ interface Props {
 
 export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   const [answers, setAnswers] = useState<string[][]>(request.questions.map(() => []))
   const [custom, setCustom] = useState("")
   const [showCustom, setShowCustom] = useState(false)
@@ -83,7 +88,7 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
   return (
     <View style={[s.card, isDark && s.cardDark]}>
       <View style={s.header}>
-        <Ionicons name="chatbubble-ellipses-outline" size={18} color={isDark ? "#0A84FF" : "#0071E3"} />
+        <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.accent} />
         <Text style={[s.title, isDark && s.textWhite]}>{q.header || t("chat.questionPrompt.headerFallback")}</Text>
       </View>
       <Text style={[s.question, isDark && s.textWhite]}>{q.question}</Text>
@@ -116,7 +121,7 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
               <TextInput
                 style={[s.customInput, isDark && s.customInputDark]}
                 placeholder={t("chat.questionPrompt.answerPlaceholder")}
-                placeholderTextColor={isDark ? "#AEAEB2" : "#8E8E93"}
+                placeholderTextColor={colors.inputPlaceholder}
                 value={custom}
                 onChangeText={setCustom}
                 onSubmitEditing={submitCustom}
@@ -129,7 +134,7 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel={t("chat.questionPrompt.submit")}
               >
-                <Ionicons name="send" size={18} color={isDark ? "#0A84FF" : "#0071E3"} />
+                <Ionicons name="send" size={18} color={colors.accent} />
               </TouchableOpacity>
             </View>
           ) : (
@@ -139,7 +144,7 @@ export function QuestionPrompt({ request, isDark, onReply, onReject }: Props) {
               accessibilityRole="button"
               accessibilityLabel={t("chat.questionPrompt.customAnswerLabel")}
             >
-              <Text style={[s.optionLabel, { color: isDark ? "#0A84FF" : "#0071E3" }]}>{t("chat.questionPrompt.customAnswerLabel")}</Text>
+              <Text style={[s.optionLabel, { color: colors.accent }]}>{t("chat.questionPrompt.customAnswerLabel")}</Text>
             </TouchableOpacity>
           ))}
       </View>
@@ -177,51 +182,51 @@ const s = StyleSheet.create({
   card: {
     margin: 12,
     padding: 16,
-    backgroundColor: "rgba(0, 113, 227, 0.06)",
+    backgroundColor: light.accentBg,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(0, 113, 227, 0.2)",
+    borderColor: light.accentBorder,
   },
-  cardDark: { backgroundColor: "rgba(10, 132, 255, 0.08)", borderColor: "rgba(10, 132, 255, 0.25)" },
+  cardDark: { backgroundColor: dark.accentBg, borderColor: dark.accentBorder },
   header: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  title: { fontSize: 15, fontWeight: "600", color: "#0071E3" },
-  textWhite: { color: "#0A84FF" },
-  question: { fontSize: 14, lineHeight: 20, color: "#000000", marginBottom: 12 },
-  metaDark: { color: "#AEAEB2" },
+  title: { fontSize: 15, fontWeight: "600", color: light.accent },
+  textWhite: { color: dark.accent },
+  question: { fontSize: 14, lineHeight: 20, color: light.textPrimary, marginBottom: 12 },
+  metaDark: { color: dark.todoDoneText },
 
   options: { gap: 8 },
   option: {
     padding: 12,
     borderRadius: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: light.white,
     borderWidth: 1,
-    borderColor: "#C6C6C8",
+    borderColor: light.border,
   },
-  optionDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E" },
-  optionSelected: { borderColor: "#0071E3", backgroundColor: "rgba(0, 113, 227, 0.12)" },
-  optionSelectedDark: { borderColor: "#0A84FF", backgroundColor: "rgba(10, 132, 255, 0.2)" },
-  optionLabel: { fontSize: 14, fontWeight: "600", color: "#000000" },
-  optionLabelSelected: { color: "#0071E3" },
-  optionDesc: { fontSize: 12, color: "#6E6E73", marginTop: 2 },
+  optionDark: { backgroundColor: dark.surface, borderColor: dark.borderSubtle },
+  optionSelected: { borderColor: light.accent, backgroundColor: light.accentSelectedBg },
+  optionSelectedDark: { borderColor: dark.accent, backgroundColor: dark.accentSelectedBg },
+  optionLabel: { fontSize: 14, fontWeight: "600", color: light.textPrimary },
+  optionLabelSelected: { color: light.accent },
+  optionDesc: { fontSize: 12, color: light.roleText, marginTop: 2 },
 
   customRow: { flexDirection: "row", gap: 8 },
   customInput: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: light.white,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: "#C6C6C8",
-    color: "#000000",
+    borderColor: light.border,
+    color: light.textPrimary,
   },
-  customInputDark: { backgroundColor: "#1C1C1E", borderColor: "#2C2C2E", color: "#FFFFFF" },
+  customInputDark: { backgroundColor: dark.surface, borderColor: dark.borderSubtle, color: dark.textPrimary },
   customSubmit: { justifyContent: "center", alignItems: "center", padding: 8 },
 
   footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12 },
-  dismiss: { fontSize: 14, color: "#6E6E73" },
-  submitBtn: { backgroundColor: "#0071E3", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
-  submitBtnDark: { backgroundColor: "#0A84FF" },
-  submitText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
+  dismiss: { fontSize: 14, color: light.roleText },
+  submitBtn: { backgroundColor: light.accent, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  submitBtnDark: { backgroundColor: dark.accent },
+  submitText: { color: light.white, fontWeight: "600", fontSize: 14 },
 })

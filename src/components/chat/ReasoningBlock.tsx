@@ -19,8 +19,8 @@ export function ReasoningBlock({ text, isDark }: Props) {
       style={[
         s.block,
         {
-          backgroundColor: isDark ? "rgba(10, 132, 255, 0.08)" : "rgba(0, 113, 227, 0.05)",
-          borderColor: isDark ? "rgba(10, 132, 255, 0.2)" : "rgba(0, 113, 227, 0.15)",
+          backgroundColor: colors.accentTintBg,
+          borderColor: colors.accentTintBorder,
         },
       ]}
       onPress={() => setExpanded(!expanded)}
@@ -30,10 +30,10 @@ export function ReasoningBlock({ text, isDark }: Props) {
       accessibilityState={{ expanded }}
     >
       <View style={s.header}>
-        <View style={[s.iconBadge, { backgroundColor: isDark ? "rgba(255, 159, 10, 0.15)" : "rgba(255, 149, 0, 0.1)" }]}>
-          <Ionicons name="bulb-outline" size={14} color={isDark ? "#FF9F0A" : "#FF9500"} />
+        <View style={[s.iconBadge, { backgroundColor: colors.warnTintBg }]}>
+          <Ionicons name="bulb-outline" size={14} color={colors.statusWarning} />
         </View>
-        <Text style={[s.label, { color: isDark ? "#FF9F0A" : "#FF9500" }]}>{t("chat.reasoningBlock.label")}</Text>
+        <Text style={[s.label, { color: colors.statusWarning }]}>{t("chat.reasoningBlock.label")}</Text>
         <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={14} color={colors.textMuted} />
       </View>
       {expanded && (

@@ -2,6 +2,10 @@ import { useState } from "react"
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme, Platform, ScrollView } from "react-native"
 import * as Clipboard from "expo-clipboard"
 import { WIDE_CONTENT_SCROLL_CONFIG } from "../../lib/scroll-config"
+import { theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   code: string
@@ -46,13 +50,13 @@ export function CodeBlock({ code, language }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: light.codeBg,
     borderRadius: 8,
     marginVertical: 8,
     overflow: "hidden",
   },
   containerDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: dark.codeBg,
   },
   header: {
     flexDirection: "row",
@@ -60,27 +64,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#e8e8e8",
+    backgroundColor: light.codeHeaderBg,
   },
   headerDark: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: dark.codeHeaderBg,
   },
   language: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#666666",
+    color: light.codeLang,
     textTransform: "uppercase",
   },
   languageDark: {
-    color: "#888888",
+    color: dark.codeLang,
   },
   copyBtn: {
     fontSize: 11,
-    color: "#8b5cf6",
+    color: light.codeCopy,
     fontWeight: "600",
   },
   copyBtnDark: {
-    color: "#a78bfa",
+    color: dark.codeCopy,
   },
   codeScroll: {
     padding: 12,
@@ -89,9 +93,9 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 13,
     lineHeight: 20,
-    color: "#1a1a1a",
+    color: light.codeText,
   },
   codeDark: {
-    color: "#e5e5e5",
+    color: dark.codeText,
   },
 })

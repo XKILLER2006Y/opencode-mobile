@@ -2,6 +2,10 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native"
 import { useTranslation } from "react-i18next"
 import { useEvents } from "../../stores/events"
 import { useSessions } from "../../stores/sessions"
+import { getTheme, theme } from "../../lib/theme"
+
+const dark = theme.colors.dark
+const light = theme.colors.light
 
 interface Props {
   sessionID: string
@@ -10,6 +14,7 @@ interface Props {
 
 export function StatusIndicator({ sessionID, isDark }: Props) {
   const { t } = useTranslation()
+  const colors = getTheme(isDark)
   const status = useEvents((s) => s.sessionStatus[sessionID])
   const text = useEvents((s) => s.statusText[sessionID])
   const optimistic = useSessions((s) => s.sending[sessionID])
@@ -26,8 +31,8 @@ export function StatusIndicator({ sessionID, isDark }: Props) {
 
   return (
     <View style={[s.bar, isDark && s.barDark]}>
-      <ActivityIndicator size="small" color={isDark ? "#0A84FF" : "#0071E3"} />
-      <Text style={[s.text, isDark && s.textDark]}>{label}</Text>
+      <ActivityIndicator size="small" color={colors.accent} />
+      <Text style={[s.text, { color: colors.accent }]}>{label}</Text>
     </View>
   )
 }
@@ -39,11 +44,10 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "rgba(0, 113, 227, 0.06)",
+    backgroundColor: light.accentBg,
     borderTopWidth: 1,
-    borderTopColor: "#C6C6C8",
+    borderTopColor: light.border,
   },
-  barDark: { backgroundColor: "#1C1C1E", borderTopColor: "#2C2C2E" },
-  text: { fontSize: 13, color: "#0071E3", fontWeight: "500" },
-  textDark: { color: "#0A84FF" },
+  barDark: { backgroundColor: dark.surface, borderTopColor: dark.borderSubtle },
+  text: { fontSize: 13, fontWeight: "500" },
 })

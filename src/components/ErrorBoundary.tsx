@@ -14,6 +14,10 @@ import { log } from "../lib/logbuffer"
 // via the shared i18next instance directly (already initialized by the time
 // this can render, since app/_layout.tsx imports it before mounting).
 import i18n from "../lib/i18n/config"
+// Error boundary is dark-only; no isDark prop / hook, just the dark palette.
+import { theme } from "../lib/theme"
+
+const dark = theme.colors.dark
 
 interface Props {
   children: React.ReactNode
@@ -116,18 +120,18 @@ export class ErrorBoundary extends React.Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0a0a0a" },
+  root: { flex: 1, backgroundColor: dark.ink },
   content: { padding: 24, paddingTop: 80 },
-  title: { color: "#ffffff", fontSize: 24, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#a0a0a0", fontSize: 15, lineHeight: 21, marginBottom: 24 },
-  card: { backgroundColor: "#1a1a1a", borderRadius: 12, padding: 16, marginBottom: 12 },
-  cardLabel: { color: "#888", fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: 6 },
-  cardBody: { color: "#fff", fontSize: 15 },
-  code: { color: "#cdd3da", fontSize: 12, fontFamily: "Courier" },
+  title: { color: dark.textPrimary, fontSize: 24, fontWeight: "700", marginBottom: 8 },
+  subtitle: { color: dark.ebSubtitle, fontSize: 15, lineHeight: 21, marginBottom: 24 },
+  card: { backgroundColor: dark.surfaceRaised, borderRadius: 12, padding: 16, marginBottom: 12 },
+  cardLabel: { color: dark.ebCardLabel, fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: 6 },
+  cardBody: { color: dark.textPrimary, fontSize: 15 },
+  code: { color: dark.ebCode, fontSize: 12, fontFamily: "Courier" },
   actions: { marginTop: 16, flexDirection: "row", gap: 12 },
   button: { flex: 1, paddingVertical: 14, borderRadius: 10, alignItems: "center" },
-  buttonPrimary: { backgroundColor: "#3b82f6" },
-  buttonSecondary: { backgroundColor: "#2a2a2a" },
-  buttonPrimaryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  buttonSecondaryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonPrimary: { backgroundColor: dark.infoBlue },
+  buttonSecondary: { backgroundColor: dark.telemBtnBg },
+  buttonPrimaryText: { color: dark.textPrimary, fontSize: 16, fontWeight: "600" },
+  buttonSecondaryText: { color: dark.textPrimary, fontSize: 16, fontWeight: "600" },
 })

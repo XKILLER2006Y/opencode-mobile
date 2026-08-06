@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -210,7 +211,7 @@ export default function EditConnectionScreen() {
             <Ionicons
               name={opt.icon}
               size={20}
-              color={type === opt.type ? (isDark ? "#0a0a0a" : "#ffffff") : isDark ? "#888888" : "#666666"}
+              color={type === opt.type ? (isDark ? theme.colors.dark.bgApp : theme.colors.light.surface) : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary}
             />
             <Text
               style={[
@@ -231,7 +232,7 @@ export default function EditConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder={t("connection.shared.namePlaceholder")}
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={name}
         onChangeText={setName}
         accessibilityLabel={t("connection.shared.name")}
@@ -242,7 +243,7 @@ export default function EditConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="http://192.168.1.100:4096"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={url}
         onChangeText={setUrl}
         autoCapitalize="none"
@@ -256,7 +257,7 @@ export default function EditConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="/path/to/project"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={directory}
         onChangeText={setDirectory}
         autoCapitalize="none"
@@ -272,7 +273,7 @@ export default function EditConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="admin"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
@@ -284,7 +285,7 @@ export default function EditConnectionScreen() {
       <TextInput
         style={[styles.input, isDark && styles.inputDark]}
         placeholder="••••••••"
-        placeholderTextColor={isDark ? "#666666" : "#999999"}
+        placeholderTextColor={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -301,10 +302,10 @@ export default function EditConnectionScreen() {
           accessibilityLabel={t("connection.edit.testButton")}
         >
           {isTesting ? (
-            <ActivityIndicator size="small" color={isDark ? "#ffffff" : "#0a0a0a"} />
+            <ActivityIndicator size="small" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
           ) : (
             <>
-              <Ionicons name="pulse" size={20} color={isDark ? "#ffffff" : "#0a0a0a"} />
+              <Ionicons name="pulse" size={20} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
               <Text style={[styles.testButtonText, isDark && styles.textDark]}>{t("connection.edit.testButton")}</Text>
             </>
           )}
@@ -318,7 +319,7 @@ export default function EditConnectionScreen() {
           accessibilityLabel={t("connection.edit.saveButton")}
         >
           {isSaving ? (
-            <ActivityIndicator size="small" color={isDark ? "#0a0a0a" : "#ffffff"} />
+            <ActivityIndicator size="small" color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
           ) : (
             <Text style={[styles.saveButtonText, isDark && styles.saveButtonTextDark]}>
               {t("connection.edit.saveButton")}
@@ -332,7 +333,7 @@ export default function EditConnectionScreen() {
           accessibilityRole="button"
           accessibilityLabel={t("connection.edit.deleteButton")}
         >
-          <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          <Ionicons name="trash-outline" size={20} color={theme.colors.light.statusError} />
           <Text style={styles.deleteButtonText}>{t("connection.edit.deleteButton")}</Text>
         </TouchableOpacity>
       </View>
@@ -343,10 +344,10 @@ export default function EditConnectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   center: {
     justifyContent: "center",
@@ -358,17 +359,17 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 16,
     marginBottom: 8,
   },
   labelDark: {
-    color: "#ffffff",
+    color: theme.colors.dark.textPrimary,
   },
   typeContainer: {
     flexDirection: "row",
@@ -381,56 +382,56 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     gap: 6,
   },
   typeOptionDark: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: theme.colors.dark.border,
   },
   typeOptionSelected: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
   },
   typeOptionSelectedDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   typeLabel: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   textDark: {
-    color: "#ffffff",
+    color: theme.colors.dark.textPrimary,
   },
   typeLabelSelected: {
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   typeLabelSelectedDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   input: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   inputDark: {
-    backgroundColor: "#1a1a1a",
-    color: "#ffffff",
+    backgroundColor: theme.colors.dark.border,
+    color: theme.colors.dark.textPrimary,
   },
   hint: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 6,
   },
   hintDark: {
-    color: "#888888",
+    color: theme.colors.dark.textMuted,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
     marginTop: 32,
     marginBottom: 8,
   },
@@ -446,33 +447,33 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e5e5e5",
+    borderColor: theme.colors.light.border,
   },
   testButtonDark: {
-    borderColor: "#333333",
+    borderColor: theme.colors.dark.textSecondary,
   },
   testButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   saveButton: {
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
   },
   saveButtonDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   saveButtonTextDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   deleteButton: {
     flexDirection: "row",
@@ -481,11 +482,10 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#fef2f2",
+    backgroundColor: "rgba(255, 59, 48, 0.06)",
   },
   deleteButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ef4444",
-  },
-})
+    color: theme.colors.light.statusError,
+  }})

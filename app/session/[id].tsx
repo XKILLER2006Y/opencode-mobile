@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
@@ -578,7 +579,7 @@ export default function SessionScreen() {
 
   // Current agent display
   const currentAgent = agents.find((a) => a.name === agent)
-  const agentColor = currentAgent?.color || (isDark ? "#0A84FF" : "#0071E3")
+  const agentColor = currentAgent?.color || (isDark ? theme.colors.dark.accent : theme.colors.light.accent)
   const modelLabel = model?.modelID ? model.modelID.split("/").pop() || model.modelID : "default"
 
   // Variants for current model (for reasoning effort picker)
@@ -598,7 +599,7 @@ export default function SessionScreen() {
             <View style={s.headerRight}>
               {shortDir && (
                 <View style={[s.dirBadge, isDark && s.dirBadgeDark]}>
-                  <Ionicons name="folder-outline" size={14} color={isDark ? "#8E8E93" : "#6E6E73"} />
+                  <Ionicons name="folder-outline" size={14} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                   <Text style={[s.dirText, isDark && s.dirTextDark]}>{shortDir}</Text>
                 </View>
               )}
@@ -612,7 +613,7 @@ export default function SessionScreen() {
                 <Ionicons
                   name={showInfo ? "stats-chart" : "stats-chart-outline"}
                   size={20}
-                  color={showInfo ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"}
+                  color={showInfo ? (isDark ? theme.colors.dark.accent : theme.colors.light.accent) : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary}
                 />
               </TouchableOpacity>
             </View>
@@ -693,7 +694,7 @@ export default function SessionScreen() {
 
         {isLoading ? (
           <View style={s.loading}>
-            <ActivityIndicator size="large" color={isDark ? "#FFFFFF" : "#000000"} />
+            <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
           </View>
         ) : (
           <View style={s.listWrap}>
@@ -732,7 +733,7 @@ export default function SessionScreen() {
               ListFooterComponent={
                 loadingMore ? (
                   <View style={s.loadingMore}>
-                    <ActivityIndicator size="small" color={isDark ? "#8E8E93" : "#6E6E73"} />
+                    <ActivityIndicator size="small" color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                     <Text style={[s.loadingMoreText, isDark && s.metaDark]}>{t("session.loadingOlder")}</Text>
                   </View>
                 ) : null
@@ -742,7 +743,7 @@ export default function SessionScreen() {
                 inverted transform mirroring its text/icon (see #ui-mirror). */}
             {messageData.length === 0 && (
               <View style={s.emptyOverlay} pointerEvents="none">
-                <Ionicons name="chatbubble-outline" size={48} color={isDark ? "#8E8E93" : "#C6C6C8"} />
+                <Ionicons name="chatbubble-outline" size={48} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.border} />
                 <Text style={[s.emptyText, isDark && s.metaDark]}>{t("session.empty.title")}</Text>
                 <Text style={[s.emptyHint, isDark && s.metaDark]}>{t("session.empty.hint")}</Text>
               </View>
@@ -754,7 +755,7 @@ export default function SessionScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t("session.scrollToBottom")}
               >
-                <Ionicons name="chevron-down" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+                <Ionicons name="chevron-down" size={24} color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
               </TouchableOpacity>
             )}
           </View>
@@ -806,7 +807,7 @@ export default function SessionScreen() {
             >
               <View style={[s.agentDot, { backgroundColor: agentColor }]} />
               <Text style={[s.agentLabel, isDark && s.textWhite]}>{agent || "build"}</Text>
-              <Ionicons name="swap-horizontal-outline" size={12} color={isDark ? "#8E8E93" : "#6E6E73"} />
+              <Ionicons name="swap-horizontal-outline" size={12} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -816,7 +817,7 @@ export default function SessionScreen() {
               accessibilityRole="button"
               accessibilityLabel={`${t("session.toolbar.modelButton")}: ${modelLabel}`}
             >
-              <Ionicons name="hardware-chip-outline" size={14} color={isDark ? "#8E8E93" : "#6E6E73"} />
+              <Ionicons name="hardware-chip-outline" size={14} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
               <Text style={[s.modelLabel, isDark && s.metaDark]} numberOfLines={1}>
                 {modelLabel}
               </Text>
@@ -832,7 +833,7 @@ export default function SessionScreen() {
                   variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")
                 }`}
               >
-                <Ionicons name="flash-outline" size={14} color={variant ? (isDark ? "#0A84FF" : "#0071E3") : isDark ? "#8E8E93" : "#6E6E73"} />
+                <Ionicons name="flash-outline" size={14} color={variant ? (isDark ? theme.colors.dark.accent : theme.colors.light.accent) : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                 <Text style={[s.variantLabel, isDark && s.metaDark, variant && s.variantLabelActive]} numberOfLines={1}>
                   {variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")}
                 </Text>
@@ -857,7 +858,7 @@ export default function SessionScreen() {
                 accessibilityLabel={t("session.input.attachButton")}
                 accessibilityHint={t("session.input.attachCameraHint")}
               >
-                <Ionicons name="add-circle-outline" size={26} color={isDark ? "#8E8E93" : "#6E6E73"} />
+                <Ionicons name="add-circle-outline" size={26} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
               </TouchableOpacity>
 
               {/* Clipboard paste button */}
@@ -867,7 +868,7 @@ export default function SessionScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t("session.input.pasteButton")}
               >
-                <Ionicons name="clipboard-outline" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
+                <Ionicons name="clipboard-outline" size={22} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
               </TouchableOpacity>
 
               <TextInput
@@ -879,7 +880,7 @@ export default function SessionScreen() {
                       ? t("session.input.placeholderFollowUp")
                       : t("session.input.placeholderDefault")
                 }
-                placeholderTextColor={speech.listening ? (isDark ? "#FF453A" : "#FF3B30") : isDark ? "#AEAEB2" : "#8E8E93"}
+                placeholderTextColor={speech.listening ? (isDark ? theme.colors.dark.statusError : theme.colors.light.statusError) : isDark ? theme.colors.dark.textSecondary : theme.colors.light.textMuted}
                 value={speech.listening ? speech.transcript : input}
                 onChangeText={speech.listening ? undefined : setInput}
                 editable={!speech.listening}
@@ -896,7 +897,7 @@ export default function SessionScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("session.input.stopButton")}
                 >
-                  <Ionicons name="stop" size={20} color="#ffffff" />
+                  <Ionicons name="stop" size={20} color={theme.colors.light.surface} />
                 </TouchableOpacity>
               )}
               {/* Mic button: when no input, not sending, and not listening */}
@@ -907,7 +908,7 @@ export default function SessionScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("session.input.micButton")}
                 >
-                  <Ionicons name="mic" size={22} color={isDark ? "#8E8E93" : "#6E6E73"} />
+                  <Ionicons name="mic" size={22} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                 </TouchableOpacity>
               )}
               {/* Listening indicator: tap to stop */}
@@ -918,7 +919,7 @@ export default function SessionScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("session.input.stopListeningButton")}
                 >
-                  <Ionicons name="mic" size={22} color="#ffffff" />
+                  <Ionicons name="mic" size={22} color={theme.colors.light.surface} />
                 </TouchableOpacity>
               )}
               {/* Send button: when there's input */}
@@ -930,7 +931,7 @@ export default function SessionScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("session.input.sendButton")}
                 >
-                  <Ionicons name="send" size={20} color="#ffffff" />
+                  <Ionicons name="send" size={20} color={theme.colors.light.surface} />
                 </TouchableOpacity>
               )}
             </View>
@@ -961,8 +962,8 @@ export default function SessionScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F2F2F7" },
-  containerDark: { backgroundColor: "#000000" },
+  container: { flex: 1, backgroundColor: theme.colors.light.bgApp },
+  containerDark: { backgroundColor: theme.colors.dark.bgApp },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
   listWrap: { flex: 1, position: "relative" },
 
@@ -977,16 +978,16 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.light.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
   },
-  scrollBtnDark: { backgroundColor: "#2C2C2E" },
+  scrollBtnDark: { backgroundColor: theme.colors.dark.surfaceElevated },
 
   // Loading more (appears at top in inverted list = ListFooterComponent)
   loadingMore: {
@@ -996,7 +997,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 16,
   },
-  loadingMoreText: { fontSize: 13, color: "#8E8E93" },
+  loadingMoreText: { fontSize: 13, color: theme.colors.light.textMuted },
 
   // Empty state overlay — sits on top of the (empty) inverted list, untransformed,
   // so its text/icon render upright and un-mirrored on Android.
@@ -1013,10 +1014,10 @@ const s = StyleSheet.create({
 
   // Empty
   empty: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 64 },
-  emptyText: { fontSize: 16, color: "#8E8E93", marginTop: 12 },
-  emptyHint: { fontSize: 13, color: "#bbbbbb", marginTop: 4 },
-  metaDark: { color: "#AEAEB2" },
-  textWhite: { color: "#FFFFFF" },
+  emptyText: { fontSize: 16, color: theme.colors.light.textMuted, marginTop: 12 },
+  emptyHint: { fontSize: 13, color: theme.colors.light.textMuted, marginTop: 4 },
+  metaDark: { color: theme.colors.dark.textSecondary },
+  textWhite: { color: theme.colors.light.surface },
 
   // Toolbar
   composerGlass: {
@@ -1042,7 +1043,7 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   agentDot: { width: 8, height: 8, borderRadius: 4 },
-  agentLabel: { fontFamily: "Inter-SemiBold", fontSize: 13, color: "#000000" },
+  agentLabel: { fontFamily: "Inter-SemiBold", fontSize: 13, color: theme.colors.light.textPrimary },
   modelChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -1053,7 +1054,7 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   modelChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
-  modelLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: "#6E6E73", maxWidth: 160 },
+  modelLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: theme.colors.light.textSecondary, maxWidth: 160 },
 
   // Variant (reasoning effort) chip
   variantChip: {
@@ -1067,8 +1068,8 @@ const s = StyleSheet.create({
   },
   variantChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
   variantChipActive: { backgroundColor: "rgba(0, 113, 227, 0.12)" },
-  variantLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: "#6E6E73" },
-  variantLabelActive: { color: "#0071E3" },
+  variantLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: theme.colors.light.textSecondary },
+  variantLabelActive: { color: theme.colors.light.accent },
 
   // Input
   inputContainer: {
@@ -1094,22 +1095,22 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     maxHeight: 120,
-    color: "#000000",
+    color: theme.colors.light.textPrimary,
   },
-  inputDark: { backgroundColor: "rgba(120, 120, 128, 0.24)", color: "#FFFFFF" },
-  inputListening: { borderWidth: 1, borderColor: "#FF3B30" },
-  inputListeningDark: { borderColor: "#FF453A" },
+  inputDark: { backgroundColor: "rgba(120, 120, 128, 0.24)", color: theme.colors.dark.textPrimary },
+  inputListening: { borderWidth: 1, borderColor: theme.colors.light.statusError },
+  inputListeningDark: { borderColor: theme.colors.dark.statusError },
   sendBtn: {
     minWidth: 40,
     height: 40,
     borderRadius: 9999,
-    backgroundColor: "#0071E3",
+    backgroundColor: theme.colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
     paddingHorizontal: 10,
   },
-  sendBtnDisabled: { backgroundColor: "#8E8E93" },
+  sendBtnDisabled: { backgroundColor: theme.colors.light.textMuted },
   micBtn: {
     width: 40,
     height: 40,
@@ -1122,7 +1123,7 @@ const s = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 9999,
-    backgroundColor: "#FF3B30",
+    backgroundColor: theme.colors.light.statusError,
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
@@ -1131,7 +1132,7 @@ const s = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 9999,
-    backgroundColor: "#FF3B30",
+    backgroundColor: theme.colors.light.statusError,
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
@@ -1143,14 +1144,14 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: theme.colors.light.bgApp,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
-  dirBadgeDark: { backgroundColor: "#1C1C1E" },
-  dirText: { fontSize: 12, color: "#6E6E73", fontWeight: "500" },
-  dirTextDark: { color: "#AEAEB2" },
+  dirBadgeDark: { backgroundColor: theme.colors.dark.surface },
+  dirText: { fontSize: 12, color: theme.colors.light.textSecondary, fontWeight: "500" },
+  dirTextDark: { color: theme.colors.dark.textSecondary },
 
   // SSE reconnect/connected banner
   banner: {
@@ -1158,15 +1159,14 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     alignItems: "center",
   },
-  bannerReconnecting: { backgroundColor: "#92400e" },
-  bannerConnected: { backgroundColor: "#065f46" },
-  bannerText: { color: "#ffffff", fontSize: 13, fontWeight: "500" },
+  bannerReconnecting: { backgroundColor: "rgba(146, 64, 14, 1)" },
+  bannerConnected: { backgroundColor: "rgba(6, 95, 70, 1)" },
+  bannerText: { color: theme.colors.light.surface, fontSize: 13, fontWeight: "500" },
 
   // Pending revert (edit message) banner
   bannerRevert: {
-    backgroundColor: "#1e3a8a",
+    backgroundColor: "rgba(30, 58, 138, 1)",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  bannerAction: { color: "#93c5fd", fontSize: 13, fontWeight: "700" },
-})
+  bannerAction: { color: "rgba(147, 197, 253, 1)", fontSize: 13, fontWeight: "700" }})

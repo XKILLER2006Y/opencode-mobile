@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { theme } from "../../src/lib/theme"
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, useColorScheme, Alert } from "react-native"
 import * as Clipboard from "expo-clipboard"
 import { router } from "expo-router"
@@ -31,7 +32,7 @@ function ConnectionItem({
   const { t } = useTranslation()
   const typeIcon = connection.type === "local" ? "wifi" : connection.type === "tunnel" ? "globe" : "cloud"
   // Green = healthy, amber = ping failed (unreachable/unauthorized), gray = unknown
-  const dotColor = health === true ? "#22c55e" : health === false ? "#f59e0b" : "#a1a1aa"
+  const dotColor = health === true ? theme.colors.light.statusSuccess : health === false ? theme.colors.light.healthWarn : theme.colors.light.textMuted
 
   const handleLongPress = () => {
     Alert.alert(connection.name, t("connectionsList.actionsAlert.message"), [
@@ -56,7 +57,7 @@ function ConnectionItem({
       accessibilityHint={t("connectionsList.longPressHint")}
     >
       <View style={styles.connectionIcon}>
-        <Ionicons name={typeIcon} size={24} color={isActive ? "#22c55e" : isDark ? "#888888" : "#666666"} />
+        <Ionicons name={typeIcon} size={24} color={isActive ? theme.colors.light.statusSuccess : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
         <View
           style={[styles.healthDot, isDark && styles.healthDotDark, { backgroundColor: dotColor }]}
           testID={`health-dot-${connection.id}`}
@@ -120,7 +121,7 @@ function ConnectionItem({
         accessibilityRole="button"
         accessibilityLabel={t("connectionsList.actionsAlert.edit")}
       >
-        <Ionicons name="ellipsis-vertical" size={20} color={isDark ? "#666666" : "#999999"} />
+        <Ionicons name="ellipsis-vertical" size={20} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textMuted} />
       </TouchableOpacity>
     </TouchableOpacity>
   )
@@ -139,7 +140,7 @@ function ExposeCard({ isDark }: { isDark: boolean }) {
   return (
     <View style={[styles.exposeCard, isDark && styles.exposeCardDark]}>
       <View style={styles.exposeHeader}>
-        <Ionicons name="globe-outline" size={22} color="#6366f1" />
+        <Ionicons name="globe-outline" size={22} color={theme.colors.light.indigo} />
         <Text style={[styles.exposeTitle, isDark && styles.textDark]}>{t("connectionsList.exposeCard.title")}</Text>
       </View>
       <Text style={[styles.exposeSubtitle, isDark && styles.metaDark]}>
@@ -161,7 +162,7 @@ function ExposeCard({ isDark }: { isDark: boolean }) {
           accessibilityRole="button"
           accessibilityLabel={t("connectionsList.exposeCard.copy")}
         >
-          <Ionicons name={copied ? "checkmark" : "copy-outline"} size={16} color="#6366f1" />
+          <Ionicons name={copied ? "checkmark" : "copy-outline"} size={16} color={theme.colors.light.indigo} />
           <Text style={styles.copyButtonText}>
             {copied ? t("connectionsList.exposeCard.copied") : t("connectionsList.exposeCard.copy")}
           </Text>
@@ -227,7 +228,7 @@ export default function ConnectionsScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="server-outline" size={64} color={isDark ? "#444444" : "#cccccc"} />
+            <Ionicons name="server-outline" size={64} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.border} />
             <Text style={[styles.emptyTitle, isDark && styles.textDark]}>{t("connectionsList.empty.title")}</Text>
             <Text style={[styles.emptySubtitle, isDark && styles.metaDark]}>
               {t("connectionsList.empty.subtitle")}
@@ -243,7 +244,7 @@ export default function ConnectionsScreen() {
               testID="scan-to-connect-button"
               accessibilityRole="button"
             >
-              <Ionicons name="qr-code-outline" size={20} color={isDark ? "#0a0a0a" : "#ffffff"} />
+              <Ionicons name="qr-code-outline" size={20} color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
               <Text style={[styles.scanButtonText, isDark && styles.scanButtonTextDark]}>
                 {t("connectionsList.scan")}
               </Text>
@@ -260,7 +261,7 @@ export default function ConnectionsScreen() {
             </Text>
             <View style={styles.settingRow}>
               <View style={styles.settingLabel}>
-                <Ionicons name="layers-outline" size={18} color={isDark ? "#888888" : "#666666"} />
+                <Ionicons name="layers-outline" size={18} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
                 <Text style={[styles.settingText, isDark && styles.textDark]}>
                   {t("connectionsList.preferences.pageSizeLabel")}
                 </Text>
@@ -308,7 +309,7 @@ export default function ConnectionsScreen() {
         accessibilityRole="button"
         accessibilityLabel={t("nav.addConnectionTitle")}
       >
-        <Ionicons name="add" size={28} color={isDark ? "#0a0a0a" : "#ffffff"} />
+        <Ionicons name="add" size={28} color={isDark ? theme.colors.dark.bgApp : theme.colors.light.surface} />
       </TouchableOpacity>
     </View>
   )
@@ -317,22 +318,22 @@ export default function ConnectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.light.surface,
   },
   containerDark: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.dark.bgApp,
   },
   header: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
+    borderBottomColor: theme.colors.light.border,
   },
   headerDark: {
-    borderBottomColor: "#1a1a1a",
+    borderBottomColor: theme.colors.dark.border,
   },
   headerText: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   connectionItem: {
     flexDirection: "row",
@@ -341,13 +342,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 6,
     borderRadius: 14,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.light.surface,
     borderWidth: 1,
-    borderColor: "#E4E4E7",
+    borderColor: theme.colors.light.borderSubtle,
   },
   connectionItemDark: {
-    backgroundColor: "#18181B",
-    borderColor: "#27272A",
+    backgroundColor: theme.colors.dark.surface,
+    borderColor: theme.colors.dark.surfaceElevated,
   },
   connectionItemActive: {
     borderColor: "rgba(34, 197, 94, 0.4)",
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F4F4F5",
+    backgroundColor: theme.colors.light.borderSubtle,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -377,49 +378,49 @@ const styles = StyleSheet.create({
   connectionName: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#09090B",
+    color: theme.colors.light.textPrimary,
   },
   connectionNameActive: {
-    color: "#09090B",
+    color: theme.colors.light.textPrimary,
   },
   connectionNameActiveDark: {
-    color: "#FAFAFA",
+    color: theme.colors.dark.textPrimary,
   },
   textDark: {
-    color: "#FAFAFA",
+    color: theme.colors.dark.textPrimary,
   },
   activeBadge: {
-    backgroundColor: "#22C55E",
+    backgroundColor: theme.colors.light.statusSuccess,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
   },
   activeBadgeDark: {
-    backgroundColor: "#16A34A",
+    backgroundColor: theme.colors.dark.statusSuccess,
   },
   activeBadgeText: {
-    color: "#FFFFFF",
+    color: theme.colors.light.surface,
     fontSize: 11,
     fontWeight: "600",
   },
   activeBadgeTextDark: {
-    color: "#FFFFFF",
+    color: theme.colors.dark.textPrimary,
   },
   connectionUrl: {
     fontSize: 13,
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
     marginTop: 2,
   },
   connectionUrlActive: {
-    color: "#71717A",
+    color: theme.colors.light.textSecondary,
   },
   connectionMeta: {
     fontSize: 12,
-    color: "#A1A1AA",
+    color: theme.colors.light.textMuted,
     marginTop: 4,
   },
   metaDark: {
-    color: "#A1A1AA",
+    color: theme.colors.dark.textMuted,
   },
   emptyContainer: {
     flex: 1,
@@ -431,11 +432,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     marginTop: 16,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
@@ -449,17 +450,17 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.light.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
   fabDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   healthDot: {
     position: "absolute",
@@ -469,10 +470,10 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: "#FFFFFF",
+    borderColor: theme.colors.light.surface,
   },
   healthDotDark: {
-    borderColor: "#18181B",
+    borderColor: theme.colors.dark.surface,
   },
   modeBadge: {
     paddingHorizontal: 8,
@@ -480,28 +481,28 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   modeBadgeQuick: {
-    backgroundColor: "#f59e0b",
+    backgroundColor: theme.colors.light.healthWarn,
   },
   modeBadgeNamed: {
-    backgroundColor: "#6366f1",
+    backgroundColor: theme.colors.light.indigo,
   },
   modeBadgeText: {
-    color: "#FFFFFF",
+    color: theme.colors.light.surface,
     fontSize: 11,
     fontWeight: "600",
   },
   exposeCard: {
-    backgroundColor: "#f0f0ff",
+    backgroundColor: theme.colors.light.indigoBg,
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: "#c7d2fe",
+    borderColor: theme.colors.light.indigo,
   },
   exposeCardDark: {
-    backgroundColor: "#1e1b4b",
-    borderColor: "#3730a3",
+    backgroundColor: theme.colors.dark.indigoBg,
+    borderColor: theme.colors.dark.indigo,
   },
   exposeHeader: {
     flexDirection: "row",
@@ -511,17 +512,17 @@ const styles = StyleSheet.create({
   exposeTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   exposeSubtitle: {
     fontSize: 13,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     lineHeight: 20,
     marginTop: 6,
   },
   exposeCommandLabel: {
     fontSize: 12,
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
     marginTop: 12,
     marginBottom: 6,
   },
@@ -532,23 +533,23 @@ const styles = StyleSheet.create({
   },
   commandBox: {
     flex: 1,
-    backgroundColor: "#eef2ff",
+    backgroundColor: theme.colors.light.indigoBox,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     justifyContent: "center",
   },
   commandBoxDark: {
-    backgroundColor: "#312e81",
+    backgroundColor: theme.colors.dark.indigoBox,
   },
   commandText: {
     fontFamily: "monospace",
     fontSize: 11,
-    color: "#3730a3",
+    color: theme.colors.light.indigo,
     lineHeight: 16,
   },
   commandTextDark: {
-    color: "#c7d2fe",
+    color: theme.colors.dark.indigo,
   },
   copyButton: {
     flexDirection: "row",
@@ -556,12 +557,12 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: "#eef2ff",
+    backgroundColor: theme.colors.light.indigoBox,
   },
   copyButtonText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#4338ca",
+    color: theme.colors.light.indigo,
   },
   scanButton: {
     flexDirection: "row",
@@ -570,35 +571,35 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     marginHorizontal: 16,
     marginTop: 16,
   },
   scanButtonDark: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.dark.textPrimary,
   },
   scanButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   scanButtonTextDark: {
-    color: "#0a0a0a",
+    color: theme.colors.dark.bgApp,
   },
   settingsSection: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
+    borderTopColor: theme.colors.light.border,
     marginTop: 16,
     gap: 10,
   },
   settingsSectionDark: {
-    borderTopColor: "#1a1a1a",
+    borderTopColor: theme.colors.dark.border,
   },
   settingsTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   settingRow: {
     flexDirection: "row",
@@ -612,7 +613,7 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 14,
-    color: "#0a0a0a",
+    color: theme.colors.light.textPrimary,
   },
   pagePicker: {
     flexDirection: "row",
@@ -623,31 +624,30 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e5e5e5",
-    backgroundColor: "#f5f5f5",
+    borderColor: theme.colors.light.border,
+    backgroundColor: theme.colors.light.surfaceElevated,
   },
   pageOptionDark: {
-    borderColor: "#2a2a2a",
-    backgroundColor: "#1a1a1a",
+    borderColor: theme.colors.dark.surfaceElevated,
+    backgroundColor: theme.colors.dark.border,
   },
   pageOptionActive: {
-    backgroundColor: "#0a0a0a",
-    borderColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
+    borderColor: theme.colors.light.textPrimary,
   },
   pageOptionActiveDark: {
-    backgroundColor: "#3b82f6",
-    borderColor: "#3b82f6",
+    backgroundColor: theme.colors.dark.accent,
+    borderColor: theme.colors.dark.accent,
   },
   pageOptionText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#666666",
+    color: theme.colors.light.textSecondary,
   },
   pageOptionTextActive: {
-    color: "#ffffff",
+    color: theme.colors.light.surface,
   },
   settingHint: {
     fontSize: 12,
-    color: "#999999",
-  },
-})
+    color: theme.colors.light.textMuted,
+  }})

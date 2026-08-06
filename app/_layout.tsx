@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { theme } from "../src/lib/theme"
 import { Stack, router } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useColorScheme, View, ActivityIndicator, AppState } from "react-native"
@@ -139,12 +140,12 @@ function RootLayout() {
   // still be registered in the new Stack or the navigation state breaks.
   const screenOptions = {
     headerStyle: {
-      backgroundColor: isDark ? "#000000" : "#F2F2F7",
+      backgroundColor: isDark ? theme.colors.dark.bgApp : theme.colors.light.bgApp,
     },
-    headerTintColor: isDark ? "#FFFFFF" : "#000000",
+    headerTintColor: isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary,
     headerTitleStyle: { fontFamily: "Inter-SemiBold" },
     contentStyle: {
-      backgroundColor: isDark ? "#000000" : "#F2F2F7",
+      backgroundColor: isDark ? theme.colors.dark.bgApp : theme.colors.light.bgApp,
     },
   }
 
@@ -155,10 +156,10 @@ function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: isDark ? "#000000" : "#F2F2F7",
+          backgroundColor: isDark ? theme.colors.dark.bgApp : theme.colors.light.bgApp,
         }}
       >
-        <ActivityIndicator size="large" color={isDark ? "#FFFFFF" : "#000000"} />
+        <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
       </View>
     )
   }

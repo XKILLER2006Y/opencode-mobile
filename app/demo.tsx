@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { theme } from "../src/lib/theme"
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, useColorScheme, Linking } from "react-native"
 import { Stack, useRouter } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
@@ -61,7 +62,7 @@ export default function DemoScreen() {
       <Stack.Screen options={{ title: t("demo.title"), presentation: "card" }} />
       <View style={[s.container, isDark && s.containerDark]} testID="demo-screen">
         <View style={[s.banner, isDark && s.bannerDark]} testID="demo-banner">
-          <Ionicons name="play-circle-outline" size={16} color="#8b5cf6" />
+          <Ionicons name="play-circle-outline" size={16} color={theme.colors.light.indigo} />
           <Text style={s.bannerText}>{t("demo.banner")}</Text>
         </View>
 
@@ -113,10 +114,10 @@ export default function DemoScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ffffff" },
-  containerDark: { backgroundColor: "#0a0a0a" },
-  textWhite: { color: "#ffffff" },
-  metaDark: { color: "#888888" },
+  container: { flex: 1, backgroundColor: theme.colors.light.surface },
+  containerDark: { backgroundColor: theme.colors.dark.bgApp },
+  textWhite: { color: theme.colors.light.surface },
+  metaDark: { color: theme.colors.dark.textMuted },
 
   banner: {
     flexDirection: "row",
@@ -124,12 +125,12 @@ const s = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: "#f5f3ff",
+    backgroundColor: theme.colors.light.indigoBox,
     borderBottomWidth: 1,
-    borderBottomColor: "#e9d5ff",
+    borderBottomColor: "rgba(233, 213, 255, 1)",
   },
-  bannerDark: { backgroundColor: "#1a1030", borderBottomColor: "#2a1a4a" },
-  bannerText: { fontSize: 13, fontWeight: "600", color: "#6d28d9", flex: 1 },
+  bannerDark: { backgroundColor: theme.colors.dark.indigoBg, borderBottomColor: theme.colors.dark.indigoBg },
+  bannerText: { fontSize: 13, fontWeight: "600", color: theme.colors.light.indigo, flex: 1 },
 
   scrollContent: { padding: 16, paddingBottom: 40 },
 
@@ -137,24 +138,23 @@ const s = StyleSheet.create({
     marginTop: 8,
     padding: 20,
     borderRadius: 16,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.light.surfaceElevated,
     alignItems: "center",
   },
-  ctaCardDark: { backgroundColor: "#1a1a1a" },
-  ctaTitle: { fontSize: 17, fontWeight: "700", color: "#0a0a0a", textAlign: "center" },
-  ctaSubtitle: { fontSize: 13, color: "#666666", marginTop: 6, textAlign: "center", lineHeight: 18 },
+  ctaCardDark: { backgroundColor: theme.colors.dark.border },
+  ctaTitle: { fontSize: 17, fontWeight: "700", color: theme.colors.light.textPrimary, textAlign: "center" },
+  ctaSubtitle: { fontSize: 13, color: theme.colors.light.textSecondary, marginTop: 6, textAlign: "center", lineHeight: 18 },
   connectButton: {
     marginTop: 16,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: theme.colors.light.textPrimary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
     width: "100%",
     alignItems: "center",
   },
-  connectButtonText: { color: "#ffffff", fontWeight: "600", fontSize: 15 },
+  connectButtonText: { color: theme.colors.light.surface, fontWeight: "600", fontSize: 15 },
   hostedCtaLink: { marginTop: 14 },
-  hostedCtaLinkText: { fontSize: 14, fontWeight: "600", color: "#8b5cf6", textAlign: "center" },
+  hostedCtaLinkText: { fontSize: 14, fontWeight: "600", color: theme.colors.light.indigo, textAlign: "center" },
   setupGuideLink: { marginTop: 14 },
-  setupGuideLinkText: { fontSize: 14, fontWeight: "600", color: "#6366f1" },
-})
+  setupGuideLinkText: { fontSize: 14, fontWeight: "600", color: theme.colors.light.indigo }})

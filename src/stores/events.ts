@@ -9,6 +9,7 @@ import { AnalyticsEvent, track } from "../lib/analytics"
 import { recordSuccessfulSession } from "../lib/store-review"
 import { isAuthError } from "../lib/api-error"
 import { isSessionActuallyIdle } from "../lib/session-status-reconcile"
+import { busySessionCandidates } from "../lib/busy-reconcile"
 import type {
   Client,
   Part,
@@ -85,9 +86,15 @@ export async function refreshPending(client: Client, sessionID: string) {
 // before writing, so a real session.status event that lands while the fetch
 // is in flight (e.g. the session went busy again) wins over this resync.
 async function resyncBusySessions() {
-  const busySessionIDs = Object.entries(useEvents.getState().sessionStatus)
-    .filter(([, status]) => status.type === "busy")
-    .map(([sessionID]) => sessionID)
+  // A session can be stuck busy in either flag: `sessionStatus.busy` (SSE-
+  // driven) or the optimistic `sending` flag. They are cleared independently
+  // and on different paths — importantly `disconnect()` wipes sessionStatus
+  // but leaves `sending`, so candidates must be the union of both or a stuck
+  // sending survives a manual disconnect -> reconnect.
+  const busySessionIDs = busySessionCandidates(
+    useEvents.getState().sessionStatus,
+    useSessions.getState().sending,
+  )
   if (busySessionIDs.length === 0) return
 
   await Promise.all(
@@ -157,12 +164,18 @@ export const useEvents = create<EventsState>((set, get) => ({
     // Run in background
     ;(async () => {
       let reconnectScheduled = false
-      // True if this connect() call is resuming after a prior disconnect —
-      // gates the one-time busy-session resync below so a cold app start
-      // (sessionStatus is always empty then) never triggers it, and a run of
-      // failed retries can't re-arm the check on every attempt.
-      const isReconnect = get().reconnectAttempts > 0
-      let resyncedAfterReconnect = false
+      // Arms the busy-session resync on the FIRST genuinely-live event of each
+      // (re)established stream. Intentionally NOT gated on reconnectAttempts:
+      // that counter is only nonzero after a retry loop, and is 0 whenever the
+      // prior connection was live and stable — the connection-edit reconnect
+      // (app/connection/[id].tsx), the post-authError reconnect, and a manual
+      // disconnect -> connect all take that path, and those tear-down windows
+      // are exactly where a busy -> idle session.status event is most likely
+      // to have been missed. Running the resync on every established stream is
+      // safe: resyncBusySessions no-ops with no busy candidates (cold start,
+      // all idle), and it only ever clears a server-confirmed-stale busy flag
+      // (isSessionActuallyIdle), never forces one busy.
+      let resyncedAfterStream = false
       const stableTimer = setTimeout(() => {
         if (!currentController.signal.aborted) {
           set({ reconnectAttempts: 0, lastDisconnectAt: null })
@@ -211,8 +224,8 @@ export const useEvents = create<EventsState>((set, get) => ({
           // The stream is genuinely live again (we're actually receiving
           // data, not just optimistically marked "connected") — resync once
           // per reconnect, not on every event.
-          if (isReconnect && !resyncedAfterReconnect) {
-            resyncedAfterReconnect = true
+          if (!resyncedAfterStream) {
+            resyncedAfterStream = true
             void resyncBusySessions()
           }
 

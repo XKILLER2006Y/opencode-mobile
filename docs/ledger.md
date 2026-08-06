@@ -5,6 +5,36 @@ plan/spec that drove it.
 
 ---
 
+## 2026-08-06 — Fix: stale busy/processing spinner on resilient reconnects
+
+Bug: a session could stay marked busy — endless 'processing' spinner — after
+certain reconnects where a `busy -> idle` `session.status` event was missed
+during the tear-down window.
+
+Root causes (both in `src/stores/events.ts`):
+1. The busy-session resync on reconnect was gated on `reconnectAttempts > 0`,
+   but that counter is only nonzero after a *retry loop*. When the prior
+   connection was live and stable it is `0`, so these paths skipped resync:
+   the connection-edit reconnect (`app/connection/[id].tsx`), the post-
+   `authError` reconnect, and a manual `disconnect()` → `connect()`.
+2. `disconnect()` wipes `sessionStatus` but intentionally leaves
+   `useSessions.sending`, so a stuck optimistic send could not even be seen
+   by the resync (which only looked at `sessionStatus`).
+
+Fix:
+- `src/lib/busy-reconcile.ts` (new): `busySessionCandidates()` — the union of
+  `sessionStatus.busy` and `sending === true` entries, deduped. Safe by
+  design: it never forces a session busy, only surfaces candidates the
+  conservative `isSessionActuallyIdle` verdict may clear if the server
+  confirms they're stale.
+- `events.ts`: resync now arms on the FIRST live event of every established
+  stream (no longer gated on retry count), and considers both busy flags.
+
+Tests: `src/lib/busy-reconcile.test.ts` (7 cases, `node:test`). Full gate green:
+`npm test` 310/310, `npx jest --ci` 5/5, `tsc --noEmit` clean, `eslint .` clean.
+
+---
+
 ## 2026-08-06 — Upstream parity audit (dzianisv/opencode-mobile main)
 
 Line-level audit of all 45 meaningful changed files between our fork and

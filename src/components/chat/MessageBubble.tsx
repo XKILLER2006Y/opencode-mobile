@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react"
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { Markdown } from "../markdown"
+import { StreamMarkdown } from "../markdown"
 import { ToolCallCard } from "./ToolCallCard"
 import { ReasoningBlock } from "./ReasoningBlock"
 import { useBatchedText } from "../../lib/use-batched-text.ts"
@@ -141,7 +141,7 @@ export const MessageBubble = memo(
             </Text>
           ) : (
             <View style={s.markdownWrap}>
-              <Markdown>{renderText}</Markdown>
+              <StreamMarkdown streaming={isLive}>{renderText}</StreamMarkdown>
             </View>
           ))}
 

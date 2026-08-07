@@ -452,22 +452,35 @@ def _tap_fab_bottom_right() -> bool:
 
     On this RN build the FAB's accessibilityLabel is NOT exposed in the
     uiautomator dump — the node only carries its icon glyph — so label-based
-    taps miss it. Compute the center from the screen width and the tab-bar top
-    edge (the FAB sits 16px above/right of the content area, 56px square).
+    taps miss it. Strategy:
+      1. Prefer the FAB's own node: any small node in the bottom-right corner
+         of the content area (above the tab bar) — the FAB is the only element
+         there on the sessions tab.
+      2. Fall back to the computed position (right:16, bottom:16 of a 56px
+         FAB, measured from the content area's bottom edge).
     """
     xml = ui_dump()
     if not xml:
         return False
-    widths = [int(m.group(2)) for m in re.finditer(r'bounds="\[\d+,(\d+)\]\[\d+,(\d+)\]"', xml)]
-    screen_w = max(widths) if widths else 320
+    # Tab-bar top: the "Sessions" tab LABEL node sits at the bottom of the
+    # 42px tab bar, so subtract ~28px to reach the bar's top edge.
     tab_top = None
     for m in re.finditer(r'(?:text|content-desc)="Sessions"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
-        tab_top = int(m.group(2))
+        tab_top = int(m.group(2)) - 28
         break
     if tab_top is None:
         tab_top = 597  # CI emulator default (320x640)
-    x = screen_w - 44   # right:16 + half of 56px FAB
-    y = tab_top - 44    # bottom:16 + half of 56px FAB
+    # 1. The FAB node itself (icon-only glyph, bottom-right, above the tab bar).
+    for m in re.finditer(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+        x1, y1, x2, y2 = map(int, m.groups())
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+        if cx > 200 and tab_top - 90 <= cy <= tab_top - 10:
+            adb("shell", "input", "tap", str(cx), str(cy))
+            _sleep(1.0)
+            return True
+    # 2. Computed position.
+    x = 320 - 44   # right:16 + half of 56px FAB
+    y = tab_top - 44
     adb("shell", "input", "tap", str(x), str(y))
     _sleep(1.0)
     return True

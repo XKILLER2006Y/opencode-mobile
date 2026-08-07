@@ -447,16 +447,44 @@ def _tap_first_edittext() -> bool:
     return False
 
 
+def _tap_fab_bottom_right() -> bool:
+    """Tap the floating action button anchored bottom-right (e.g. sessions FAB).
+
+    On this RN build the FAB's accessibilityLabel is NOT exposed in the
+    uiautomator dump — the node only carries its icon glyph — so label-based
+    taps miss it. Compute the center from the screen width and the tab-bar top
+    edge (the FAB sits 16px above/right of the content area, 56px square).
+    """
+    xml = ui_dump()
+    if not xml:
+        return False
+    widths = [int(m.group(2)) for m in re.finditer(r'bounds="\[\d+,(\d+)\]\[\d+,(\d+)\]"', xml)]
+    screen_w = max(widths) if widths else 320
+    tab_top = None
+    for m in re.finditer(r'(?:text|content-desc)="Sessions"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+        tab_top = int(m.group(2))
+        break
+    if tab_top is None:
+        tab_top = 597  # CI emulator default (320x640)
+    x = screen_w - 44   # right:16 + half of 56px FAB
+    y = tab_top - 44    # bottom:16 + half of 56px FAB
+    adb("shell", "input", "tap", str(x), str(y))
+    _sleep(1.0)
+    return True
+
+
 def _scripted_connect(host_only: str, wait_after: float = 2.0) -> bool:
     """Deterministic add-connection flow via uiautomator (0 LLM calls).
 
-    CI emulators run with a hardware keyboard (hw.keyboard=yes), so the soft
-    IME never opens: a KEYCODE_BACK "dismiss keyboard" pops the WHOLE form
-    route instead, leaving the connection unsaved while the old form-closed
-    check false-positived on the tab screen (runs 2-5). So:
+    The old flow pressed KEYCODE_BACK to dismiss the keyboard after typing.
+    On this emulator the IME opens late (after `adb input text`), so the BACK
+    landed while the keyboard was down and popped the WHOLE form route — the
+    connection was never saved, and the old "form closed" check false-positived
+    on the tab screen (runs 2-5). So:
       * NEVER press BACK here;
-      * type via `adb input text` (works without the IME) and verify the value
-        actually landed in the hierarchy before continuing;
+      * type via `adb input text`, then verify the value actually landed in
+        the hierarchy before continuing (a silent miss used to save the
+        placeholder IP 192.168.1.100);
       * scroll the form with swipes in the UPPER half of the screen (a swipe
         that starts on the keyboard zone is swallowed by the IME);
       * tap the exact 'Connect' submit (fuzzy would match the 'Connect to
@@ -600,11 +628,14 @@ def _scripted_session_list(precreated_title: str, wait: float = 20.0) -> bool:
 def _scripted_new_session(wait: float = 10.0) -> bool:
     """Deterministic new_session phase (0 LLM calls).
 
-    Taps the New-session FAB -> taps 'Current Project' in the directory modal
-    -> asserts a chat input (EditText) appears.
+    Taps the New-session FAB (label-based first, then by computed coordinates
+    — the FAB's accessibilityLabel is not exposed in the uiautomator dump on
+    this RN build, so label taps miss it), taps 'Current Project' in the
+    directory modal, then asserts a chat input (EditText) appears.
     """
     print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
-    if not _tap_first(["New session", "new session", "+"], fuzzy=True):
+    if not (_tap_first(["New session", "new session", "+"], fuzzy=True)
+            or _tap_fab_bottom_right()):
         print("  [new_session-scripted] FAIL: new-session FAB not found")
         _debug_ui_labels("new_session")
         return False

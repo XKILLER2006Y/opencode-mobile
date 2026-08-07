@@ -450,32 +450,29 @@ def _tap_first_edittext() -> bool:
 def _find_fab_center() -> tuple[int, int]:
     """Return the center (cx, cy) of the bottom-right FAB (e.g. sessions FAB).
 
-    On this RN build the FAB's accessibilityLabel is NOT exposed in the
-    uiautomator dump — the node only carries its icon glyph ('\uf103' for the
-    sessions add-FAB) — so label-based taps miss it. Strategy:
-      1. Prefer the FAB's own node: any small node in the bottom-right corner
-         of the content area (above the tab bar) — the FAB is the only element
-         there on the sessions tab.
-      2. Fall back to the computed position (right:16, bottom:16 of a 56px
-         FAB, measured from the content area's bottom edge).
+    The FAB IS exposed in the uiautomator dump via resource-id
+    `new-session-fab` and content-desc 'New session' (clickable=true) — the
+    old "accessibilityLabel not exposed" assumption was wrong (runs 27-30
+    missed it because a regex picked the screen HEADER 'Sessions' at y~44
+    instead of the TAB-BAR label at y~625, so the computed fallback went to
+    (276, -28) — off-screen). Prefer the FAB's own node; fall back to the
+    tab-bar label, which must be y > 500 to exclude the header.
     """
     xml = ui_dump()
     if xml:
-        # Tab-bar top: the "Sessions" tab LABEL node sits at the bottom of the
-        # 42px tab bar, so subtract ~28px to reach the bar's top edge.
-        tab_top = None
+        for pat in (
+            r'resource-id="new-session-fab"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
+            r'content-desc="New session"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
+        ):
+            m = re.search(pat, xml)
+            if m:
+                x1, y1, x2, y2 = map(int, m.groups())
+                return ((x1 + x2) // 2, (y1 + y2) // 2)
+        # Tab-bar 'Sessions' label (y>500 = bottom of screen), not the header.
         for m in re.finditer(r'(?:text|content-desc)="Sessions"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
-            tab_top = int(m.group(2)) - 28
-            break
-        if tab_top is None:
-            tab_top = 597  # CI emulator default (320x640)
-        for m in re.finditer(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
-            x1, y1, x2, y2 = map(int, m.groups())
-            cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
-            if cx > 200 and tab_top - 90 <= cy <= tab_top - 10:
-                return (cx, cy)
-        return (320 - 44, tab_top - 44)  # right:16 + half of 56px FAB
-    return (276, 553)  # default for the CI emulator (320x640)
+            if int(m.group(2)) > 500:
+                return (320 - 44, int(m.group(2)) - 72)
+    return (276, 547)  # CI emulator default (320x640)
 
 
 def _tap_fab_bottom_right() -> bool:
@@ -695,14 +692,15 @@ def _scripted_new_session(wait: float = 15.0) -> bool:
     passes on the first that lands:
 
       A. `input tap` on the FAB center — short-press quick-create path.
-      B. `input motionevent DOWN` + hold + `CANCEL` — long-press modal path
-         (a plain `input swipe` UP lands on the freshly-opened modal's
-         full-screen dismiss overlay and closes it instantly, so it must be
-         CANCEL, not UP).
+      B. `input swipe` (same point, 800ms) — long-press modal path.
+         (`input motionevent` does NOT exist on this emulator's `input`
+         command — verified via stderr in run 30.)
 
-    Diagnostics: before anything, dump the RAW FAB node (class/clickable/
-    enabled) so a non-touchable FAB is visible in the log instead of another
-    blind round-trip.
+    Root cause of runs 27-30: `_find_fab_center()` picked the screen HEADER
+    'Sessions' (y~44) instead of the TAB-BAR label (y~625), so the computed
+    tap went to (276, -28) — off-screen. The FAB node itself
+    (resource-id=new-session-fab, desc='New session', clickable=true) is now
+    used directly.
     """
     print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
     cx, cy = _find_fab_center()
@@ -720,11 +718,10 @@ def _scripted_new_session(wait: float = 15.0) -> bool:
         if check_ui_text("Current Project"):
             break  # modal appeared — tap may have been a long-press; use it below
 
-    # B. Long-press modal path: DOWN + hold + CANCEL.
+    # B. Long-press modal path: swipe (same point) holds for 800ms > the app's
+    #    delayLongPress (500ms). motionevent is unavailable on this emulator.
     for _ in range(3):
-        _input_raw("motionevent", "DOWN", str(cx), str(cy))
-        _sleep(0.8)
-        _input_raw("motionevent", "CANCEL")
+        adb("shell", "input", "swipe", str(cx), str(cy), str(cx), str(cy), "800")
         _sleep(1.8)
         if check_ui_text("Current Project"):
             break

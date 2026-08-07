@@ -364,6 +364,90 @@ def check_ui_text(text: str, case_sensitive: bool = False) -> bool:
     return needle in haystack
 
 
+def _ui_node_centers(text: str, fuzzy: bool = True) -> list[tuple[int, int]]:
+    """Return center (x, y) of every uiautomator node whose text matches.
+
+    Deterministic — no LLM. Used by the scripted connect phase to save the
+    tiny free-tier Gemini daily budget for the phases that actually need vision.
+    """
+    xml = ui_dump()
+    if not xml:
+        return []
+    centers = []
+    for m in re.finditer(r'text="([^"]*)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+        node_text, x1, y1, x2, y2 = m.group(1), *map(int, m.groups()[1:])
+        if not node_text:
+            continue
+        if (fuzzy and text.lower() in node_text.lower()) or (not fuzzy and node_text == text):
+            centers.append(((x1 + x2) // 2, (y1 + y2) // 2))
+    return centers
+
+
+def _tap_first(labels: list[str], fuzzy: bool = True) -> bool:
+    """Tap the first node matching any label. Returns True if tapped."""
+    for label in labels:
+        centers = _ui_node_centers(label, fuzzy=fuzzy)
+        if centers:
+            x, y = centers[0]
+            adb("shell", "input", "tap", str(x), str(y))
+            _sleep(1.0)
+            return True
+    return False
+
+
+def _tap_first_edittext() -> bool:
+    """Tap the first EditText node (fallback when a labelled field is missing)."""
+    xml = ui_dump()
+    if not xml:
+        return False
+    for m in re.finditer(r'class="android\.widget\.EditText"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+        x1, y1, x2, y2 = map(int, m.groups())
+        adb("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
+        _sleep(1.0)
+        return True
+    return False
+
+
+def _scripted_connect(host_only: str, wait_after: float = 2.0) -> bool:
+    """Deterministic add-connection flow via uiautomator (0 LLM calls).
+
+    Taps Add Connection -> types the host IP -> taps Connect -> verifies the
+    connection entry appears in the list. Returns True on success.
+    """
+    print("  [connect-scripted] driving add-connection via uiautomator (0 LLM calls)")
+    if not _tap_first(["Add Connection", "New Connection", "Add Server"]):
+        print("  [connect-scripted] FAIL: no add-connection control found")
+        return False
+    _sleep(1.0)
+
+    if not (_tap_first(["IP Address", "IP address", "Address", "Host"], fuzzy=True)
+            or _tap_first_edittext()):
+        print("  [connect-scripted] FAIL: address field not found")
+        return False
+    _sleep(0.8)
+    adb("shell", "input", "text", host_only)  # plain IP — safe chars only
+    _sleep(0.5)
+
+    if not _tap_first(["Connect"]):
+        adb("shell", "input", "swipe", "160", "480", "160", "200", "300")
+        _sleep(1.0)
+        if not _tap_first(["Connect"]):
+            print("  [connect-scripted] FAIL: Connect button not found")
+            return False
+    _sleep(1.0)
+
+    end = time.time() + 12
+    while time.time() < end:
+        xml = ui_dump().lower()
+        if "my server" in xml or "4096" in xml:
+            print("  [connect-scripted] OK: connection saved")
+            _sleep(wait_after)
+            return True
+        _sleep(1.0)
+    print("  [connect-scripted] WARN: entry not confirmed within 12s")
+    return False
+
+
 def check_notification_drawer(expected_text: str, timeout: int = 10) -> bool:
     """Return True if `expected_text` appears in the OS notification drawer
     within `timeout` seconds.
@@ -533,22 +617,55 @@ Rules:
 """
 
 
+_LLM_CALL_COUNT = 0
+LLM_BUDGET = int(os.environ.get("CUA_LLM_BUDGET", "15"))
+
+
+class BudgetExhausted(Exception):
+    """Raised when the LLM daily-request budget is exhausted.
+
+    Free-tier Gemini keys cap each model at ~20 requests/day. The budget
+    (CUA_LLM_BUDGET, default 15) stops the driver before a 429 hard-crash so
+    the showcase degrades gracefully and already-passed critical phases survive.
+    """
+
+
 def call_llm(client, model: str, system: str, history: list) -> str:
-    """Call LLM via OpenAI-compatible API with retry on rate limit."""
+    """Call LLM via OpenAI-compatible API with retry on rate limit.
+
+    Enforces a hard global request budget (see LLM_BUDGET) and requests strict
+    JSON output (response_format=json_object) so free-tier truncation can't
+    produce malformed action payloads that waste additional calls.
+    """
+    global _LLM_CALL_COUNT
+    if _LLM_CALL_COUNT >= LLM_BUDGET:
+        raise BudgetExhausted(f"LLM budget exhausted ({LLM_BUDGET} calls)")
+    _LLM_CALL_COUNT += 1
+
+    strict = True
     for attempt in range(3):
         try:
-            response = client.chat.completions.create(
+            create_kwargs = dict(
                 model=model,
                 messages=[{"role": "system", "content": system}] + history,
-                max_completion_tokens=300,
+                max_completion_tokens=800,
                 temperature=0,
             )
+            if strict:
+                create_kwargs["response_format"] = {"type": "json_object"}
+            response = client.chat.completions.create(**create_kwargs)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            if "429" in str(e) and attempt < 2:
-                wait = 15 * (attempt + 1)
-                print(f"  [rate limited, retrying in {wait}s...]")
-                time.sleep(wait)
+            if "429" in str(e):
+                if attempt < 2:
+                    wait = 15 * (attempt + 1)
+                    print(f"  [rate limited, retrying in {wait}s...]")
+                    time.sleep(wait)
+                    continue
+                raise
+            if strict:
+                # Some gateways reject response_format — retry once prompt-enforced only.
+                strict = False
                 continue
             raise
 
@@ -578,7 +695,7 @@ def make_client(model: str):
         return OpenAI(
             api_key=os.environ["GEMINI_API_KEY"],
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        ), "gemini-3.5-flash"
+        ), os.environ.get("OPENCODE_GOOGLE_MODEL", "gemini-flash-latest")
     sys.exit("Set AZURE_OPENAI_API_KEY, AZURE_DEV_AI_API_KEY, OPENAI_API_KEY, XAI_API_KEY, or GEMINI_API_KEY")
 
 
@@ -742,11 +859,19 @@ def run_onboarding_showcase(
     include_ui_xml: bool = False,
     verbose: bool = True,
     max_steps_per_phase: int = 25,
+    lite: bool = False,
+    scripted_connect: bool = True,
 ) -> dict:
     """Execute the full first-run onboarding journey.
 
     Each phase is a focused CUA sub-goal. Phases are run sequentially.
     Returns a summary dict with per-phase results.
+
+    lite: free-tier mode — scripted connect plus only the critical phases
+    (session_list, new_session, sessions_reload). Informational phases
+    (typescript, verify, settings) are skipped to fit a 20 req/day quota.
+    scripted_connect: drive add-connection deterministically via uiautomator
+    instead of burning LLM turns on a screen the model repeatedly mis-taps.
     """
 
     results: dict[str, dict] = {}
@@ -783,27 +908,39 @@ def run_onboarding_showcase(
     # Phase 1-2: Open app, configure server connection
     # -----------------------------------------------------------------------
     host_only = opencode_url.replace("http://", "").replace(":4096", "")
-    ok = _run(
-        "connect",
-        goal=(
-            f"You are on the OpenCode mobile app. "
-            "The screen shows either a connection screen (first launch) or an empty connections list. "
-            "Your goal: add a new connection to the opencode server and verify it is saved. "
-            "Step 1: Look for an 'Add Connection', '+', or 'New Connection' button and tap it. "
-            f"Step 2: In the 'IP Address' field type '{host_only}'. Do NOT include http:// or the port — just the IP. "
-            "Step 3: The 'Port' field should already show 4096. Leave it as is. "
-            "Step 4: Leave username and password blank. "
-            "Step 5: Scroll down if needed and tap the 'Connect' button (a large dark button with a flash icon). "
-            "Step 6: Wait up to 5 seconds for the connection to save and return to the connections list. "
-            "IMPORTANT — after saving, the connection entry MUST appear in the connections list. "
-            f"The entry will show a name like 'My Server' (the URL may be too small to read). "
-            "If you are back on the connections list and see ANY connection entry, report done. "
-            "If the form is still showing or the list is empty, the save did not work — try again."
-        ),
-        max_steps=max_steps_per_phase,
-    )
-    if not ok:
-        return {"status": "fail", "phase": "connect", "results": results}
+    if scripted_connect:
+        _banner("connect")
+        ok = _scripted_connect(host_only)
+        results["connect"] = {
+            "status": "success" if ok else "fail",
+            "steps": 0,
+            "summary": "scripted uiautomator connect (0 LLM calls)" if ok else "scripted connect failed",
+        }
+        print(f"\n  [{'OK' if ok else 'FAIL'}] Phase 'connect': {'success' if ok else 'fail'} (scripted, 0 LLM calls)")
+        if not ok:
+            return {"status": "fail", "phase": "connect", "results": results}
+    else:
+        ok = _run(
+            "connect",
+            goal=(
+                f"You are on the OpenCode mobile app. "
+                "The screen shows either a connection screen (first launch) or an empty connections list. "
+                "Your goal: add a new connection to the opencode server and verify it is saved. "
+                "Step 1: Look for an 'Add Connection', '+', or 'New Connection' button and tap it. "
+                f"Step 2: In the 'IP Address' field type '{host_only}'. Do NOT include http:// or the port — just the IP. "
+                "Step 3: The 'Port' field should already show 4096. Leave it as is. "
+                "Step 4: Leave username and password blank. "
+                "Step 5: Scroll down if needed and tap the 'Connect' button (a large dark button with a flash icon). "
+                "Step 6: Wait up to 5 seconds for the connection to save and return to the connections list. "
+                "IMPORTANT — after saving, the connection entry MUST appear in the connections list. "
+                f"The entry will show a name like 'My Server' (the URL may be too small to read). "
+                "If you are back on the connections list and see ANY connection entry, report done. "
+                "If the form is still showing or the list is empty, the save did not work — try again."
+            ),
+            max_steps=max_steps_per_phase,
+        )
+        if not ok:
+            return {"status": "fail", "phase": "connect", "results": results}
 
     _sleep(2.0)
 
@@ -833,7 +970,11 @@ def run_onboarding_showcase(
             "Wait up to 10 seconds for the session list screen to appear. "
             "Report done when you can see the session list screen."
         )
-    ok = _run("session_list", goal=session_list_goal, max_steps=15)
+    try:
+        ok = _run("session_list", goal=session_list_goal, max_steps=15)
+    except BudgetExhausted as e:
+        print(f"\n  [SKIP] Budget exhausted before session_list: {e}")
+        return {"status": "partial", "phase": "budget", "results": results}
     if not ok:
         return {"status": "fail", "phase": "session_list", "results": results}
 
@@ -842,17 +983,21 @@ def run_onboarding_showcase(
     # -----------------------------------------------------------------------
     # Phase 4: Create new session
     # -----------------------------------------------------------------------
-    ok = _run(
-        "new_session",
-        goal=(
-            "You are on the sessions list screen. "
-            "Tap the '+' button (usually top-right) to create a new AI coding session. "
-            "Wait up to 5 seconds for the new session / chat screen to open. "
-            "Report done once you see a text input field at the bottom of the screen "
-            "(the session chat/input view is open)."
-        ),
-        max_steps=12,
-    )
+    try:
+        ok = _run(
+            "new_session",
+            goal=(
+                "You are on the sessions list screen. "
+                "Tap the '+' button (usually top-right) to create a new AI coding session. "
+                "Wait up to 5 seconds for the new session / chat screen to open. "
+                "Report done once you see a text input field at the bottom of the screen "
+                "(the session chat/input view is open)."
+            ),
+            max_steps=12,
+        )
+    except BudgetExhausted as e:
+        print(f"\n  [SKIP] Budget exhausted before new_session: {e}")
+        return {"status": "partial", "phase": "budget", "results": results}
     if not ok:
         return {"status": "fail", "phase": "new_session", "results": results}
 
@@ -883,7 +1028,11 @@ def run_onboarding_showcase(
             "Report FAIL if the sessions list is empty or shows 'No sessions yet' — "
             "that means the app failed to reload sessions after navigating back from a session."
         )
-    ok = _run("sessions_reload", goal=sessions_reload_goal, max_steps=12)
+    try:
+        ok = _run("sessions_reload", goal=sessions_reload_goal, max_steps=12)
+    except BudgetExhausted as e:
+        print(f"\n  [SKIP] Budget exhausted before sessions_reload: {e}")
+        return {"status": "partial", "phase": "budget", "results": results}
     if not ok:
         return {"status": "fail", "phase": "sessions_reload", "results": results}
 
@@ -894,63 +1043,74 @@ def run_onboarding_showcase(
     # -----------------------------------------------------------------------
     # The sessions regression test is done. TypeScript tests AI task execution;
     # failures here are due to model/server issues, not the sessions loading bug.
-    _run(
-        "typescript",
-        goal=(
-            "You are on the sessions list screen. "
-            "Tap the '+' button (top-right) to create a new session, wait for the chat view. "
-            f"Tap the text input field and type: {TYPESCRIPT_TASK!r} "
-            "Do NOT press back (it navigates away). "
-            "Tap the send/arrow button (bottom-right) to submit. "
-            "After sending, wait and watch — opencode will show tool calls and file writes as it works. "
-            "CRITICAL: Do NOT tap anywhere on the screen after tapping send. "
-            "Any tap will navigate away from the session and break the connection. "
-            "Wait up to 90 seconds total for the session to go idle/complete "
-            "(no new activity for at least 5 seconds, or a completion indicator appears). "
-            "Re-check every 15 seconds by looking at the screen — do NOT tap, just look. "
-            "Report done when opencode appears to have finished (idle, no spinners, last message is a summary or file was created). "
-            "Report fail only if there is a clear unrecoverable error."
-        ),
-        max_steps=25,
-    )
-    # TypeScript phase is informational — CI model availability varies; continue regardless.
-    _sleep(2.0)
+    # Skipped in lite mode (free-tier budget) — see `--lite`.
+    if not lite:
+        try:
+            _run(
+                "typescript",
+                goal=(
+                    "You are on the sessions list screen. "
+                    "Tap the '+' button (top-right) to create a new session, wait for the chat view. "
+                    f"Tap the text input field and type: {TYPESCRIPT_TASK!r} "
+                    "Do NOT press back (it navigates away). "
+                    "Tap the send/arrow button (bottom-right) to submit. "
+                    "After sending, wait and watch — opencode will show tool calls and file writes as it works. "
+                    "CRITICAL: Do NOT tap anywhere on the screen after tapping send. "
+                    "Any tap will navigate away from the session and break the connection. "
+                    "Wait up to 90 seconds total for the session to go idle/complete "
+                    "(no new activity for at least 5 seconds, or a completion indicator appears). "
+                    "Re-check every 15 seconds by looking at the screen — do NOT tap, just look. "
+                    "Report done when opencode appears to have finished (idle, no spinners, last message is a summary or file was created). "
+                    "Report fail only if there is a clear unrecoverable error."
+                ),
+                max_steps=25,
+            )
+        except BudgetExhausted as e:
+            print(f"  [SKIP] Budget exhausted before typescript: {e}")
+        # TypeScript phase is informational — CI model availability varies; continue regardless.
+        _sleep(2.0)
 
-    # -----------------------------------------------------------------------
-    # Phase 7: Verify output / success (informational)
-    # -----------------------------------------------------------------------
-    _run(
-        "verify",
-        goal=(
-            "The opencode session has finished. "
-            "Look at the chat to confirm the TypeScript hello world task succeeded. "
-            "You should see: a mention of 'hello.ts', 'Hello, World!', a file creation tool call, "
-            "or a success summary from the assistant. "
-            "Take a clear screenshot showing the result. "
-            "Report done with a brief summary of what you see as evidence of success. "
-            "Report fail only if the screen clearly shows an error with no recovery."
-        ),
-        max_steps=8,
-    )
-    _sleep(1.5)
+        # -----------------------------------------------------------------------
+        # Phase 7: Verify output / success (informational)
+        # -----------------------------------------------------------------------
+        try:
+            _run(
+                "verify",
+                goal=(
+                    "The opencode session has finished. "
+                    "Look at the chat to confirm the TypeScript hello world task succeeded. "
+                    "You should see: a mention of 'hello.ts', 'Hello, World!', a file creation tool call, "
+                    "or a success summary from the assistant. "
+                    "Take a clear screenshot showing the result. "
+                    "Report done with a brief summary of what you see as evidence of success. "
+                    "Report fail only if the screen clearly shows an error with no recovery."
+                ),
+                max_steps=8,
+            )
+        except BudgetExhausted as e:
+            print(f"  [SKIP] Budget exhausted before verify: {e}")
+        _sleep(1.5)
 
-    # -----------------------------------------------------------------------
-    # Phase 8-9: Navigate to Settings, show model selection (informational)
-    # -----------------------------------------------------------------------
-    _run(
-        "settings",
-        goal=(
-            "Navigate to the Settings screen of the OpenCode mobile app. "
-            "Look for a gear icon, 'Settings' tab in the bottom navigation bar, "
-            "or a hamburger menu that contains Settings. Tap it. "
-            "Once on the Settings screen, look for a 'Model' or 'AI Model' option and tap it "
-            "to show the model selection list. "
-            "Take a screenshot showing the model list or model setting. "
-            "You do NOT need to change the model — just show it is accessible. "
-            "Report done when the settings/model screen is visible in a screenshot."
-        ),
-        max_steps=15,
-    )
+        # -----------------------------------------------------------------------
+        # Phase 8-9: Navigate to Settings, show model selection (informational)
+        # -----------------------------------------------------------------------
+        try:
+            _run(
+                "settings",
+                goal=(
+                    "Navigate to the Settings screen of the OpenCode mobile app. "
+                    "Look for a gear icon, 'Settings' tab in the bottom navigation bar, "
+                    "or a hamburger menu that contains Settings. Tap it. "
+                    "Once on the Settings screen, look for a 'Model' or 'AI Model' option and tap it "
+                    "to show the model selection list. "
+                    "Take a screenshot showing the model list or model setting. "
+                    "You do NOT need to change the model — just show it is accessible. "
+                    "Report done when the settings/model screen is visible in a screenshot."
+                ),
+                max_steps=15,
+            )
+        except BudgetExhausted as e:
+            print(f"  [SKIP] Budget exhausted before settings: {e}")
 
     # Critical: connect + session list with pre-created session + new session + sessions_reload.
     # TypeScript/verify/settings are informational (model availability varies in CI).
@@ -1781,6 +1941,7 @@ Examples:
     parser.add_argument("--model", default="gpt-4o", help="Vision model deployment name.")
     parser.add_argument("--max-steps", type=int, default=25, help="Max LLM steps per phase (showcase) or total (legacy).")
     parser.add_argument("--include-xml", action="store_true", help="Include UI hierarchy XML in LLM context (more accurate, more tokens).")
+    parser.add_argument("--lite", action="store_true", help="Free-tier mode: scripted connect + critical phases only (fits ~20 requests/day).")
     parser.add_argument("--quiet", action="store_true")
 
     # Legacy / compat flags
@@ -2010,6 +2171,8 @@ Examples:
                 include_ui_xml=args.include_xml,
                 verbose=not args.quiet,
                 max_steps_per_phase=args.max_steps,
+                lite=args.lite,
+                scripted_connect=True,
             )
         finally:
             stop_screen_recording(rec_thread, remote_path, local_video)

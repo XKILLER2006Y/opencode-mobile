@@ -619,6 +619,8 @@ Rules:
 
 _LLM_CALL_COUNT = 0
 LLM_BUDGET = int(os.environ.get("CUA_LLM_BUDGET", "15"))
+LLM_MIN_INTERVAL = float(os.environ.get("CUA_LLM_INTERVAL", "14"))
+_last_llm_call = 0.0
 
 
 class BudgetExhausted(Exception):
@@ -633,14 +635,25 @@ class BudgetExhausted(Exception):
 def call_llm(client, model: str, system: str, history: list) -> str:
     """Call LLM via OpenAI-compatible API with retry on rate limit.
 
-    Enforces a hard global request budget (see LLM_BUDGET) and requests strict
-    JSON output (response_format=json_object) so free-tier truncation can't
-    produce malformed action payloads that waste additional calls.
+    Enforces a hard global request budget (see LLM_BUDGET), paces calls to stay
+    under free-tier per-minute quotas (CUA_LLM_INTERVAL, default 14s — gemini
+    free tier allows ~5 requests/minute), and requests strict JSON output
+    (response_format=json_object) so truncation can't waste calls on garbage.
     """
-    global _LLM_CALL_COUNT
+    global _LLM_CALL_COUNT, _last_llm_call
     if _LLM_CALL_COUNT >= LLM_BUDGET:
         raise BudgetExhausted(f"LLM budget exhausted ({LLM_BUDGET} calls)")
+
+    # Pace: keep at most 1 call per LLM_MIN_INTERVAL seconds so we never trip
+    # the per-minute quota (free tier: 5 RPM on flash-class models).
+    elapsed = time.time() - _last_llm_call
+    if elapsed < LLM_MIN_INTERVAL:
+        wait = LLM_MIN_INTERVAL - elapsed
+        if wait > 5.0:
+            print(f"  [pacing] waiting {wait:.1f}s (free tier ~5 req/min)")
+        time.sleep(wait)
     _LLM_CALL_COUNT += 1
+    _last_llm_call = time.time()
 
     strict = True
     for attempt in range(3):
@@ -658,7 +671,7 @@ def call_llm(client, model: str, system: str, history: list) -> str:
         except Exception as e:
             if "429" in str(e):
                 if attempt < 2:
-                    wait = 15 * (attempt + 1)
+                    wait = 30 * (attempt + 1)  # 30s / 60s — long enough for the RPM window to reset
                     print(f"  [rate limited, retrying in {wait}s...]")
                     time.sleep(wait)
                     continue

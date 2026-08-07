@@ -27,10 +27,30 @@ on:
           - draft
 
 jobs:
+  check-secrets:
+    # Job-level `if:` cannot reference the `secrets` context (GitHub rejects
+    # the workflow file). Read the secrets into step-level env vars (allowed)
+    # and expose a has-secrets output the publish job can gate on, so forks
+    # without the Play/keystore secrets show a clean skip instead of a red
+    # failure on every tag.
+    runs-on: ubuntu-latest
+    outputs:
+      has-secrets: ${{ steps.check.outputs.has }}
+    steps:
+      - id: check
+        env:
+          PLAY_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$PLAY_STORE_SERVICE_ACCOUNT_JSON" ] && [ -n "$KEYSTORE_BASE64" ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+          fi
+
   publish:
-    # Forks without the Play/keystore secrets can't publish - skip cleanly
-    # instead of burning a runner and showing a red failure on every tag.
-    if: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON != '' && secrets.KEYSTORE_BASE64 != '' }}
+    needs: check-secrets
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
     runs-on: ubuntu-latest
     env:
       EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}

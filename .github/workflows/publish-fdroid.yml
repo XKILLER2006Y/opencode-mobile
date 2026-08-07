@@ -6,11 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-secrets:
+    # Job-level `if:` cannot reference the `secrets` context (GitHub rejects
+    # the workflow file). Read the secrets into step-level env vars (allowed)
+    # and expose a has-secrets output the publish job can gate on, so forks
+    # without the F-Droid signing keys show a clean skip instead of a red
+    # failure on every tag. The F-Droid APK build still happens in build.yml
+    # for fork releases (unsigned debug key).
+    runs-on: ubuntu-latest
+    outputs:
+      has-secrets: ${{ steps.check.outputs.has }}
+    steps:
+      - id: check
+        env:
+          FDROID_REPO_KEYSTORE_B64: ${{ secrets.FDROID_REPO_KEYSTORE_B64 }}
+          FDROID_REPO_KEY_ALIAS: ${{ secrets.FDROID_REPO_KEY_ALIAS }}
+        run: |
+          if [ -n "$FDROID_REPO_KEYSTORE_B64" ] && [ -n "$FDROID_REPO_KEY_ALIAS" ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+          fi
+
   publish-fdroid:
-    # Forks without the F-Droid repo signing secrets can't publish - skip
-    # cleanly instead of failing red on every tag. The F-Droid APK build
-    # still happens in build.yml for fork releases (unsigned debug key).
-    if: ${{ secrets.FDROID_REPO_KEYSTORE_B64 != '' && secrets.FDROID_REPO_KEY_ALIAS != '' }}
+    needs: check-secrets
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

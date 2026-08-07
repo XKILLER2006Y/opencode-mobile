@@ -450,40 +450,61 @@ def _tap_first_edittext() -> bool:
 def _scripted_connect(host_only: str, wait_after: float = 2.0) -> bool:
     """Deterministic add-connection flow via uiautomator (0 LLM calls).
 
-    Taps Add Connection -> types the host IP -> taps Connect -> verifies the
-    connection entry appears in the list. Returns True on success.
+    Taps Add Connection -> types the host IP -> dismisses the IME -> scrolls
+    to and taps the real Connect button -> verifies the form actually closed
+    (the old "my server"/"4096" check false-positived on the form's own port
+    field). Returns True on success.
     """
     print("  [connect-scripted] driving add-connection via uiautomator (0 LLM calls)")
     if not _tap_first(["Add Connection", "New Connection", "Add Server"]):
         print("  [connect-scripted] FAIL: no add-connection control found")
+        _debug_ui_labels("connect")
         return False
     _sleep(1.0)
 
     if not (_tap_first(["IP Address", "IP address", "Address", "Host"], fuzzy=True)
             or _tap_first_edittext()):
         print("  [connect-scripted] FAIL: address field not found")
+        _debug_ui_labels("connect")
         return False
     _sleep(0.8)
     adb("shell", "input", "text", host_only)  # plain IP — safe chars only
     _sleep(0.5)
 
-    if not _tap_first(["Connect"]):
-        adb("shell", "input", "swipe", "160", "480", "160", "200", "300")
-        _sleep(1.0)
-        if not _tap_first(["Connect"]):
-            print("  [connect-scripted] FAIL: Connect button not found")
-            return False
-    _sleep(1.0)
+    # Dismiss the IME: while the keyboard is up it swallows swipes, so the
+    # form (which is scrollable) never scrolls and the submit button stays
+    # hidden below the fold.
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    _sleep(0.8)
 
+    # Scroll down until a submit control is visible, then tap it.
+    # IMPORTANT: exact match — fuzzy "Connect" also matches the form header
+    # "Connect to OpenCode" (tapping the header is a no-op).
+    tapped = False
+    for _ in range(6):
+        if _tap_first(["Connect", "Save", "Done"], fuzzy=False, retries=1):
+            tapped = True
+            break
+        adb("shell", "input", "swipe", "160", "560", "160", "200", "300")
+        _sleep(0.9)
+    if not tapped:
+        # Last resort: the submit button is a full-width dark bar at the very
+        # bottom of the scrolled form.
+        adb("shell", "input", "tap", "160", "610")
+        _sleep(1.0)
+
+    # Confirm the FORM is gone — "4096" is a false positive (the form's port
+    # field always contains it).
     end = time.time() + 12
     while time.time() < end:
         xml = ui_dump().lower()
-        if "my server" in xml or "4096" in xml:
-            print("  [connect-scripted] OK: connection saved")
+        if "connect to opencode" not in xml and "ip address" not in xml:
+            print("  [connect-scripted] OK: connection saved (form closed)")
             _sleep(wait_after)
             return True
         _sleep(1.0)
-    print("  [connect-scripted] WARN: entry not confirmed within 12s")
+    print("  [connect-scripted] WARN: form did not close within 12s")
+    _debug_ui_labels("connect")
     return False
 
 
@@ -502,7 +523,9 @@ def _scripted_session_list(precreated_title: str, wait: float = 12.0) -> bool:
     connect, this returns False.
     """
     print("  [session_list-scripted] driving via uiautomator (0 LLM calls)")
-    if not _tap_first(["My Server", "my server", "4096"], fuzzy=True):
+    # The saved connection row shows the name from the connect form ("My Mac"
+    # is the default) and/or the host URL (10.0.2.2).
+    if not _tap_first(["My Mac", "my mac", "10.0.2.2", "My Server", "my server"], fuzzy=True):
         print("  [session_list-scripted] FAIL: connection entry not found")
         _debug_ui_labels("session_list")
         return False
@@ -529,15 +552,20 @@ def _scripted_session_list(precreated_title: str, wait: float = 12.0) -> bool:
     return False
 
 
-def _scripted_new_session(wait: float = 8.0) -> bool:
+def _scripted_new_session(wait: float = 10.0) -> bool:
     """Deterministic new_session phase (0 LLM calls).
 
-    Taps the '+' button and asserts a chat input (EditText) appears.
+    Taps the New-session FAB -> taps 'Current Project' in the directory modal
+    -> asserts a chat input (EditText) appears.
     """
     print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
-    if not (_tap_first(["+", "New session", "New Session"], fuzzy=False)
-            or _tap_first(["new session", "create session"], fuzzy=True)):
-        print("  [new_session-scripted] FAIL: '+' button not found")
+    if not _tap_first(["New session", "new session", "+"], fuzzy=True):
+        print("  [new_session-scripted] FAIL: new-session FAB not found")
+        _debug_ui_labels("new_session")
+        return False
+    _sleep(1.5)
+    if not _tap_first(["Current Project", "current project"], fuzzy=True):
+        print("  [new_session-scripted] FAIL: 'Current Project' option not found")
         _debug_ui_labels("new_session")
         return False
     end = time.time() + wait
@@ -547,25 +575,20 @@ def _scripted_new_session(wait: float = 8.0) -> bool:
             return True
         _sleep(1.0)
     print("  [new_session-scripted] FAIL: chat input not visible")
+    _debug_ui_labels("new_session")
     return False
 
 
 def _scripted_sessions_reload(precreated_title: str, wait: float = 8.0) -> bool:
     """Deterministic sessions_reload phase (0 LLM calls).
 
-    Taps the Sessions tab from inside a session and asserts the pre-created
+    The session chat screen lives on the ROOT stack (no tab bar), so press
+    Android BACK to return to the sessions list, then assert the pre-created
     session is still listed — the reload regression guard.
     """
     print("  [sessions_reload-scripted] driving via uiautomator (0 LLM calls)")
-    end = time.time() + 8
-    while time.time() < end:
-        if _tap_first(["Sessions", "sessions", "Session"], fuzzy=True, retries=1):
-            break
-        _sleep(1.0)
-    else:
-        print("  [sessions_reload-scripted] FAIL: Sessions tab not found")
-        _debug_ui_labels("sessions_reload")
-        return False
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    _sleep(1.5)
     end = time.time() + wait
     while time.time() < end:
         if check_ui_text(precreated_title):
@@ -574,6 +597,7 @@ def _scripted_sessions_reload(precreated_title: str, wait: float = 8.0) -> bool:
             return True
         _sleep(1.0)
     print(f"  [sessions_reload-scripted] FAIL: '{precreated_title}' not visible in {wait:.0f}s")
+    _debug_ui_labels("sessions_reload")
     return False
 
 

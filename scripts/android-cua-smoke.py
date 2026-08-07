@@ -643,9 +643,15 @@ def _scripted_new_session(wait: float = 15.0) -> bool:
 
     The sessions FAB's SHORT press quick-creates a session in the current
     project (no modal); the LONG press opens the directory options modal.
-    This phase exercises the modal path: long-press the FAB (`delayLongPress`
-    is 500ms in the app, so hold >=600ms via `input swipe` same-point), tap
-    'Current Project', then assert a chat input (EditText) appears.
+    This phase exercises the modal path: long-press the FAB, tap 'Current
+    Project', then assert a chat input (EditText) appears.
+
+    Long-press must be injected as DOWN -> hold -> CANCEL (not `input swipe`):
+    the swipe's trailing UP event lands on the freshly-opened modal's
+    full-screen dismiss overlay, which closes the modal instantly (the
+    `animationType="slide"` modal appears under the still-held finger).
+    A CANCEL event ends the gesture without pressing the overlay, so the
+    modal stays open. `delayLongPress` is 500ms in the app; hold ~800ms.
 
     The short-press path was the old bug: the script tapped the FAB and then
     looked for the modal, but a short press never opens it (runs 27-28).
@@ -654,7 +660,9 @@ def _scripted_new_session(wait: float = 15.0) -> bool:
     cx, cy = _find_fab_center()
     opened = False
     for _ in range(3):
-        adb("shell", "input", "swipe", str(cx), str(cy), str(cx), str(cy), "700")
+        adb("shell", "input", "motionevent", "DOWN", str(cx), str(cy))
+        _sleep(0.8)
+        adb("shell", "input", "motionevent", "CANCEL")
         _sleep(1.8)
         if check_ui_text("Current Project"):
             opened = True

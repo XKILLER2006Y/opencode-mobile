@@ -118,3 +118,20 @@ bundle exec fastlane android deploy
 ```
 
 Set environment variables: `SUPPLY_JSON_KEY`, `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`.
+
+## Fork behavior (XKILLER2006Y/opencode-mobile)
+
+This repo is a fork. The publish workflows (Play Store, F-Droid) require
+repository secrets that only exist on the owner's repo (Play service account,
+release keystore, F-Droid signing keys). On this fork:
+
+- `publish-play-store.yml` and `publish-fdroid.yml` now **skip cleanly**
+  (job-level `if:` guards on the required secrets) instead of failing red on
+  every tag. A skipped job is expected and is not a problem.
+- Fork releases still get both APKs from `build.yml`: `app-release.apk`
+  (release keystore) and `app-release-fdroid.apk` (debug key, source-patched
+  F-Droid build). The F-Droid APK is installable directly; it is not signed
+  with the upstream F-Droid key, so it won't update via the official F-Droid
+  client unless the fork's self-hosted repo (gh-pages) is used.
+- The fork's self-hosted F-Droid repo is published from the `gh-pages`
+  branch at https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo.

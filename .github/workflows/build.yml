@@ -59,7 +59,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - uses: actions/setup-java@v5
@@ -169,7 +169,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       # F-Droid's metadata.yml prebuild patch bumps the Kotlin/Java toolchain

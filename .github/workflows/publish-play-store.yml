@@ -28,7 +28,7 @@ on:
 
 jobs:
   publish:
-    # Forks without the Play/keystore secrets can't publish — skip cleanly
+    # Forks without the Play/keystore secrets can't publish - skip cleanly
     # instead of burning a runner and showing a red failure on every tag.
     if: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON != '' && secrets.KEYSTORE_BASE64 != '' }}
     runs-on: ubuntu-latest

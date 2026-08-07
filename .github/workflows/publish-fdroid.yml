@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish-fdroid:
-    # Forks without the F-Droid repo signing secrets can't publish — skip
+    # Forks without the F-Droid repo signing secrets can't publish - skip
     # cleanly instead of failing red on every tag. The F-Droid APK build
     # still happens in build.yml for fork releases (unsigned debug key).
     if: ${{ secrets.FDROID_REPO_KEYSTORE_B64 != '' && secrets.FDROID_REPO_KEY_ALIAS != '' }}

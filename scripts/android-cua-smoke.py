@@ -334,15 +334,39 @@ def upload_to_archivebox(video_path: str, scenario_name: str) -> bool:
 
 
 def ui_dump() -> str:
-    """Dump UI hierarchy XML and return as string."""
-    adb("shell", "uiautomator", "dump", "/sdcard/_cua_ui.xml")
-    result = subprocess.run(
-        ["adb", "pull", "/sdcard/_cua_ui.xml", "/tmp/_cua_ui.xml"],
-        capture_output=True, timeout=10,
-    )
-    if result.returncode == 0:
-        return Path("/tmp/_cua_ui.xml").read_text(errors="replace")
+    """Dump UI hierarchy XML and return as string.
+
+    Retries on transient failures (uiautomator dump can return empty while the
+    UI is mid-animation — e.g. right after a tap triggers a re-render).
+    """
+    for _ in range(3):
+        adb("shell", "uiautomator", "dump", "/sdcard/_cua_ui.xml")
+        result = subprocess.run(
+            ["adb", "pull", "/sdcard/_cua_ui.xml", "/tmp/_cua_ui.xml"],
+            capture_output=True, timeout=10,
+        )
+        if result.returncode == 0:
+            text = Path("/tmp/_cua_ui.xml").read_text(errors="replace")
+            if text.strip():
+                return text
+        time.sleep(0.8)
     return ""
+
+
+def _debug_ui_labels(prefix: str) -> None:
+    """Print every non-empty text/content-desc node + bounds (ground truth)."""
+    xml = ui_dump()
+    if not xml:
+        print(f"  [{prefix}] DEBUG: ui_dump empty — cannot inspect screen")
+        return
+    print(f"  [{prefix}] DEBUG: screen nodes:")
+    for m in re.finditer(
+        r'(?:text|content-desc)="([^"]*)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
+        xml,
+    ):
+        node_text, x1, y1, x2, y2 = m.group(1), *map(int, m.groups()[1:])
+        if node_text:
+            print(f"    {node_text!r} @ ({x1},{y1})-({x2},{y2})")
 
 
 # ---------------------------------------------------------------------------
@@ -392,15 +416,21 @@ def _ui_node_centers(text: str, fuzzy: bool = True) -> list[tuple[int, int]]:
     return centers
 
 
-def _tap_first(labels: list[str], fuzzy: bool = True) -> bool:
-    """Tap the first node matching any label. Returns True if tapped."""
-    for label in labels:
-        centers = _ui_node_centers(label, fuzzy=fuzzy)
-        if centers:
-            x, y = centers[0]
-            adb("shell", "input", "tap", str(x), str(y))
-            _sleep(1.0)
-            return True
+def _tap_first(labels: list[str], fuzzy: bool = True, retries: int = 4) -> bool:
+    """Tap the first node matching any label. Returns True if tapped.
+
+    Retries a few times so a transient empty ui_dump (UI busy right after a
+    previous tap) doesn't cause a false miss.
+    """
+    for _ in range(max(1, retries)):
+        for label in labels:
+            centers = _ui_node_centers(label, fuzzy=fuzzy)
+            if centers:
+                x, y = centers[0]
+                adb("shell", "input", "tap", str(x), str(y))
+                _sleep(1.0)
+                return True
+        _sleep(0.8)
     return False
 
 
@@ -474,10 +504,19 @@ def _scripted_session_list(precreated_title: str, wait: float = 12.0) -> bool:
     print("  [session_list-scripted] driving via uiautomator (0 LLM calls)")
     if not _tap_first(["My Server", "my server", "4096"], fuzzy=True):
         print("  [session_list-scripted] FAIL: connection entry not found")
+        _debug_ui_labels("session_list")
         return False
     _sleep(1.5)
-    if not _tap_first(["Sessions", "sessions", "Session"], fuzzy=True):
+    # The connection row tap triggers a re-render; keep trying the Sessions tab
+    # for a few seconds so a transient busy/dump-empty window doesn't false-fail.
+    end = time.time() + 8
+    while time.time() < end:
+        if _tap_first(["Sessions", "sessions", "Session"], fuzzy=True, retries=1):
+            break
+        _sleep(1.0)
+    else:
         print("  [session_list-scripted] FAIL: Sessions tab not found")
+        _debug_ui_labels("session_list")
         return False
     end = time.time() + wait
     while time.time() < end:
@@ -499,6 +538,7 @@ def _scripted_new_session(wait: float = 8.0) -> bool:
     if not (_tap_first(["+", "New session", "New Session"], fuzzy=False)
             or _tap_first(["new session", "create session"], fuzzy=True)):
         print("  [new_session-scripted] FAIL: '+' button not found")
+        _debug_ui_labels("new_session")
         return False
     end = time.time() + wait
     while time.time() < end:
@@ -517,8 +557,14 @@ def _scripted_sessions_reload(precreated_title: str, wait: float = 8.0) -> bool:
     session is still listed — the reload regression guard.
     """
     print("  [sessions_reload-scripted] driving via uiautomator (0 LLM calls)")
-    if not _tap_first(["Sessions", "sessions", "Session"], fuzzy=True):
+    end = time.time() + 8
+    while time.time() < end:
+        if _tap_first(["Sessions", "sessions", "Session"], fuzzy=True, retries=1):
+            break
+        _sleep(1.0)
+    else:
         print("  [sessions_reload-scripted] FAIL: Sessions tab not found")
+        _debug_ui_labels("sessions_reload")
         return False
     end = time.time() + wait
     while time.time() < end:

@@ -578,7 +578,7 @@ def make_client(model: str):
         return OpenAI(
             api_key=os.environ["GEMINI_API_KEY"],
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        ), "gemini-2.0-flash"
+        ), "gemini-3.5-flash"
     sys.exit("Set AZURE_OPENAI_API_KEY, AZURE_DEV_AI_API_KEY, OPENAI_API_KEY, XAI_API_KEY, or GEMINI_API_KEY")
 
 

@@ -56,7 +56,7 @@ jobs:
       # This makes the workflow runnable on forks WITHOUT the owner's Azure
       # secrets (owner setup documented in AGENTS.md).
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      OPENCODE_GOOGLE_MODEL: "gemini-flash-latest"
+      OPENCODE_GOOGLE_MODEL: "gemini-3.1-flash-lite"
       # Default: emulator reaches runner host via 10.0.2.2. Override with dispatch input for live server.
       OPENCODE_URL: ${{ inputs.opencode_url != '' && inputs.opencode_url || 'http://10.0.2.2:4096' }}
       ARCHIVEBOX_URL: ${{ secrets.ARCHIVEBOX_URL }}
@@ -123,7 +123,7 @@ jobs:
 
       - name: Configure opencode Google provider
         env:
-          OPENCODE_GOOGLE_MODEL: "gemini-flash-latest"
+          OPENCODE_GOOGLE_MODEL: "gemini-3.1-flash-lite"
         run: |
           npm install -g opencode-ai
           # opencode (released npm pkg) does NOT auto-read GEMINI_API_KEY for its
@@ -198,7 +198,7 @@ jobs:
         if: ${{ inputs.opencode_url == '' }}
         timeout-minutes: 10
         env:
-          OPENCODE_GOOGLE_MODEL: "gemini-flash-latest"
+          OPENCODE_GOOGLE_MODEL: "gemini-3.1-flash-lite"
         run: |
           # Deterministic check that the server can actually produce an assistant
           # reply BEFORE we spend ~30min driving the UI. Creates a session, sends a
@@ -220,7 +220,7 @@ jobs:
           if [ -n "$SID" ]; then
             # The /session/{id}/message endpoint (what the app SDK's session.prompt
             # hits) REQUIRES an explicit model {providerID, modelID}; without it opencode
-            # has nothing to run. Mirror exactly what the app sends: google/gemini-flash-latest.
+            # has nothing to run. Mirror exactly what the app sends: google/gemini-3.1-flash-lite.
             HTTP=$(curl -s -m 90 --connect-timeout 5 -o /tmp/probe_reply.json -w '%{http_code}' \
               -X POST "http://127.0.0.1:4096/session/$SID/message" \
               -H 'content-type: application/json' \

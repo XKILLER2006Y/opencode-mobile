@@ -365,7 +365,8 @@ def check_ui_text(text: str, case_sensitive: bool = False) -> bool:
 
 
 def _ui_node_centers(text: str, fuzzy: bool = True) -> list[tuple[int, int]]:
-    """Return center (x, y) of every uiautomator node whose text matches.
+    """Return center (x, y) of every uiautomator node whose text OR
+    content-desc matches.
 
     Deterministic — no LLM. Used by the scripted connect phase to save the
     tiny free-tier Gemini daily budget for the phases that actually need vision.
@@ -374,12 +375,20 @@ def _ui_node_centers(text: str, fuzzy: bool = True) -> list[tuple[int, int]]:
     if not xml:
         return []
     centers = []
-    for m in re.finditer(r'text="([^"]*)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+    seen = set()
+    # RN often exposes tab/button labels via content-desc instead of text.
+    for m in re.finditer(
+        r'(?:text|content-desc)="([^"]*)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
+        xml,
+    ):
         node_text, x1, y1, x2, y2 = m.group(1), *map(int, m.groups()[1:])
         if not node_text:
             continue
         if (fuzzy and text.lower() in node_text.lower()) or (not fuzzy and node_text == text):
-            centers.append(((x1 + x2) // 2, (y1 + y2) // 2))
+            key = (x1, y1, x2, y2)
+            if key not in seen:
+                seen.add(key)
+                centers.append(((x1 + x2) // 2, (y1 + y2) // 2))
     return centers
 
 
@@ -445,6 +454,80 @@ def _scripted_connect(host_only: str, wait_after: float = 2.0) -> bool:
             return True
         _sleep(1.0)
     print("  [connect-scripted] WARN: entry not confirmed within 12s")
+    return False
+
+
+def _ui_has_edittext() -> bool:
+    """True if the current UI hierarchy contains any EditText (chat input)."""
+    xml = ui_dump()
+    return bool(xml) and 'class="android.widget.EditText"' in xml
+
+
+def _scripted_session_list(precreated_title: str, wait: float = 12.0) -> bool:
+    """Deterministic session_list phase (0 LLM calls).
+
+    Taps the saved connection (activates it), taps the Sessions tab, then
+    asserts the pre-created session title is visible — the core regression
+    guard: if the app doesn't load pre-existing sessions from the server on
+    connect, this returns False.
+    """
+    print("  [session_list-scripted] driving via uiautomator (0 LLM calls)")
+    if not _tap_first(["My Server", "my server", "4096"], fuzzy=True):
+        print("  [session_list-scripted] FAIL: connection entry not found")
+        return False
+    _sleep(1.5)
+    if not _tap_first(["Sessions", "sessions", "Session"], fuzzy=True):
+        print("  [session_list-scripted] FAIL: Sessions tab not found")
+        return False
+    end = time.time() + wait
+    while time.time() < end:
+        if check_ui_text(precreated_title):
+            print(f"  [session_list-scripted] OK: '{precreated_title}' visible in list")
+            _sleep(1.0)
+            return True
+        _sleep(1.0)
+    print(f"  [session_list-scripted] FAIL: '{precreated_title}' not found in {wait:.0f}s")
+    return False
+
+
+def _scripted_new_session(wait: float = 8.0) -> bool:
+    """Deterministic new_session phase (0 LLM calls).
+
+    Taps the '+' button and asserts a chat input (EditText) appears.
+    """
+    print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
+    if not (_tap_first(["+", "New session", "New Session"], fuzzy=False)
+            or _tap_first(["new session", "create session"], fuzzy=True)):
+        print("  [new_session-scripted] FAIL: '+' button not found")
+        return False
+    end = time.time() + wait
+    while time.time() < end:
+        if _ui_has_edittext():
+            print("  [new_session-scripted] OK: chat input visible")
+            return True
+        _sleep(1.0)
+    print("  [new_session-scripted] FAIL: chat input not visible")
+    return False
+
+
+def _scripted_sessions_reload(precreated_title: str, wait: float = 8.0) -> bool:
+    """Deterministic sessions_reload phase (0 LLM calls).
+
+    Taps the Sessions tab from inside a session and asserts the pre-created
+    session is still listed — the reload regression guard.
+    """
+    print("  [sessions_reload-scripted] driving via uiautomator (0 LLM calls)")
+    if not _tap_first(["Sessions", "sessions", "Session"], fuzzy=True):
+        print("  [sessions_reload-scripted] FAIL: Sessions tab not found")
+        return False
+    end = time.time() + wait
+    while time.time() < end:
+        if check_ui_text(precreated_title):
+            print(f"  [sessions_reload-scripted] OK: '{precreated_title}' still visible")
+            _sleep(1.0)
+            return True
+        _sleep(1.0)
+    print(f"  [sessions_reload-scripted] FAIL: '{precreated_title}' not visible in {wait:.0f}s")
     return False
 
 
@@ -708,7 +791,7 @@ def make_client(model: str):
         return OpenAI(
             api_key=os.environ["GEMINI_API_KEY"],
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        ), os.environ.get("OPENCODE_GOOGLE_MODEL", "gemini-flash-latest")
+        ), os.environ.get("OPENCODE_GOOGLE_MODEL", "gemini-3.1-flash-lite")
     sys.exit("Set AZURE_OPENAI_API_KEY, AZURE_DEV_AI_API_KEY, OPENAI_API_KEY, XAI_API_KEY, or GEMINI_API_KEY")
 
 
@@ -815,6 +898,7 @@ PHASE_BANNERS = {
     "verify":           "STEP 7:   Verifying task output / success response",
     "sessions_reload":  "STEP 4b: Navigate back to sessions tab — verify sessions load (regression guard)",
     "settings":         "STEP 8-9: Navigating to Settings — showing model selection",
+    "api_check":        "STEP 4c:  Minimal LLM observation (informational — scripted guards already passed)",
 }
 
 
@@ -874,6 +958,7 @@ def run_onboarding_showcase(
     max_steps_per_phase: int = 25,
     lite: bool = False,
     scripted_connect: bool = True,
+    scripted_phases: bool = True,
 ) -> dict:
     """Execute the full first-run onboarding journey.
 
@@ -885,6 +970,10 @@ def run_onboarding_showcase(
     (typescript, verify, settings) are skipped to fit a 20 req/day quota.
     scripted_connect: drive add-connection deterministically via uiautomator
     instead of burning LLM turns on a screen the model repeatedly mis-taps.
+    scripted_phases: also drive session_list / new_session / sessions_reload
+    deterministically via uiautomator (0 LLM calls). Only `api_check` — a
+    short informational observation phase — still uses the model, so a run
+    fits in a handful of free-tier requests regardless of the quota window.
     """
 
     results: dict[str, dict] = {}
@@ -983,36 +1072,60 @@ def run_onboarding_showcase(
             "Wait up to 10 seconds for the session list screen to appear. "
             "Report done when you can see the session list screen."
         )
-    try:
-        ok = _run("session_list", goal=session_list_goal, max_steps=15)
-    except BudgetExhausted as e:
-        print(f"\n  [SKIP] Budget exhausted before session_list: {e}")
-        return {"status": "partial", "phase": "budget", "results": results}
-    if not ok:
-        return {"status": "fail", "phase": "session_list", "results": results}
+    if scripted_phases:
+        _banner("session_list")
+        ok = _scripted_session_list(precreated_title or "cua-smoke-sessions-check")
+        results["session_list"] = {
+            "status": "success" if ok else "fail",
+            "steps": 0,
+            "summary": "scripted uiautomator session_list (0 LLM calls)" if ok else "scripted session_list failed",
+        }
+        print(f"\n  [{'OK' if ok else 'FAIL'}] Phase 'session_list': {'success' if ok else 'fail'} (scripted, 0 LLM calls)")
+        if not ok:
+            return {"status": "fail", "phase": "session_list", "results": results}
+    else:
+        try:
+            ok = _run("session_list", goal=session_list_goal, max_steps=15)
+        except BudgetExhausted as e:
+            print(f"\n  [SKIP] Budget exhausted before session_list: {e}")
+            return {"status": "partial", "phase": "budget", "results": results}
+        if not ok:
+            return {"status": "fail", "phase": "session_list", "results": results}
 
     _sleep(1.5)
 
     # -----------------------------------------------------------------------
     # Phase 4: Create new session
     # -----------------------------------------------------------------------
-    try:
-        ok = _run(
-            "new_session",
-            goal=(
-                "You are on the sessions list screen. "
-                "Tap the '+' button (usually top-right) to create a new AI coding session. "
-                "Wait up to 5 seconds for the new session / chat screen to open. "
-                "Report done once you see a text input field at the bottom of the screen "
-                "(the session chat/input view is open)."
-            ),
-            max_steps=12,
-        )
-    except BudgetExhausted as e:
-        print(f"\n  [SKIP] Budget exhausted before new_session: {e}")
-        return {"status": "partial", "phase": "budget", "results": results}
-    if not ok:
-        return {"status": "fail", "phase": "new_session", "results": results}
+    if scripted_phases:
+        _banner("new_session")
+        ok = _scripted_new_session()
+        results["new_session"] = {
+            "status": "success" if ok else "fail",
+            "steps": 0,
+            "summary": "scripted uiautomator new_session (0 LLM calls)" if ok else "scripted new_session failed",
+        }
+        print(f"\n  [{'OK' if ok else 'FAIL'}] Phase 'new_session': {'success' if ok else 'fail'} (scripted, 0 LLM calls)")
+        if not ok:
+            return {"status": "fail", "phase": "new_session", "results": results}
+    else:
+        try:
+            ok = _run(
+                "new_session",
+                goal=(
+                    "You are on the sessions list screen. "
+                    "Tap the '+' button (usually top-right) to create a new AI coding session. "
+                    "Wait up to 5 seconds for the new session / chat screen to open. "
+                    "Report done once you see a text input field at the bottom of the screen "
+                    "(the session chat/input view is open)."
+                ),
+                max_steps=12,
+            )
+        except BudgetExhausted as e:
+            print(f"\n  [SKIP] Budget exhausted before new_session: {e}")
+            return {"status": "partial", "phase": "budget", "results": results}
+        if not ok:
+            return {"status": "fail", "phase": "new_session", "results": results}
 
     _sleep(1.0)
 
@@ -1041,14 +1154,48 @@ def run_onboarding_showcase(
             "Report FAIL if the sessions list is empty or shows 'No sessions yet' — "
             "that means the app failed to reload sessions after navigating back from a session."
         )
-    try:
-        ok = _run("sessions_reload", goal=sessions_reload_goal, max_steps=12)
-    except BudgetExhausted as e:
-        print(f"\n  [SKIP] Budget exhausted before sessions_reload: {e}")
-        return {"status": "partial", "phase": "budget", "results": results}
-    if not ok:
-        return {"status": "fail", "phase": "sessions_reload", "results": results}
+    if scripted_phases:
+        _banner("sessions_reload")
+        ok = _scripted_sessions_reload(precreated_title or "cua-smoke-sessions-check")
+        results["sessions_reload"] = {
+            "status": "success" if ok else "fail",
+            "steps": 0,
+            "summary": "scripted uiautomator sessions_reload (0 LLM calls)" if ok else "scripted sessions_reload failed",
+        }
+        print(f"\n  [{'OK' if ok else 'FAIL'}] Phase 'sessions_reload': {'success' if ok else 'fail'} (scripted, 0 LLM calls)")
+        if not ok:
+            return {"status": "fail", "phase": "sessions_reload", "results": results}
+    else:
+        try:
+            ok = _run("sessions_reload", goal=sessions_reload_goal, max_steps=12)
+        except BudgetExhausted as e:
+            print(f"\n  [SKIP] Budget exhausted before sessions_reload: {e}")
+            return {"status": "partial", "phase": "budget", "results": results}
+        if not ok:
+            return {"status": "fail", "phase": "sessions_reload", "results": results}
 
+    _sleep(1.0)
+
+    # -----------------------------------------------------------------------
+    # Phase 4c: api_check — minimal LLM proof (informational, never gates)
+    # -----------------------------------------------------------------------
+    # Hybrid free-tier mode: critical phases are scripted (0 LLM calls); this
+    # short observation phase is the only real model usage in the run. It is
+    # informational — if the free-tier quota is exhausted mid-run the phase is
+    # skipped and the overall run still succeeds on the scripted guards.
+    try:
+        _run(
+            "api_check",
+            goal=(
+                "You are on the OpenCode mobile app sessions list screen. "
+                "Do NOT tap anything. "
+                "Take a screenshot and in one short sentence describe what session "
+                "entries are visible in the list."
+            ),
+            max_steps=3,
+        )
+    except BudgetExhausted as e:
+        print(f"  [SKIP] Budget exhausted before api_check: {e}")
     _sleep(1.0)
 
     # -----------------------------------------------------------------------

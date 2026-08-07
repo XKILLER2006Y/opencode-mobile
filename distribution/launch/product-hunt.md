@@ -20,10 +20,10 @@ You get token-by-token streaming output, a full inline diff viewer for every fil
 Free and MIT licensed. No subscription, no ads, no telemetry you didn't opt into.
 
 **Links:**
-- Get it (all install options): https://dzianisv.github.io/opencode-mobile/
-- F-Droid repo (add in your F-Droid client): https://dzianisv.github.io/opencode-mobile/fdroid/repo
-- Direct APK: https://github.com/dzianisv/opencode-mobile/releases/latest
-- Source: https://github.com/dzianisv/opencode-mobile
+- Get it (all install options): https://XKILLER2006Y.github.io/opencode-mobile/
+- F-Droid repo (add in your F-Droid client): https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
+- Direct APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
+- Source: https://github.com/XKILLER2006Y/opencode-mobile
 - Google Play: coming soon (currently in internal testing)
 
 ---
@@ -39,7 +39,7 @@ I built this because I run long opencode sessions on my home server and needed a
 - This is a client for [opencode](https://github.com/sst/opencode) (by the sst team, MIT). You need opencode running somewhere — your laptop, a home server, a VPS. Setup is `npm install -g opencode-ai && opencode serve`. Then paste the URL into the app.
 - Supports any connection method you already use to reach home: local network, Tailscale, Cloudflare Tunnel, ngrok.
 - Works with any model opencode supports: Claude, GPT-4, Gemini, or local LLMs via any OpenAI-compatible endpoint.
-- MIT licensed. Source is public at https://github.com/dzianisv/opencode-mobile. F-Droid submission in progress.
+- MIT licensed. Source is public at https://github.com/XKILLER2006Y/opencode-mobile. F-Droid submission in progress.
 
 Happy to answer questions about the implementation — particularly the SSE streaming + tool call approval flow, which was the trickiest part to get right. Thanks for hunting it!
 

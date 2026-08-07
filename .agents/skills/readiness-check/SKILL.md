@@ -48,16 +48,16 @@ Gates are grouped. REQUIRED gates decide the verdict; nice-to-have gates only WA
   - `npm run typecheck` exits clean.
   - `npm test` passes.
 - **B. F-Droid self-hosted repo LIVE** (REQUIRED)
-  - `https://dzianisv.github.io/opencode-mobile/fdroid/repo/index-v1.json` parses and contains `cc.agentlabs.opencode`; prints served versionName.
-  - `https://github.com/dzianisv/opencode-mobile/releases/latest` returns 200/3xx.
+  - `https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo/index-v1.json` parses and contains `cc.agentlabs.opencode`; prints served versionName.
+  - `https://github.com/XKILLER2006Y/opencode-mobile/releases/latest` returns 200/3xx.
 - **C. F-Droid MAINLINE published** (REQUIRED, headline)
   - `https://f-droid.org/packages/cc.agentlabs.opencode/` returns 200. A 404 means not yet merged on f-droid.org → this gate FAILS. Do not confuse with the self-hosted gate (B).
 - **D. Google Play PUBLISHED** (REQUIRED, headline)
   - `https://play.google.com/store/apps/details?id=cc.agentlabs.opencode` returns 200 with a real store page. While in-review/draft it 404s → gate FAILS.
 - **E. Web presence** (REQUIRED)
-  - landing `/`, `/guide/`, `/privacy/`, `sitemap.xml`, `robots.txt`, `og.png`, `fdroid-qr.png`, `apk-qr.png` under `https://dzianisv.github.io/opencode-mobile/` all return 200.
+  - landing `/`, `/guide/`, `/privacy/`, `sitemap.xml`, `robots.txt`, `og.png`, `fdroid-qr.png`, `apk-qr.png` under `https://XKILLER2006Y.github.io/opencode-mobile/` all return 200.
 - **F. Repo discoverability** (nice-to-have, WARN only)
-  - `gh repo view dzianisv/opencode-mobile --json repositoryTopics,homepageUrl` shows topics + homepage. Skipped gracefully if `gh` is missing/unauthenticated.
+  - `gh repo view XKILLER2006Y/opencode-mobile --json repositoryTopics,homepageUrl` shows topics + homepage. Skipped gracefully if `gh` is missing/unauthenticated.
 
 ## Interpreting results
 

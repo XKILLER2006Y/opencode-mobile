@@ -89,7 +89,7 @@ the email collection. To resubmit:
    with the named third parties. See the full table in `distribution/play-listing.md` →
    "Data safety form".
 4. Confirm the **Privacy policy URL** field still points at
-   `https://dzianisv.github.io/opencode-mobile/privacy/` (now updated with the email
+   `https://XKILLER2006Y.github.io/opencode-mobile/privacy/` (now updated with the email
    disclosure — `docs/privacy/index.html`, mirrored from `distribution/privacy-policy.md`).
 5. Save, then **Send for review** (Play re-reviews Data Safety changes; this is separate from
    a binary/release review since no code changed).

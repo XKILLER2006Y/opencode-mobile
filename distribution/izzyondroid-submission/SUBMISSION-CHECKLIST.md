@@ -13,11 +13,11 @@ IzzyOnDroid is the fastest OSS distribution channel — typical inclusion is
 ## Prerequisites
 
 - [ ] Signed release APK (not AAB) exists and is attached to a GitHub tag
-      (e.g. `https://github.com/dzianisv/opencode-mobile/releases/tag/v0.4.2`)
+      (e.g. `https://github.com/XKILLER2006Y/opencode-mobile/releases/tag/v0.4.2`)
 - [ ] APK is signed with `keystores/production-release.jks`
 - [ ] SHA-256 fingerprint confirmed: see `distribution/SIGNING-KEY-FINGERPRINTS.md`
 - [ ] Sentry opt-in gate is in production (avoids `Tracking` anti-feature escalation)
-- [ ] Privacy policy is live at `https://dzianisv.github.io/opencode-mobile/privacy/`
+- [ ] Privacy policy is live at `https://XKILLER2006Y.github.io/opencode-mobile/privacy/`
 - [ ] `app.json` `version` and `android.versionCode` are set correctly in the tagged commit
 
 ---

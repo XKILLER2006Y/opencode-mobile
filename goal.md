@@ -90,7 +90,7 @@ There is no finish line — keep compounding.
 - **Website**: `https://opencode.agentlabs.cc` is live (HTTP 200).
 - **CUA E2E**: the `sessions_reload` phase is green in CI (v0.4.6 run `28002986180` ✓). Deterministic ADB-based assertion helpers now back the feature scenarios.
 - **Demo**: 10× sped-up demo at `docs-site/demo.mp4`, embedded on the site.
-- **Support**: `support@agentlabs.cc` → `dzianisvv+agentlabscc@gmail.com` via Cloudflare email routing.
+- **Support**: `support@agentlabs.cc` → `XKILLER2006Yv+agentlabscc@gmail.com` via Cloudflare email routing.
 
 ## Current mission: grow installs (no terminal done-state)
 
@@ -110,7 +110,7 @@ third-party gates in <known_external_blockers>.
 ### Key facts
 - Package: `cc.agentlabs.opencode` (live). Legacy/orphaned app `ai.opencode.mobile` — ignore it.
 - Developer account: VIBE TECHNOLOGIES, LLC (ID `8842655543970815326`), Google login
-  `vibeteaichnologies@gmail.com` — never `dzianisvv@gmail.com`.
+  `vibeteaichnologies@gmail.com` — never `XKILLER2006Yv@gmail.com`.
 - Site `https://opencode.agentlabs.cc` · Support `support@agentlabs.cc`.
 - Dev server for CUA: `100.108.64.76:4096` (Tailscale).
 - Install channels live today: Google Play (internal), GitHub release APK, self-hosted F-Droid repo.

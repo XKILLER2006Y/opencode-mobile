@@ -156,7 +156,7 @@ Shipped + VERIFIED this cycle:
 
 ### cycle 7 addendum — baseline measured + delegation
 - **REAL BASELINE (the metric, measured):** 18 total APK downloads across all releases (v0.4.3=13, v0.4.2=2, rest ~0); GitHub 2 stars, 1 fork; traffic API no-access. → Gap to 100 is large; bottleneck is unambiguously AWARENESS, not conversion.
-- **Landing page audited = SOLID** (https://dzianisv.github.io/opencode-mobile/): title/desc keyworded, sets the self-hosted-server expectation repeatedly (the #1 happy-customer determinant), all CTAs resolve (download/, guide/, fdroid repo, APK, GitHub). Not the bottleneck — did NOT churn it.
+- **Landing page audited = SOLID** (https://XKILLER2006Y.github.io/opencode-mobile/): title/desc keyworded, sets the self-hosted-server expectation repeatedly (the #1 happy-customer determinant), all CTAs resolve (download/, guide/, fdroid repo, APK, GitHub). Not the bottleneck — did NOT churn it.
 - **Launch readiness:** distribution/launch/ set is POST-READY (live URLs, Play="coming soon", no placeholders, LAUNCH-CHECKLIST confirms). docs/marketing/ set uses intentional {{PLAY_URL}} (swap on Play approval) — not stale. (Minor: owner-submissions.md still says 0.4.3.)
 - **QA-gate hardening DELEGATED** to a background doer (agent): investigate whether CI opencode can reply (AZURE_OPENAI_* is in job env), widen cua-smoke from --only-connect-scenario to the core journey (connect→create session→[send→reply]→session list), iterate to green, NO release tag, NO public post. Awaiting its completion to drive next cycle.
 - **Critical path = QA gate green** → then cut v0.4.4 tag (public release) + owner fires the ready launch (biggest awareness step-change). Both the launch posting and Play promotion remain owner/identity-gated (bucket-C) with ready kits.
@@ -243,7 +243,7 @@ privacy blocker; hosting is); WS3 fixed it.
 
 ### Integrated
 - HANDOFF.md owner steps tightened (40 insertions): exact push step (3 commits +
-  `source ~/.env.d/github-dzianisv.env`), v0.4.4 bump targets `app.json:5` +
+  `source ~/.env.d/github-XKILLER2006Y.env`), v0.4.4 bump targets `app.json:5` +
   `android/app/build.gradle:98` (both verified `0.4.3`), privacy deploy+verify steps,
   MR #39530 URL + edit target, growth `{{PLAY_URL}}`/`{{FDROID_URL}}` placeholder gate.
   Committed to local main (reversible). NOT pushed.
@@ -369,8 +369,8 @@ Shipped 2 new high-intent SEO pages targeting uncovered queries, deployed live, 
   e668ef7..67b9de6 via /tmp/ghp-deploy worktree off origin/gh-pages, rsync, .nojekyll
   kept, fdroid repo untouched). gh-pages author had to use noreply email (privacy block).
 - Live HTTP 200 (verified after ~10 polls / Pages build delay):
-  - https://dzianisv.github.io/opencode-mobile/remote-access/ → 200
-  - https://dzianisv.github.io/opencode-mobile/ios/ → 200
+  - https://XKILLER2006Y.github.io/opencode-mobile/remote-access/ → 200
+  - https://XKILLER2006Y.github.io/opencode-mobile/ios/ → 200
   - sitemap.xml live and includes both new <loc> entries.
 - IndexNow POST (remote-access, ios, sitemap) → HTTP 200.
 
@@ -411,8 +411,8 @@ NEXT (owner): fire distribution/launch/ (verified-accurate, demo GIF, paste-read
 4 commits ahead of origin for engine to push.
 
 ### 2026-06-08 — F-Droid MAINLINE MR #39530: added Binaries field (the real remaining blocker)
-- **GitLab access: YES** (glab v1.67 authed as dzianisv via GITLAB_TOKEN; fork = gitlab.com/dzianisv/fdroiddata, project 82771999; fdroiddata canonical = project 36528).
+- **GitLab access: YES** (glab v1.67 authed as XKILLER2006Y via GITLAB_TOKEN; fork = gitlab.com/XKILLER2006Y/fdroiddata, project 82771999; fdroiddata canonical = project 36528).
 - **MR #39530 status: OPEN**, branch `add-cc.agentlabs.opencode` → `master`. Reproducible-build CI was ALREADY solved in a prior cycle — pipeline 2574586691 had all 9 jobs green incl. `fdroid build` + `check apk` (Expo SDK54/RN0.81 source-only recipe: `buildFromSource:['*']`, scandelete node_modules binaries, Firebase/Sentry/installreferrer stripped via in-repo `fdroid/*-patches`, JDK17→21 sed, NDK 27.1.12297006).
 - **The actual remaining blocker was NOT the build — it was a missing `Binaries:` field.** Maintainer linsui's last two notes: "Please add Binaries for reproducible build" and "AllowedAPKSigningKeys can't make F-Droid use your key without Binaries. It will just reject the apk." Without Binaries, F-Droid has no published-APK reference to verify the rebuild against, so a developer-signed (AllowedAPKSigningKeys) APK is rejected.
-- **FIX SHIPPED (commit 2f93f8e on fork branch):** added top-level `Binaries: https://github.com/dzianisv/opencode-mobile/releases/download/v%v/app-release.apk` (verified live: every release tag v0.4.0–v0.4.4 publishes `app-release.apk`; %v resolves to v0.4.3 for the pinned versionCode-5 build). Posted update note to linsui (note 3433771701) requesting a verification run. Synced stale local `distribution/fdroid-submission/metadata.yml` (was v0.3.1) to the canonical recipe.
+- **FIX SHIPPED (commit 2f93f8e on fork branch):** added top-level `Binaries: https://github.com/XKILLER2006Y/opencode-mobile/releases/download/v%v/app-release.apk` (verified live: every release tag v0.4.0–v0.4.4 publishes `app-release.apk`; %v resolves to v0.4.3 for the pinned versionCode-5 build). Posted update note to linsui (note 3433771701) requesting a verification run. Synced stale local `distribution/fdroid-submission/metadata.yml` (was v0.3.1) to the canonical recipe.
 - **NEXT STEP:** maintainer/F-Droid verification server reruns: rebuild from pinned commit c46f273 → download published v0.4.3 APK → byte-compare. If reproducible, MR merges and app ships to f-droid.org serving our signed APK. If diffs surface, iterate on determinism (likely candidates: hermes bytecode, build timestamps, R8/zip ordering). This now needs F-Droid-CI/maintainer iteration — the metadata side is complete and correct; cannot self-merge.

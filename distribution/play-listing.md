@@ -76,13 +76,13 @@ Install opencode on any machine:
 Then open the app, tap Connect, paste your server URL, and you're in. Your AI coding agent is now on your phone.
 
 <b>OPEN SOURCE</b>
-OpenCode Mobile is MIT licensed. Source code, issue tracker, and community at github.com/dzianisv/opencode-mobile. Contributions welcome.
+OpenCode Mobile is MIT licensed. Source code, issue tracker, and community at github.com/XKILLER2006Y/opencode-mobile. Contributions welcome.
 
 <b>PRIVACY</b>
 OpenCode Mobile does not collect your code, prompts, or AI responses. All traffic goes directly from the app to YOUR opencode server — never through our infrastructure. With your opt-in consent we use Sentry for crash diagnostics and PostHog for anonymous usage analytics (no PII, no message content, off by default). Diagnostic reports you share are also delivered to our support inbox. If you choose to join the optional OpenCode Connect waitlist, we collect the email address you enter to notify you at launch.
 
 Support: support@agentlabs.cc
-Issues: github.com/dzianisv/opencode-mobile/issues
+Issues: github.com/XKILLER2006Y/opencode-mobile/issues
 ```
 (3474/4000 chars)
 
@@ -165,7 +165,7 @@ Issues: github.com/dzianisv/opencode-mobile/issues
 
 **Required.** Must be a public URL.
 
-Suggested path: `https://dzianisv.github.io/opencode-mobile/privacy/`
+Suggested path: `https://XKILLER2006Y.github.io/opencode-mobile/privacy/`
 
 Privacy policy must cover:
 - What data is collected (Sentry crash diagnostics: device model, OS version, stack trace; PostHog usage analytics: activation-funnel events with coarse properties; Chatwoot shared support reports: scrubbed diagnostic reports sent only when the user taps "Share Report"; **email address: only if the user opts into the optional "OpenCode Connect" waitlist on the Connect screen** — no other user content in any of them)
@@ -362,7 +362,7 @@ still used for routine test builds; production releases are dispatched explicitl
 - [x] Adaptive icon (real PNG)
 - [x] Feature graphic 1024×500
 - [x] At least 2 phone screenshots
-- [x] Privacy policy live at https://dzianisv.github.io/opencode-mobile/privacy/
+- [x] Privacy policy live at https://XKILLER2006Y.github.io/opencode-mobile/privacy/
 - [x] Decide pricing model (free, no ads, no IAP)
 - [x] Run IARC content rating questionnaire (after app created in Play Console)
 - [x] Complete Data safety form (after app created in Play Console)

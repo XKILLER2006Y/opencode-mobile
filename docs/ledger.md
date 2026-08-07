@@ -10,7 +10,7 @@ plan/spec that drove it.
 Follow-up to the UI screenshot review. Three verified issues fixed:
 
 1. **Branding leak in install command.** `INSTALL_COMMAND` in
-   `src/lib/connect-qr.ts` pointed at `dzianisv/opencode-mobile` (upstream
+   `src/lib/connect-qr.ts` pointed at `XKILLER2006Y/opencode-mobile` (upstream
    author's repo). Distributed builds now install the CLI from this project's
    own repo (`XKILLER2006Y/opencode-mobile`) so the app is self-consistent.
    Test hardened with a branding guard (asserts owner + absence of upstream).
@@ -96,7 +96,7 @@ Tests: `src/lib/busy-reconcile.test.ts` (7 cases, `node:test`). Full gate green:
 
 ---
 
-## 2026-08-06 — Upstream parity audit (dzianisv/opencode-mobile main)
+## 2026-08-06 — Upstream parity audit (XKILLER2006Y/opencode-mobile main)
 
 Line-level audit of all 45 meaningful changed files between our fork and
 upstream `main` (285 commits, 221 files, no shared merge base). Result:

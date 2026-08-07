@@ -2,7 +2,7 @@
 
 ## Status
 
-- Vercel project: `opencode-mobile-site` (team `dzianisvs-projects`)
+- Vercel project: `opencode-mobile-site` (team `XKILLER2006Ys-projects`)
 - Auto-domain (live now): https://opencode-mobile-site.vercel.app
 - Custom domain (pending DNS): https://agentlabs.cc/opencode
 - Source: `/home/azureuser/workspace/vibebrowser/OpenCodeMobileSite/`
@@ -56,5 +56,5 @@ When the privacy policy changes, re-deploy the site to pick up the new version.
 ## Verification command
 
 ```bash
-curl -sI https://dzianisv.github.io/opencode-mobile/privacy/ | head -3
+curl -sI https://XKILLER2006Y.github.io/opencode-mobile/privacy/ | head -3
 ```

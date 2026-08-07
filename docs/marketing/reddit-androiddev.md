@@ -26,8 +26,8 @@ I just shipped OpenCode Mobile (open source, MIT) — an Android client for the 
 
 **Stack:** Expo SDK 54, TypeScript, React Query for server state, Zustand for local state, `expo-local-authentication` for biometric gating (app-open + per-send), `expo-secure-store` (Android Keystore) for connection secrets, Sentry (opt-in, off by default), signed AAB on every tag via GitHub Actions + EAS.
 
-Source: https://github.com/dzianisv/opencode-mobile
+Source: https://github.com/XKILLER2006Y/opencode-mobile
 
-Install / try it: https://dzianisv.github.io/opencode-mobile/download/ · F-Droid repo: https://dzianisv.github.io/opencode-mobile/fdroid/repo · APK: https://github.com/dzianisv/opencode-mobile/releases/latest · Google Play: in review — {{PLAY_URL}}
+Install / try it: https://XKILLER2006Y.github.io/opencode-mobile/download/ · F-Droid repo: https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo · APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest · Google Play: in review — {{PLAY_URL}}
 
 Happy to get into any of it — the SSE + approval coordination was the part I rewrote the most.

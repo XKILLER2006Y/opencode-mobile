@@ -16,25 +16,25 @@ const quickLinks = [
   {
     title: 'README',
     description: 'Installation, building from source, and quick start guide.',
-    href: 'https://github.com/dzianisv/opencode-mobile#readme',
+    href: 'https://github.com/XKILLER2006Y/opencode-mobile#readme',
     external: true,
   },
   {
     title: 'Releases',
     description: 'Download APKs and view changelog for every release.',
-    href: 'https://github.com/dzianisv/opencode-mobile/releases',
+    href: 'https://github.com/XKILLER2006Y/opencode-mobile/releases',
     external: true,
   },
   {
     title: 'Bug Reports',
     description: 'Found a bug? Open an issue on GitHub.',
-    href: 'https://github.com/dzianisv/opencode-mobile/issues/new',
+    href: 'https://github.com/XKILLER2006Y/opencode-mobile/issues/new',
     external: true,
   },
   {
     title: 'Contributing',
     description: 'Want to contribute? See CONTRIBUTING.md in the repo.',
-    href: 'https://github.com/dzianisv/opencode-mobile/blob/main/CONTRIBUTING.md',
+    href: 'https://github.com/XKILLER2006Y/opencode-mobile/blob/main/CONTRIBUTING.md',
     external: true,
   },
 ]
@@ -92,7 +92,7 @@ export default function DocsPage() {
           and the opencode Cloud. Want to help write docs?
         </p>
         <a
-          href="https://github.com/dzianisv/opencode-mobile/discussions"
+          href="https://github.com/XKILLER2006Y/opencode-mobile/discussions"
           target="_blank"
           rel="noopener noreferrer"
           className="btn-primary text-sm"

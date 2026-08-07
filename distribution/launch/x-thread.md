@@ -68,7 +68,7 @@ Your keys. Your hardware. Your inference budget.
 
 **Tweet 6 (OSS / trust)**
 ```
-MIT licensed. Source at github.com/dzianisv/opencode-mobile
+MIT licensed. Source at github.com/XKILLER2006Y/opencode-mobile
 
 No subscription. No ads. Sentry crash reporting is opt-in and off by default. Credentials live in Android Keystore.
 
@@ -82,8 +82,8 @@ F-Droid submission in progress.
 ```
 Now on Android.
 
-Get it (F-Droid repo + direct APK): https://dzianisv.github.io/opencode-mobile/
-Source + docs: github.com/dzianisv/opencode-mobile
+Get it (F-Droid repo + direct APK): https://XKILLER2006Y.github.io/opencode-mobile/
+Source + docs: github.com/XKILLER2006Y/opencode-mobile
 
 Google Play coming soon. If you run opencode, give it a try — issues and PRs welcome.
 ```

@@ -60,15 +60,15 @@ MIT licensed. No subscription. No ads.
 
 Sentry crash reporting is opt-in and OFF by default. Connection secrets live in the Android Keystore.
 
-Source: github.com/dzianisv/opencode-mobile
+Source: github.com/XKILLER2006Y/opencode-mobile
 ```
 
 **Tweet 7 (CTA)**
 ```
 On Android now:
 
-Install (F-Droid + direct APK): dzianisv.github.io/opencode-mobile/download
-Setup guide: dzianisv.github.io/opencode-mobile/guide
+Install (F-Droid + direct APK): XKILLER2006Y.github.io/opencode-mobile/download
+Setup guide: XKILLER2006Y.github.io/opencode-mobile/guide
 
 Google Play going live shortly: {{PLAY_URL}}
 

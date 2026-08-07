@@ -111,7 +111,7 @@ MR description template:
 **Package:** cc.agentlabs.opencode
 **License:** MIT
 **Category:** Development
-**Source:** https://github.com/dzianisv/opencode-mobile
+**Source:** https://github.com/XKILLER2006Y/opencode-mobile
 
 OpenCode Mobile is a free, open-source mobile client for the opencode AI
 coding agent (sst/opencode). MIT licensed. Crash reporting opt-in default OFF.

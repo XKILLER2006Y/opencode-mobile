@@ -201,6 +201,7 @@ jobs:
       - name: Probe opencode model capability (can it reply?)
         id: probe
         if: ${{ inputs.opencode_url == '' }}
+        timeout-minutes: 10
         env:
           AZURE_OPENAI_MODEL: "gpt-5.4"
         run: |
@@ -210,6 +211,13 @@ jobs:
           # MODEL_CAPABLE=true/false as an informational signal (the emulator step
           # always runs --showcase regardless of model capability).
           set +e
+          # Fail fast when the CI repo lacks the Azure secrets (e.g. forks):
+          # the sync /message endpoint blocks until the model call completes and
+          # has NO server-side timeout, so an empty apiKey stalls it for the
+          # whole 60-min job budget. The step timeout + curl -m bound the blast.
+          if [ -z "${AZURE_OPENAI_API_KEY}" ] || [ -z "${AZURE_OPENAI_ENDPOINT}" ]; then
+            echo "::warning::AZURE_OPENAI_API_KEY/AZURE_OPENAI_ENDPOINT are empty on this repo — model probe will fail fast (expected without secrets)"
+          fi
           # Use -s (not -sf): we WANT the body even on non-2xx so failures are visible.
           SID=$(curl -s -X POST http://127.0.0.1:4096/session -H 'content-type: application/json' -d '{}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))" 2>/dev/null)
           echo "session id: ${SID:-<none>}"
@@ -218,7 +226,7 @@ jobs:
             # The /session/{id}/message endpoint (what the app SDK's session.prompt
             # hits) REQUIRES an explicit model {providerID, modelID}; without it opencode
             # has nothing to run. Mirror exactly what the app sends: azure/gpt-5.4.
-            HTTP=$(curl -s -o /tmp/probe_reply.json -w '%{http_code}' \
+            HTTP=$(curl -s -m 90 --connect-timeout 5 -o /tmp/probe_reply.json -w '%{http_code}' \
               -X POST "http://127.0.0.1:4096/session/$SID/message" \
               -H 'content-type: application/json' \
               -d "{\"model\":{\"providerID\":\"azure\",\"modelID\":\"$AZURE_OPENAI_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: pong\"}]}" \
@@ -235,7 +243,7 @@ jobs:
             # Fire-and-forget, then poll /session/$SID/message for the response.
             if [ "$CAPABLE" = "true" ]; then
               echo "--- testing prompt_async endpoint (app's actual code path) ---"
-              ASYNC_HTTP=$(curl -s -o /tmp/async_resp.txt -w '%{http_code}' \
+              ASYNC_HTTP=$(curl -s -m 90 --connect-timeout 5 -o /tmp/async_resp.txt -w '%{http_code}' \
                 -X POST "http://127.0.0.1:4096/session/$SID/prompt_async" \
                 -H 'content-type: application/json' \
                 -d "{\"model\":{\"providerID\":\"azure\",\"modelID\":\"$AZURE_OPENAI_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: async_pong\"}]}" \
@@ -281,6 +289,7 @@ jobs:
 
       - name: Run CUA smoke test with emulator
         uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 60
         env:
           OPENCODE_URL: ${{ env.OPENCODE_URL }}
           CUA_SCENARIO: ${{ inputs.scenario || 'showcase' }}

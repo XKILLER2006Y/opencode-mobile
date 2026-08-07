@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { useConnections } from "./connections"
 import { useSessions, abortedSessions } from "./sessions"
 import { send as notify } from "../lib/notifications"
-import { sanitizeBody } from "../lib/notify-format"
+import { sanitizeBody, permissionNotificationBody, questionNotificationBody } from "../lib/notify-format"
 import { statusFromPart } from "../lib/status-labels"
 import { addBreadcrumb } from "../lib/sentry"
 import { AnalyticsEvent, track } from "../lib/analytics"
@@ -388,14 +388,9 @@ export const useEvents = create<EventsState>((set, get) => ({
               notify({
                 category: "permissions",
                 title: "Agent needs approval",
-                body: sanitizeBody(
-                  req.permission
-                    ? req.patterns?.length
-                      ? `${req.permission}: ${req.patterns.join(", ")}`
-                      : req.permission
-                    : req.patterns?.join(", "),
-                  "A tool needs your approval",
-                ),
+                // Generic body only — patterns/permission names stay in the
+                // in-app card (M-03: file-path globs leaked to the lock screen).
+                body: permissionNotificationBody(),
                 sessionId: req.sessionID,
                 dedupeKey: `perm-${req.id}`,
                 dedupeCooldownMs: 60_000,
@@ -433,7 +428,9 @@ export const useEvents = create<EventsState>((set, get) => ({
               notify({
                 category: "questions",
                 title: req.questions?.[0]?.header || "Input needed",
-                body: sanitizeBody(req.questions?.[0]?.question, "The assistant has a question"),
+                // Generic body only — the question itself (agent context) is
+                // revealed in-app, never on the lock screen (M-03).
+                body: questionNotificationBody(),
                 sessionId: req.sessionID,
                 dedupeKey: `question-${req.id}`,
                 dedupeCooldownMs: 60_000,

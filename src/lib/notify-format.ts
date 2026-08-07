@@ -13,3 +13,22 @@ export function sanitizeBody(s: string | undefined, fallback: string): string {
   // eslint-disable-next-line no-control-regex -- C0 controls are exactly what must be stripped
   return (s ? s.replace(/[\x00-\x1f\x7f]/g, " ").trim().slice(0, MAX_NOTIF_BODY) : "") || fallback
 }
+
+// Lock-screen notification bodies are pure "come look" signals. The in-app
+// permission/question cards render the full request; nothing server-supplied
+// (permission names, file-path globs, question text) may reach the
+// notification shade before the device is unlocked (M-03). The request is
+// deliberately NOT accepted as a parameter — callers that want to leak
+// content have to write it here themselves, and the tests pin the body as a
+// fixed generic string.
+
+export const PERMISSION_NOTIF_BODY = "A tool needs your approval"
+export const QUESTION_NOTIF_BODY = "The assistant has a question"
+
+export function permissionNotificationBody(): string {
+  return PERMISSION_NOTIF_BODY
+}
+
+export function questionNotificationBody(): string {
+  return QUESTION_NOTIF_BODY
+}

@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import * as SecureStore from "expo-secure-store"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { type Category, defaultPreferences } from "../lib/notifications"
 import { clampPageSize, mergeStoredSettings } from "../lib/settings-merge"
 import { setAppLocale } from "../lib/i18n/config"
@@ -32,7 +32,9 @@ function snapshot(get: () => SettingsState): Settings {
 }
 
 async function persist(settings: Settings) {
-  await SecureStore.setItemAsync(SETTINGS_KEY, JSON.stringify(settings))
+  // Settings are non-secret user preferences — AsyncStorage, not the
+  // Keychain-backed SecureStore (M-04).
+  await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({
@@ -40,7 +42,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   loaded: false,
 
   load: async () => {
-    const raw = await SecureStore.getItemAsync(SETTINGS_KEY)
+    const raw = await AsyncStorage.getItem(SETTINGS_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<Settings>
       // Merge stored settings with defaults so new fields/categories get their default

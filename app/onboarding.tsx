@@ -1,12 +1,13 @@
 import { useState } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useColorScheme } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, useColorScheme } from "react-native"
 import { router } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useTranslation } from "react-i18next"
 import { getTheme, theme } from "../src/lib/theme"
 import { useOnboarding } from "../src/stores/onboarding"
+import { useAuth } from "../src/stores/auth"
 
-type Step = "guide" | "helper"
+type Step = "guide" | "security" | "helper"
 
 const FEATURES = [
   { icon: "chatbubbles-outline" as const, key: "feature1" },
@@ -19,6 +20,7 @@ export default function OnboardingScreen() {
   const isDark = colorScheme === "dark"
   const colors = getTheme(isDark)
   const { t } = useTranslation()
+  const { hasBiometrics, settings, updateSettings } = useAuth()
   const [step, setStep] = useState<Step>("guide")
 
   const handleSkip = async () => {
@@ -64,12 +66,55 @@ export default function OnboardingScreen() {
 
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: colors.accent }]}
-              onPress={() => setStep("helper")}
+              onPress={() => setStep(hasBiometrics ? "security" : "helper")}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel={t("onboarding.getStarted")}
             >
               <Text style={[styles.primaryButtonText, { color: colors.white }]}>{t("onboarding.getStarted")}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => void handleSkip()}
+              style={styles.skipButton}
+              activeOpacity={0.6}
+              accessibilityRole="button"
+              accessibilityLabel={t("onboarding.skip")}
+            >
+              <Text style={[styles.skipText, { color: colors.textSecondary }]}>{t("onboarding.skip")}</Text>
+            </TouchableOpacity>
+          </>
+        ) : step === "security" ? (
+          <>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>{t("onboarding.securityTitle")}</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t("onboarding.securitySubtitle")}</Text>
+
+            <View style={[styles.helperCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.helperIcon, { backgroundColor: colors.accentGlow }]}>
+                <Ionicons name="finger-print" size={26} color={colors.accent} />
+              </View>
+              <View style={styles.helperCopy}>
+                <Text style={[styles.helperTitle, { color: colors.textPrimary }]}>{t("onboarding.securityToggleLabel")}</Text>
+                <Text style={[styles.helperSub, { color: colors.textSecondary }]}>
+                  {t("onboarding.securityToggleDescription")}
+                </Text>
+              </View>
+              <Switch
+                value={settings.requireBiometric}
+                onValueChange={(value) => void updateSettings({ requireBiometric: value })}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                accessibilityLabel={t("onboarding.securityToggleLabel")}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: colors.accent }]}
+              onPress={() => setStep("helper")}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={t("onboarding.continue")}
+            >
+              <Text style={[styles.primaryButtonText, { color: colors.white }]}>{t("onboarding.continue")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

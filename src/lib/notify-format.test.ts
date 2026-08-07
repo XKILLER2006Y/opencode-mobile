@@ -1,6 +1,12 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { sanitizeBody, MAX_NOTIF_BODY } from "./notify-format.ts"
+import {
+  sanitizeBody,
+  MAX_NOTIF_BODY,
+  PERMISSION_NOTIF_BODY,
+  permissionNotificationBody,
+  questionNotificationBody,
+} from "./notify-format.ts"
 
 // Notification bodies come from the server (and ultimately the AI). They must be
 // neutralized before display: control chars stripped, whitespace trimmed, length capped.
@@ -38,4 +44,26 @@ test("caps length at MAX_NOTIF_BODY", () => {
 test("trims before slicing so leading whitespace doesn't eat the budget", () => {
   const out = sanitizeBody("   " + "y".repeat(250), "fb")
   assert.equal(out, "y".repeat(MAX_NOTIF_BODY))
+})
+
+// Lock-screen notification bodies must be pure "come look" signals. The
+// in-app permission/question cards render the full request; nothing
+// server-supplied (permission names, file-path globs, question text) may
+// reach the notification shade before the device is unlocked (M-03).
+
+test("permission notification body is a fixed generic string", () => {
+  assert.equal(permissionNotificationBody(), "A tool needs your approval")
+})
+
+test("permission notification body can never carry server-supplied content", () => {
+  // The body has no parameters — there is no input channel for permission
+  // names or file-path globs to leak through (M-03).
+  assert.equal(permissionNotificationBody(), PERMISSION_NOTIF_BODY)
+  assert.ok(!PERMISSION_NOTIF_BODY.includes("bash"))
+  assert.ok(!PERMISSION_NOTIF_BODY.includes(".env"))
+  assert.ok(!PERMISSION_NOTIF_BODY.includes(".pem"))
+})
+
+test("question notification body is a fixed generic string", () => {
+  assert.equal(questionNotificationBody(), "The assistant has a question")
 })

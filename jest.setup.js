@@ -8,6 +8,23 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => {}),
 }))
 
+// AsyncStorage's native module is null under Jest. The settings store reads
+// and writes preferences through it (M-04); provide the promise-based API it
+// uses, backed by an in-memory Map so load/persist roundtrips work in tests.
+const mockAsyncStorageStore = new Map()
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(async (key) => (mockAsyncStorageStore.has(key) ? mockAsyncStorageStore.get(key) : null)),
+    setItem: jest.fn(async (key, value) => {
+      mockAsyncStorageStore.set(key, value)
+    }),
+    clear: jest.fn(async () => {
+      mockAsyncStorageStore.clear()
+    }),
+  },
+}))
+
 jest.mock("expo-haptics", () => ({
   impactAsync: jest.fn(async () => {}),
   notificationAsync: jest.fn(async () => {}),

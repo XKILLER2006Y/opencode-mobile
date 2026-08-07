@@ -1,23 +1,23 @@
-# Live Session Core Implementation Plan
+﻿# Live Session Core Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn the session screen into a PC-TUI-parity live experience — streaming thinking, live tool progress, continuous chat feel, live session stats — by replacing the O(n²) markdown reparse path with a block-level streaming renderer, fixing the reasoning batching and stats-scan hot paths, decomposing the 1,174-line session screen, and completing Apple polish.
+**Goal:** Turn the session screen into a PC-TUI-parity live experience â€” streaming thinking, live tool progress, continuous chat feel, live session stats â€” by replacing the O(nÂ²) markdown reparse path with a block-level streaming renderer, fixing the reasoning batching and stats-scan hot paths, decomposing the 1,174-line session screen, and completing Apple polish.
 
-**Architecture:** Hybrid streaming markdown (streamdown-rn while streaming → existing react-native-marked wrapper on completion for copy-button code blocks). Incremental O(1) session stats accumulator. MessageBubble keeps per-message part rendering (reasoning → text → tools in SSE order = the Activity River); live chrome (auto-expand, elapsed ticker, jump chip) lives at screen level inside the existing inverted FlatList so virtualization tuning is preserved.
+**Architecture:** Hybrid streaming markdown (streamdown-rn while streaming â†’ existing react-native-marked wrapper on completion for copy-button code blocks). Incremental O(1) session stats accumulator. MessageBubble keeps per-message part rendering (reasoning â†’ text â†’ tools in SSE order = the Activity River); live chrome (auto-expand, elapsed ticker, jump chip) lives at screen level inside the existing inverted FlatList so virtualization tuning is preserved.
 
 **Tech Stack:** React Native 0.86.2, React 19.2.3, Expo SDK ~57, streamdown-rn 0.2.1, react-native-marked 8.1.1, expo-blur ~57.0.2 (installed), expo-font ~57.0.1 (installed, Inter bundled), Zustand stores, jest-expo + RTL.
 
 ## Global Constraints
 
-- Deps installed ONLY via `npx expo install` — `.npmrc` strict-scripts gate forbids bare `npm install` of Expo-managed packages.
-- Version floors: `streamdown-rn@0.2.1` (peer React ^19 / RN ^0.81 — verified against React 19.2.3 / RN 0.86.2).
+- Deps installed ONLY via `npx expo install` â€” `.npmrc` strict-scripts gate forbids bare `npm install` of Expo-managed packages.
+- Version floors: `streamdown-rn@0.2.1` (peer React ^19 / RN ^0.81 â€” verified against React 19.2.3 / RN 0.86.2).
 - Verification gate every task end: `npx eslint src app` exit 0, `npx tsc --noEmit` exit 0, `npm test` all pass (319 existing + new).
-- The keyboard-avoidance wrapper (KAV + measured `kbOffset`, `app/session/[id].tsx:626-643`) is UNTOUCHED in behavior — regression guard.
+- The keyboard-avoidance wrapper (KAV + measured `kbOffset`, `app/session/[id].tsx:626-643`) is UNTOUCHED in behavior â€” regression guard.
 - Android selectable-Text workaround (Markdown.tsx `CustomRenderer.plainText` drops `selectable` per facebook/react-native#46999) MUST persist in the final markdown path.
 - Existing FlatList virtualization tuning (`windowSize={11}`, `maxToRenderPerBatch={12}`, `updateCellsBatchingPeriod={40}`, `maintainVisibleContentPosition`) is preserved; no new unbounded-mount paths.
 - No backend contract changes; no store restructuring; navigation/tabs/connections/settings untouched.
-- Apple design is ALREADY live in code (expo-blur glass toolbar, Inter fonts, iMessage bubbles) — Phase 4 is verification + gaps only, NOT a rebuild.
+- Apple design is ALREADY live in code (expo-blur glass toolbar, Inter fonts, iMessage bubbles) â€” Phase 4 is verification + gaps only, NOT a rebuild.
 
 ---
 
@@ -26,20 +26,20 @@
 **Files:**
 - Modify: `package.json` (via `npx expo install`)
 - Create: `src/components/markdown/StreamMarkdown.tsx`
-- Create: `test/stream-markdown.test.tsx` (new test dir for component tests if none exists — check `src/components/**/*.test.*` pattern first and follow it)
+- Create: `test/stream-markdown.test.tsx` (new test dir for component tests if none exists â€” check `src/components/**/*.test.*` pattern first and follow it)
 
 **Interfaces:**
 - Consumes: `Markdown` from `src/components/markdown/Markdown.tsx` (existing, unchanged)
-- Produces: `StreamMarkdown({ children, streaming }: { children: string; streaming?: boolean })` — renders `StreamdownRN` when `streaming === true`, `Markdown` when false. `isComplete` passed to StreamdownRN on the completion frame to finalize the active block.
+- Produces: `StreamMarkdown({ children, streaming }: { children: string; streaming?: boolean })` â€” renders `StreamdownRN` when `streaming === true`, `Markdown` when false. `isComplete` passed to StreamdownRN on the completion frame to finalize the active block.
 
-- [ ] **Step 1: Install dependency**
+- [x] **Step 1: Install dependency**
 
 Run: `npx expo install streamdown-rn`
 Expected: resolves `streamdown-rn@0.2.1` into package.json. Do NOT use bare `npm install`.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
-Create `test/stream-markdown.test.tsx` (or match existing component-test location — verify with `Get-ChildItem -Recurse -Filter "*.test.*" src | select -First 5 FullName` first):
+Create `test/stream-markdown.test.tsx` (or match existing component-test location â€” verify with `Get-ChildItem -Recurse -Filter "*.test.*" src | select -First 5 FullName` first):
 
 ```tsx
 import { render } from "@testing-library/react-native"
@@ -65,12 +65,12 @@ describe("StreamMarkdown", () => {
 })
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `npx jest test/stream-markdown.test.tsx -t "StreamMarkdown"` (or `npm test -- --runInBand`)
-Expected: FAIL — module not found `../src/components/markdown/StreamMarkdown`.
+Expected: FAIL â€” module not found `../src/components/markdown/StreamMarkdown`.
 
-- [ ] **Step 4: Write minimal implementation**
+- [x] **Step 4: Write minimal implementation**
 
 ```tsx
 import { useMemo } from "react"
@@ -84,8 +84,8 @@ interface Props {
 }
 
 // Hybrid markdown path. While a message is actively streaming, StreamdownRN
-// parses incrementally (block-level memoization — only the active block
-// re-renders per token, killing the O(n²) full reparse of react-native-marked).
+// parses incrementally (block-level memoization â€” only the active block
+// re-renders per token, killing the O(nÂ²) full reparse of react-native-marked).
 // On completion we switch to the stable Markdown wrapper once: it re-parses
 // the final text a single time (negligible O(n)) and restores the copy-button
 // CodeBlock + the Android selectable workaround, which streamdown-rn's
@@ -106,19 +106,19 @@ export function StreamMarkdown({ children, streaming = false }: Props) {
 }
 ```
 
-NOTE: `useThemeColors` — verify the actual export in `src/lib/theme.ts` (grep `export function getTheme` / `export const useTheme`). If only `getTheme(isDark)` exists, use `useColorScheme()` + `getTheme` like `Markdown.tsx` does. streamdown-rn's `theme` prop accepts `'dark' | 'light' | ThemeConfig`; a named theme is sufficient for Task 1 (custom ThemeConfig mapping to Apple tokens is Task 8).
+NOTE: `useThemeColors` â€” verify the actual export in `src/lib/theme.ts` (grep `export function getTheme` / `export const useTheme`). If only `getTheme(isDark)` exists, use `useColorScheme()` + `getTheme` like `Markdown.tsx` does. streamdown-rn's `theme` prop accepts `'dark' | 'light' | ThemeConfig`; a named theme is sufficient for Task 1 (custom ThemeConfig mapping to Apple tokens is Task 8).
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npx jest test/stream-markdown.test.tsx -t "StreamMarkdown"`
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Full gate**
+- [x] **Step 6: Full gate**
 
 Run: `npx eslint src test; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Expected: eslint exit 0, tsc exit 0, all tests pass (319 existing + 3 new).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add package.json package-lock.json src/components/markdown/StreamMarkdown.tsx test/stream-markdown.test.tsx
@@ -137,10 +137,10 @@ git commit -m "feat(markdown): hybrid StreamMarkdown with streamdown-rn streamin
 **Interfaces:**
 - Consumes: `useBatchedText(text, windowMs?)` from `src/lib/use-batched-text.ts` (existing, returns lagged copy)
 - Consumes: `Message` / `Part` types from `src/lib/sdk` (existing)
-- Produces: `ReasoningBlock({ text, isDark, live }: { text: string; isDark: boolean; live?: boolean })` — memoized; `live === true` renders expanded; manual tap toggles; when `live` flips false the user's manual state wins.
-- Produces: MessageBubble computes `isLive` as `message.streaming || !message.done` — VERIFY actual flag on Message type (grep `streaming` in `src/lib/sdk.ts` and `src/stores/sessions.ts`); if no flag exists, use `parts.some(p => p.type === "reasoning" && p.streaming)` or the store's `sending`/`sessionStatus` — pick whatever the data actually carries and document it here.
+- Produces: `ReasoningBlock({ text, isDark, live }: { text: string; isDark: boolean; live?: boolean })` â€” memoized; `live === true` renders expanded; manual tap toggles; when `live` flips false the user's manual state wins.
+- Produces: MessageBubble computes `isLive` as `message.streaming || !message.done` â€” VERIFY actual flag on Message type (grep `streaming` in `src/lib/sdk.ts` and `src/stores/sessions.ts`); if no flag exists, use `parts.some(p => p.type === "reasoning" && p.streaming)` or the store's `sending`/`sessionStatus` â€” pick whatever the data actually carries and document it here.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 import { render, fireEvent } from "@testing-library/react-native"
@@ -167,12 +167,12 @@ describe("ReasoningBlock", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest test/reasoning-block.test.tsx -t "ReasoningBlock"`
-Expected: FAIL — live prop not implemented (no auto-expand).
+Expected: FAIL â€” live prop not implemented (no auto-expand).
 
-- [ ] **Step 3: Implement ReasoningBlock live + memo**
+- [x] **Step 3: Implement ReasoningBlock live + memo**
 
 Rewrite `src/components/chat/ReasoningBlock.tsx`:
 
@@ -195,7 +195,7 @@ function ReasoningBlockImpl({ text, isDark, live = false }: Props) {
   const [userCollapsed, setUserCollapsed] = useState(false)
 
   // While live, stay expanded unless the user explicitly collapsed it.
-  // useEffect deliberately NOT used — derived state: expanded = live && !userCollapsed.
+  // useEffect deliberately NOT used â€” derived state: expanded = live && !userCollapsed.
   // When the stream completes (live flips false), the last user action wins.
   const expanded = live ? !userCollapsed : !userCollapsed
 
@@ -230,9 +230,9 @@ export const ReasoningBlock = memo(ReasoningBlockImpl, (prev, next) =>
 )
 ```
 
-NOTE: the header has `flex: 1` on label — add `liveDot` style `{ width: 6, height: 6, borderRadius: 3, marginRight: 2 }`. Verify `accentTintBg` / `warnTintBg` exist in theme (grep them — they appear in the original file so they do).
+NOTE: the header has `flex: 1` on label â€” add `liveDot` style `{ width: 6, height: 6, borderRadius: 3, marginRight: 2 }`. Verify `accentTintBg` / `warnTintBg` exist in theme (grep them â€” they appear in the original file so they do).
 
-- [ ] **Step 4: Wire batching + live flag in MessageBubble**
+- [x] **Step 4: Wire batching + live flag in MessageBubble**
 
 In `src/components/chat/MessageBubble.tsx`:
 
@@ -255,17 +255,17 @@ const isLive = /* VERIFY: message.streaming || parts.some(p => p.type === "reaso
 
 IMPORTANT: `useBatchedText` is already called for text at line 65; adding a second hook call is fine (hooks are per-component, independent). Do NOT add the reasoning hook conditionally.
 
-- [ ] **Step 5: Run tests to verify pass**
+- [x] **Step 5: Run tests to verify pass**
 
 Run: `npx jest test/reasoning-block.test.tsx test/stream-markdown.test.tsx -t "ReasoningBlock|StreamMarkdown"`
 Expected: PASS.
 
-- [ ] **Step 6: Full gate + verify existing tests still pass**
+- [x] **Step 6: Full gate + verify existing tests still pass**
 
 Run: `npx eslint src test; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
-Expected: green (MessageBubble tests — if any exist — plus all 319).
+Expected: green (MessageBubble tests â€” if any exist â€” plus all 319).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/components/chat/ReasoningBlock.tsx src/components/chat/MessageBubble.tsx test/reasoning-block.test.tsx
@@ -282,12 +282,12 @@ git commit -m "fix(chat): batch reasoning streaming, auto-expand thinking while 
 - Test: `test/session-stats.test.ts`
 
 **Interfaces:**
-- Consumes: `Message` type from `src/lib/sdk` (fields `role`, `cost`, `tokens {input, output, reasoning, cache {read, write}}`, `providerID`, `modelID` — VERIFY exact shape with grep in sdk.ts; adjust accordingly)
-- Consumes: `Provider` from `src/stores/catalog` (field `models[].limit.context` — already used by SessionInfo)
-- Produces: `createSessionStatsAccumulator()` → `{ push(msg: Message): void; get(): SessionStats }` where `SessionStats = { cost, input, output, reasoning, cacheRead, cacheWrite, total, percent, context }`. `push` is O(1) per message: a `Set<string>` of already-seen message ids + running totals; `get` is O(1).
-- Produces: `computeContextPercent(messages: Message[], providers: Provider[]): { context, percent }` — called once per accumulator per context-limit lookup (provider/model lookup is cheap; context limit changes only when the last assistant message changes).
+- Consumes: `Message` type from `src/lib/sdk` (fields `role`, `cost`, `tokens {input, output, reasoning, cache {read, write}}`, `providerID`, `modelID` â€” VERIFY exact shape with grep in sdk.ts; adjust accordingly)
+- Consumes: `Provider` from `src/stores/catalog` (field `models[].limit.context` â€” already used by SessionInfo)
+- Produces: `createSessionStatsAccumulator()` â†’ `{ push(msg: Message): void; get(): SessionStats }` where `SessionStats = { cost, input, output, reasoning, cacheRead, cacheWrite, total, percent, context }`. `push` is O(1) per message: a `Set<string>` of already-seen message ids + running totals; `get` is O(1).
+- Produces: `computeContextPercent(messages: Message[], providers: Provider[]): { context, percent }` â€” called once per accumulator per context-limit lookup (provider/model lookup is cheap; context limit changes only when the last assistant message changes).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 import { createSessionStatsAccumulator } from "../src/lib/session-stats"
@@ -330,12 +330,12 @@ describe("createSessionStatsAccumulator", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest test/session-stats.test.ts`
-Expected: FAIL — module not found.
+Expected: FAIL â€” module not found.
 
-- [ ] **Step 3: Implement accumulator**
+- [x] **Step 3: Implement accumulator**
 
 Create `src/lib/session-stats.ts`:
 
@@ -355,8 +355,8 @@ export interface SessionStats {
 }
 
 // O(1) per push: running totals + seen-id set. The previous SessionInfo
-// implementation scanned every message on every store update — O(n) per SSE
-// token push during streaming. Long sessions + live streaming = O(n²) total.
+// implementation scanned every message on every store update â€” O(n) per SSE
+// token push during streaming. Long sessions + live streaming = O(nÂ²) total.
 // The accumulator makes each push constant-time and get() a simple read.
 export function createSessionStatsAccumulator() {
   const seen = new Set<string>()
@@ -403,7 +403,7 @@ export function createSessionStatsAccumulator() {
 }
 ```
 
-- [ ] **Step 4: Rewire SessionInfo**
+- [x] **Step 4: Rewire SessionInfo**
 
 In `src/components/chat/SessionInfo.tsx`, replace the `useMemo` stats block (lines 62-91):
 
@@ -426,19 +426,19 @@ const stats = useMemo(() => {
 }, [messages, providers])
 ```
 
-NOTE: this keeps the same semantics (only *new* ids accumulate — the store replaces message objects with new refs but SAME id, so duplicates are skipped) while removing the per-update full-cost rescan. The visible output is identical; the cost drops from O(n) per update to O(n) total.
+NOTE: this keeps the same semantics (only *new* ids accumulate â€” the store replaces message objects with new refs but SAME id, so duplicates are skipped) while removing the per-update full-cost rescan. The visible output is identical; the cost drops from O(n) per update to O(n) total.
 
-- [ ] **Step 5: Run tests to verify pass**
+- [x] **Step 5: Run tests to verify pass**
 
 Run: `npx jest test/session-stats.test.ts`
 Expected: PASS.
 
-- [ ] **Step 6: Full gate**
+- [x] **Step 6: Full gate**
 
 Run: `npx eslint src test; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Expected: green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/session-stats.ts test/session-stats.test.ts src/components/chat/SessionInfo.tsx
@@ -447,7 +447,7 @@ git commit -m "perf(stats): O(1) incremental session token/cost accumulator"
 
 ---
 
-### Task 4: Live tool progress — auto-expand running tools + single elapsed ticker
+### Task 4: Live tool progress â€” auto-expand running tools + single elapsed ticker
 
 **Files:**
 - Modify: `src/components/chat/ToolCallCard.tsx` (auto-expand while running; live elapsed tick via shared interval)
@@ -456,9 +456,9 @@ git commit -m "perf(stats): O(1) incremental session token/cost accumulator"
 
 **Interfaces:**
 - Consumes: `Part` from `src/lib/sdk` (`state.status`, `state.time.start/end`, `state.output`)
-- Produces: `useLiveNow(active: boolean): number` — returns `Date.now()` updated ~1s; when `active` is false returns last value and stops the interval (single interval per active tool via a module-scope ref count, NOT per-card timers).
+- Produces: `useLiveNow(active: boolean): number` â€” returns `Date.now()` updated ~1s; when `active` is false returns last value and stops the interval (single interval per active tool via a module-scope ref count, NOT per-card timers).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 import { renderHook, act } from "@testing-library/react-native"
@@ -483,18 +483,18 @@ describe("useLiveNow", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest test/live-elapsed.test.ts`
-Expected: FAIL — module not found.
+Expected: FAIL â€” module not found.
 
-- [ ] **Step 3: Implement shared ticker**
+- [x] **Step 3: Implement shared ticker**
 
 ```ts
 import { useEffect, useRef, useState } from "react"
 
 // Single shared interval for all running tool cards. Per-card setInterval
-// timers would each wake React and force a re-render — with several tools
+// timers would each wake React and force a re-render â€” with several tools
 // running that's a re-render storm. One timer, one state bump, all cards
 // read the same "now".
 let subscribers = 0
@@ -536,9 +536,9 @@ export function useLiveNow(active: boolean): number {
 }
 ```
 
-NOTE: the module-scope `now` update happens in `tick`; the local version bump forces re-render; `now` is read on render. Simplify if tsc complains — the intent is: shared clock + per-subscriber re-render, no per-card interval.
+NOTE: the module-scope `now` update happens in `tick`; the local version bump forces re-render; `now` is read on render. Simplify if tsc complains â€” the intent is: shared clock + per-subscriber re-render, no per-card interval.
 
-- [ ] **Step 4: Wire ToolCallCard**
+- [x] **Step 4: Wire ToolCallCard**
 
 In `ToolCallCard.tsx`:
 - Add `const isRunning = status === "running"`
@@ -552,23 +552,23 @@ const elapsed = isRunning && tool.state?.time?.start
   : duration(tool.state?.time?.start, tool.state?.time?.end)
 ```
 
-- Add a subtle "running" pulse style on the card border while `isRunning` (optional; keep minimal — accent border + existing ActivityIndicator suffices for Task 4; visual pulse is Task 8).
+- Add a subtle "running" pulse style on the card border while `isRunning` (optional; keep minimal â€” accent border + existing ActivityIndicator suffices for Task 4; visual pulse is Task 8).
 
-- [ ] **Step 5: Run tests to verify pass**
+- [x] **Step 5: Run tests to verify pass**
 
 Run: `npx jest test/live-elapsed.test.ts`
 Expected: PASS.
 
-- [ ] **Step 6: Full gate**
+- [x] **Step 6: Full gate**
 
 Run: `npx eslint src test; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Expected: green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/live-elapsed.ts test/live-elapsed.test.ts src/components/chat/ToolCallCard.tsx
-git commit -m "feat(chat): live tool progress — auto-expand running cards, shared elapsed ticker"
+git commit -m "feat(chat): live tool progress â€” auto-expand running cards, shared elapsed ticker"
 ```
 
 ---
@@ -576,14 +576,14 @@ git commit -m "feat(chat): live tool progress — auto-expand running cards, sha
 ### Task 5: MessageBubble uses StreamMarkdown hybrid
 
 **Files:**
-- Modify: `src/components/chat/MessageBubble.tsx` (swap `<Markdown>` → `<StreamMarkdown streaming={isLive}>` for assistant text)
-- Test: extend `test/stream-markdown.test.tsx` (no new file needed — render-count test for block memoization)
+- Modify: `src/components/chat/MessageBubble.tsx` (swap `<Markdown>` â†’ `<StreamMarkdown streaming={isLive}>` for assistant text)
+- Test: extend `test/stream-markdown.test.tsx` (no new file needed â€” render-count test for block memoization)
 
 **Interfaces:**
 - Consumes: `StreamMarkdown` from Task 1, `isLive` computed in Task 2
 - Produces: assistant streaming text renders through streamdown-rn while live, stable Markdown (copy-button CodeBlock) on completion. Render-count regression test proves stable blocks do not re-render.
 
-- [ ] **Step 1: Write the failing render-count test**
+- [x] **Step 1: Write the failing render-count test**
 
 Add to `test/stream-markdown.test.tsx`:
 
@@ -615,7 +615,7 @@ describe("StreamMarkdown block memoization", () => {
     const before = stableRenders
     fireEvent.press(getByText("grow"))
     // StableProbe sits outside StreamMarkdown so it always re-renders with its
-    // parent — this proves the probe harness, not block memoization. The real
+    // parent â€” this proves the probe harness, not block memoization. The real
     // assertion is that appending content doesn't crash and streaming renders.
     expect(stableRenders).toBeGreaterThanOrEqual(before)
     expect(getByText(/new paragraph/)).toBeTruthy()
@@ -623,14 +623,14 @@ describe("StreamMarkdown block memoization", () => {
 })
 ```
 
-NOTE: true per-block render-count verification of streamdown-rn internals is a vendor concern — the guard here is behavioral: content appends while streaming render correctly and the component stays mounted (no crash, no key remount flash). If streamdown-rn exposes `onDebug` (it does — `DebugSnapshot.registry.stableBlockCount`), assert `stableBlockCount` increases after completion in a follow-up test.
+NOTE: true per-block render-count verification of streamdown-rn internals is a vendor concern â€” the guard here is behavioral: content appends while streaming render correctly and the component stays mounted (no crash, no key remount flash). If streamdown-rn exposes `onDebug` (it does â€” `DebugSnapshot.registry.stableBlockCount`), assert `stableBlockCount` increases after completion in a follow-up test.
 
-- [ ] **Step 2: Run test to verify it passes already (harness check)**
+- [x] **Step 2: Run test to verify it passes already (harness check)**
 
 Run: `npx jest test/stream-markdown.test.tsx`
 Expected: PASS (harness works pre-swap).
 
-- [ ] **Step 3: Swap the render path**
+- [x] **Step 3: Swap the render path**
 
 In `MessageBubble.tsx`:
 
@@ -645,12 +645,12 @@ In `MessageBubble.tsx`:
 
 - Update import: replace `import { Markdown } from "../markdown"` with `import { StreamMarkdown } from "../markdown"` and add `StreamMarkdown` to `src/components/markdown/index.tsx` exports.
 
-- [ ] **Step 4: Run tests + full gate**
+- [x] **Step 4: Run tests + full gate**
 
 Run: `npx jest test/stream-markdown.test.tsx; if ($?) { npx eslint src test }; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Expected: green.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/chat/MessageBubble.tsx src/components/markdown/index.tsx test/stream-markdown.test.tsx
@@ -662,15 +662,15 @@ git commit -m "feat(chat): stream assistant markdown via StreamdownRN while live
 ### Task 6: Jump-to-latest glass chip upgrade
 
 **Files:**
-- Modify: `app/session/[id].tsx` (existing `showScrollButton` block, lines ~753-762 → extract to component + glass styling)
+- Modify: `app/session/[id].tsx` (existing `showScrollButton` block, lines ~753-762 â†’ extract to component + glass styling)
 - Create: `src/components/session/JumpToLatest.tsx`
 - Test: `test/jump-to-latest.test.tsx`
 
 **Interfaces:**
 - Consumes: `onPress: () => void`, `visible: boolean`, `isDark: boolean`
-- Produces: `JumpToLatest({ visible, onPress, isDark })` — glass pill (BlurView `systemMaterial`/`systemMaterialDark`), "↓ Latest" label + chevron-down icon, appears only when `visible`, Apple spring on mount.
+- Produces: `JumpToLatest({ visible, onPress, isDark })` â€” glass pill (BlurView `systemMaterial`/`systemMaterialDark`), "â†“ Latest" label + chevron-down icon, appears only when `visible`, Apple spring on mount.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```tsx
 import { render, fireEvent } from "@testing-library/react-native"
@@ -696,12 +696,12 @@ describe("JumpToLatest", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest test/jump-to-latest.test.tsx`
-Expected: FAIL — module not found.
+Expected: FAIL â€” module not found.
 
-- [ ] **Step 3: Implement component**
+- [x] **Step 3: Implement component**
 
 ```tsx
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native"
@@ -774,7 +774,7 @@ const s = StyleSheet.create({
 })
 ```
 
-- [ ] **Step 4: Wire into session screen**
+- [x] **Step 4: Wire into session screen**
 
 In `app/session/[id].tsx`, replace the inline scroll button block (lines ~753-762) with:
 
@@ -782,14 +782,14 @@ In `app/session/[id].tsx`, replace the inline scroll button block (lines ~753-76
 <JumpToLatest visible={showScrollButton} onPress={() => scrollToBottom(true)} isDark={isDark} />
 ```
 
-Remove the now-unused `s.scrollBtn` / `s.scrollBtnDark` styles (keep if other code references them — grep first).
+Remove the now-unused `s.scrollBtn` / `s.scrollBtnDark` styles (keep if other code references them â€” grep first).
 
-- [ ] **Step 5: Run tests + full gate**
+- [x] **Step 5: Run tests + full gate**
 
 Run: `npx jest test/jump-to-latest.test.tsx; if ($?) { npx eslint src app test }; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Expected: green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/session/JumpToLatest.tsx test/jump-to-latest.test.tsx "app/session/[id].tsx"
@@ -805,15 +805,15 @@ git commit -m "feat(session): glass Jump-to-latest chip"
 - Create: `src/components/session/ComposerToolbar.tsx`
 - Create: `src/components/session/StatusChrome.tsx`
 - Modify: `app/session/[id].tsx` (shell: header, banners, orchestration, KAV wrapper, sheets)
-- Tests: `test/message-list.test.tsx`, `test/status-chrome.test.tsx` (behavioral smoke tests — FlatList rendering + banner visibility)
+- Tests: `test/message-list.test.tsx`, `test/status-chrome.test.tsx` (behavioral smoke tests â€” FlatList rendering + banner visibility)
 
 **Interfaces:**
 - Consumes: existing screen-local state/handlers moved as props. Each component receives ONLY what it renders; orchestration stays in `[id].tsx`.
-- Produces: `MessageList({ data, isDark, onLoadMore, loadingMore, onScroll, showScrollButton, onScrollToBottom, onLongPress })` — FlatList + virtualization + empty state + JumpToLatest (from Task 6).
-- Produces: `ComposerToolbar({ input, onChangeInput, onSend, attachments, onRemoveAttachment, onPickFromLibrary, onPickFromCamera, onPaste, agent, onCycleAgent, modelLabel, onOpenModelPicker, variantLabel, onOpenVariantPicker, hasVariants, isDark })` — glass toolbar + chips + input (visual extraction ONLY; all handlers remain owned by the screen).
-- Produces: `StatusChrome({ sessionID, isDark, reconnectAttempts, showConnectedFlash, revertMessageID, onUndoRevert, permissions, onPermissionReply, questions, onQuestionReply, onQuestionReject })` — StatusIndicator + banners + permission/question prompts.
+- Produces: `MessageList({ data, isDark, onLoadMore, loadingMore, onScroll, showScrollButton, onScrollToBottom, onLongPress })` â€” FlatList + virtualization + empty state + JumpToLatest (from Task 6).
+- Produces: `ComposerToolbar({ input, onChangeInput, onSend, attachments, onRemoveAttachment, onPickFromLibrary, onPickFromCamera, onPaste, agent, onCycleAgent, modelLabel, onOpenModelPicker, variantLabel, onOpenVariantPicker, hasVariants, isDark })` â€” glass toolbar + chips + input (visual extraction ONLY; all handlers remain owned by the screen).
+- Produces: `StatusChrome({ sessionID, isDark, reconnectAttempts, showConnectedFlash, revertMessageID, onUndoRevert, permissions, onPermissionReply, questions, onQuestionReply, onQuestionReject })` â€” StatusIndicator + banners + permission/question prompts.
 
-- [ ] **Step 1: Write failing smoke tests**
+- [x] **Step 1: Write failing smoke tests**
 
 ```tsx
 // test/message-list.test.tsx
@@ -842,29 +842,29 @@ describe("StatusChrome", () => {
 })
 ```
 
-NOTE: adapt text matchers to actual i18n strings used by the banners (`t("session.banners.reconnecting")` etc.) — grep the locale file if the regex doesn't match.
+NOTE: adapt text matchers to actual i18n strings used by the banners (`t("session.banners.reconnecting")` etc.) â€” grep the locale file if the regex doesn't match.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx jest test/message-list.test.tsx test/status-chrome.test.tsx`
-Expected: FAIL — modules not found.
+Expected: FAIL â€” modules not found.
 
-- [ ] **Step 3: Implement components (mechanical extraction)**
+- [x] **Step 3: Implement components (mechanical extraction)**
 
 Move, WITHOUT logic changes:
-1. FlatList block (lines 703-763 + `messageData` render + empty overlay) → `MessageList.tsx`. Props as declared in Interfaces.
-2. Composer glass block (lines 796-940ish — BlurView + chips + ImageAttachments + input + send) → `ComposerToolbar.tsx`. Props as declared.
-3. Status block (lines 662-788 — banners + StatusIndicator + permissions + questions) → `StatusChrome.tsx`. Props as declared.
-4. `[id].tsx` keeps: header/navigation options, SessionInfo, KAV wrapper + kbOffset, sheets (model/variant/slash), all handlers, all state. It composes: `<MessageList …/>`, `<StatusChrome …/>`, `<ComposerToolbar …/>` inside the KAV wrapper.
+1. FlatList block (lines 703-763 + `messageData` render + empty overlay) â†’ `MessageList.tsx`. Props as declared in Interfaces.
+2. Composer glass block (lines 796-940ish â€” BlurView + chips + ImageAttachments + input + send) â†’ `ComposerToolbar.tsx`. Props as declared.
+3. Status block (lines 662-788 â€” banners + StatusIndicator + permissions + questions) â†’ `StatusChrome.tsx`. Props as declared.
+4. `[id].tsx` keeps: header/navigation options, SessionInfo, KAV wrapper + kbOffset, sheets (model/variant/slash), all handlers, all state. It composes: `<MessageList â€¦/>`, `<StatusChrome â€¦/>`, `<ComposerToolbar â€¦/>` inside the KAV wrapper.
 
-Move the used style keys into each component's own StyleSheet (delete from `[id].tsx` only if nothing else references them — grep each key before removing).
+Move the used style keys into each component's own StyleSheet (delete from `[id].tsx` only if nothing else references them â€” grep each key before removing).
 
-- [ ] **Step 4: Run tests + full gate**
+- [x] **Step 4: Run tests + full gate**
 
 Run: `npx jest test/message-list.test.tsx test/status-chrome.test.tsx; if ($?) { npx eslint src app test }; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
-Expected: green — all 319 existing tests must pass untouched (behavior preserved).
+Expected: green â€” all 319 existing tests must pass untouched (behavior preserved).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/session/MessageList.tsx src/components/session/ComposerToolbar.tsx src/components/session/StatusChrome.tsx test/message-list.test.tsx test/status-chrome.test.tsx "app/session/[id].tsx"
@@ -877,14 +877,14 @@ git commit -m "refactor(session): decompose screen into MessageList, ComposerToo
 
 **Files:**
 - Modify: `src/components/markdown/StreamMarkdown.tsx` (Apple ThemeConfig mapping)
-- Modify: `src/components/chat/ToolCallCard.tsx` (running pulse — optional polish)
+- Modify: `src/components/chat/ToolCallCard.tsx` (running pulse â€” optional polish)
 - Verify: `app/session/[id].tsx`, `src/components/chat/MessageBubble.tsx`, `src/components/chat/SessionInfo.tsx` (no changes expected)
 
 **Interfaces:**
 - Consumes: Apple theme tokens from `src/lib/theme.ts` (`colors.dark/light` with `surface`, `surfaceElevated`, `accent`, `markdownCode*`)
 - Produces: `appleStreamdownTheme(isDark: boolean): ThemeConfig` mapping Apple tokens into streamdown-rn's `ThemeConfig` (`colors.background/foreground/muted/accent/codeBackground/codeForeground/border/link/syntax*`, `fonts.mono`, `spacing.block/inline/indent`).
 
-- [ ] **Step 1: Write Apple theme mapping**
+- [x] **Step 1: Write Apple theme mapping**
 
 Add to `StreamMarkdown.tsx`:
 
@@ -919,27 +919,27 @@ function appleStreamdownTheme(isDark: boolean): ThemeConfig {
 }
 ```
 
-Use `useColorScheme()` inside StreamMarkdown (like Markdown.tsx) and pass `appleStreamdownTheme(isDark)` to StreamdownRN. VERIFY token names against `theme.ts` (grep `codeBg`, `violetStrong`, `codeCopy`, `markdownLink` etc. — the file shows them at lines 46-58, 68-71).
+Use `useColorScheme()` inside StreamMarkdown (like Markdown.tsx) and pass `appleStreamdownTheme(isDark)` to StreamdownRN. VERIFY token names against `theme.ts` (grep `codeBg`, `violetStrong`, `codeCopy`, `markdownLink` etc. â€” the file shows them at lines 46-58, 68-71).
 
-- [ ] **Step 2: Verify Apple surfaces are complete (audit, no rebuild)**
+- [x] **Step 2: Verify Apple surfaces are complete (audit, no rebuild)**
 
 Run: `npx eslint src app; if ($?) { npx tsc --noEmit }; if ($?) { npm test }`
 Manually verify (spot-check with grep):
-- Glass composer: `BlurView` at `[id].tsx:796` ✓
-- Inter fonts: `src/lib/fonts.ts` + `assets/fonts/Inter-*.ttf` ✓
-- iMessage bubbles: `MessageBubble.tsx:174` `borderRadius: 20`, no tail ✓
+- Glass composer: `BlurView` at `[id].tsx:796` âœ“
+- Inter fonts: `src/lib/fonts.ts` + `assets/fonts/Inter-*.ttf` âœ“
+- iMessage bubbles: `MessageBubble.tsx:174` `borderRadius: 20`, no tail âœ“
 - Pill buttons on session chrome (grep `borderRadius: 999` in session components; add if missing in new decomposed components)
-- Apple spring: add `LayoutAnimation.configureNext` or Reanimated spring on JumpToLatest mount (Task 6 already uses BlurView; spring optional — add `LayoutAnimation` if trivially available, else skip)
+- Apple spring: add `LayoutAnimation.configureNext` or Reanimated spring on JumpToLatest mount (Task 6 already uses BlurView; spring optional â€” add `LayoutAnimation` if trivially available, else skip)
 
-- [ ] **Step 3: Run full gate + expo-doctor**
+- [x] **Step 3: Run full gate + expo-doctor**
 
 Run: `npx eslint src app test; if ($?) { npx tsc --noEmit }; if ($?) { npm test }; if ($?) { npx expo-doctor }`
 Expected: all green, expo-doctor clean.
 
-- [ ] **Step 4: Bump version + commit**
+- [x] **Step 4: Bump version + commit**
 
-Run: bump `app.json` version → 0.4.17, `android.versionCode` → 44, `package.json` → 0.4.17, `android/app/build.gradle` versionCode 44 / versionName "0.4.17".
-Run: `npm run check:versions` — expect "Version metadata aligned: 0.4.17 (44)".
+Run: bump `app.json` version â†’ 0.4.17, `android.versionCode` â†’ 44, `package.json` â†’ 0.4.17, `android/app/build.gradle` versionCode 44 / versionName "0.4.17".
+Run: `npm run check:versions` â€” expect "Version metadata aligned: 0.4.17 (44)".
 
 ```bash
 git add app.json package.json android/app/build.gradle src/components/markdown/StreamMarkdown.tsx src/components/chat/ToolCallCard.tsx
@@ -951,16 +951,16 @@ git commit -m "feat(ui): Apple theme mapping for streaming markdown + polish, bu
 ## Self-Review Checklist
 
 - **Spec coverage:**
-  - §2.1 dependency → Task 1
-  - §2.2 StreamMarkdown hybrid → Tasks 1 + 5
-  - §2.3 reasoning batching + live → Task 2
-  - §3 Activity River → Task 4 (live tool) + Task 5 (streaming text) + Task 6 (jump chip) — river is the composed behavior of MessageBubble parts + screen chrome, per virtualization constraint
-  - §3.3 component boundary → Tasks 5-7 (MessageBubble parts = river entries; MessageList composes them)
-  - §4 decomposition → Task 7
-  - §4.1 incremental stats → Task 3
-  - §5 Apple polish → Task 8 (verified mostly done; only streamdown theme mapping + gaps)
-  - §6 verification gates → every task ends with eslint/tsc/jest gate
-- **Placeholder scan:** no TBD/TODO steps; every step has concrete code or a verified-fail expectation. The one VERIFY note (isLive flag source, Message.tokens shape, theme export names) is a deliberate instruction to check the actual data shape before coding — not a placeholder.
+  - Â§2.1 dependency â†’ Task 1
+  - Â§2.2 StreamMarkdown hybrid â†’ Tasks 1 + 5
+  - Â§2.3 reasoning batching + live â†’ Task 2
+  - Â§3 Activity River â†’ Task 4 (live tool) + Task 5 (streaming text) + Task 6 (jump chip) â€” river is the composed behavior of MessageBubble parts + screen chrome, per virtualization constraint
+  - Â§3.3 component boundary â†’ Tasks 5-7 (MessageBubble parts = river entries; MessageList composes them)
+  - Â§4 decomposition â†’ Task 7
+  - Â§4.1 incremental stats â†’ Task 3
+  - Â§5 Apple polish â†’ Task 8 (verified mostly done; only streamdown theme mapping + gaps)
+  - Â§6 verification gates â†’ every task ends with eslint/tsc/jest gate
+- **Placeholder scan:** no TBD/TODO steps; every step has concrete code or a verified-fail expectation. The one VERIFY note (isLive flag source, Message.tokens shape, theme export names) is a deliberate instruction to check the actual data shape before coding â€” not a placeholder.
 - **Type consistency:** `StreamMarkdown({children, streaming})` used consistently (Tasks 1, 5, 8); `ReasoningBlock({text, isDark, live})` consistent (Task 2); `useBatchedText` reused (Task 2); `JumpToLatest({visible, onPress, isDark})` consistent (Task 6); `createSessionStatsAccumulator().push/.setContext/.get` consistent (Task 3); `useLiveNow(active)` consistent (Task 4).
 
 ## Execution Handoff

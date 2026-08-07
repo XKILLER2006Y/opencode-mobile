@@ -447,12 +447,12 @@ def _tap_first_edittext() -> bool:
     return False
 
 
-def _tap_fab_bottom_right() -> bool:
-    """Tap the floating action button anchored bottom-right (e.g. sessions FAB).
+def _find_fab_center() -> tuple[int, int]:
+    """Return the center (cx, cy) of the bottom-right FAB (e.g. sessions FAB).
 
     On this RN build the FAB's accessibilityLabel is NOT exposed in the
-    uiautomator dump — the node only carries its icon glyph — so label-based
-    taps miss it. Strategy:
+    uiautomator dump — the node only carries its icon glyph ('\uf103' for the
+    sessions add-FAB) — so label-based taps miss it. Strategy:
       1. Prefer the FAB's own node: any small node in the bottom-right corner
          of the content area (above the tab bar) — the FAB is the only element
          there on the sessions tab.
@@ -460,28 +460,28 @@ def _tap_fab_bottom_right() -> bool:
          FAB, measured from the content area's bottom edge).
     """
     xml = ui_dump()
-    if not xml:
-        return False
-    # Tab-bar top: the "Sessions" tab LABEL node sits at the bottom of the
-    # 42px tab bar, so subtract ~28px to reach the bar's top edge.
-    tab_top = None
-    for m in re.finditer(r'(?:text|content-desc)="Sessions"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
-        tab_top = int(m.group(2)) - 28
-        break
-    if tab_top is None:
-        tab_top = 597  # CI emulator default (320x640)
-    # 1. The FAB node itself (icon-only glyph, bottom-right, above the tab bar).
-    for m in re.finditer(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
-        x1, y1, x2, y2 = map(int, m.groups())
-        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
-        if cx > 200 and tab_top - 90 <= cy <= tab_top - 10:
-            adb("shell", "input", "tap", str(cx), str(cy))
-            _sleep(1.0)
-            return True
-    # 2. Computed position.
-    x = 320 - 44   # right:16 + half of 56px FAB
-    y = tab_top - 44
-    adb("shell", "input", "tap", str(x), str(y))
+    if xml:
+        # Tab-bar top: the "Sessions" tab LABEL node sits at the bottom of the
+        # 42px tab bar, so subtract ~28px to reach the bar's top edge.
+        tab_top = None
+        for m in re.finditer(r'(?:text|content-desc)="Sessions"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+            tab_top = int(m.group(2)) - 28
+            break
+        if tab_top is None:
+            tab_top = 597  # CI emulator default (320x640)
+        for m in re.finditer(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml):
+            x1, y1, x2, y2 = map(int, m.groups())
+            cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+            if cx > 200 and tab_top - 90 <= cy <= tab_top - 10:
+                return (cx, cy)
+        return (320 - 44, tab_top - 44)  # right:16 + half of 56px FAB
+    return (276, 553)  # default for the CI emulator (320x640)
+
+
+def _tap_fab_bottom_right() -> bool:
+    """Tap the floating action button anchored bottom-right (e.g. sessions FAB)."""
+    cx, cy = _find_fab_center()
+    adb("shell", "input", "tap", str(cx), str(cy))
     _sleep(1.0)
     return True
 
@@ -638,23 +638,33 @@ def _scripted_session_list(precreated_title: str, wait: float = 20.0) -> bool:
     return False
 
 
-def _scripted_new_session(wait: float = 10.0) -> bool:
+def _scripted_new_session(wait: float = 15.0) -> bool:
     """Deterministic new_session phase (0 LLM calls).
 
-    Taps the New-session FAB (label-based first, then by computed coordinates
-    — the FAB's accessibilityLabel is not exposed in the uiautomator dump on
-    this RN build, so label taps miss it), taps 'Current Project' in the
-    directory modal, then asserts a chat input (EditText) appears.
+    The sessions FAB's SHORT press quick-creates a session in the current
+    project (no modal); the LONG press opens the directory options modal.
+    This phase exercises the modal path: long-press the FAB (`delayLongPress`
+    is 500ms in the app, so hold >=600ms via `input swipe` same-point), tap
+    'Current Project', then assert a chat input (EditText) appears.
+
+    The short-press path was the old bug: the script tapped the FAB and then
+    looked for the modal, but a short press never opens it (runs 27-28).
     """
     print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
-    if not (_tap_first(["New session", "new session", "+"], fuzzy=True)
-            or _tap_fab_bottom_right()):
-        print("  [new_session-scripted] FAIL: new-session FAB not found")
+    cx, cy = _find_fab_center()
+    opened = False
+    for _ in range(3):
+        adb("shell", "input", "swipe", str(cx), str(cy), str(cx), str(cy), "700")
+        _sleep(1.8)
+        if check_ui_text("Current Project"):
+            opened = True
+            break
+    if not opened:
+        print("  [new_session-scripted] FAIL: options modal did not open (FAB long-press missed?)")
         _debug_ui_labels("new_session")
         return False
-    _sleep(1.5)
     if not _tap_first(["Current Project", "current project"], fuzzy=True):
-        print("  [new_session-scripted] FAIL: 'Current Project' option not found")
+        print("  [new_session-scripted] FAIL: 'Current Project' option not tappable")
         _debug_ui_labels("new_session")
         return False
     end = time.time() + wait

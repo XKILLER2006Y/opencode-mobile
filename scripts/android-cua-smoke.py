@@ -638,37 +638,98 @@ def _scripted_session_list(precreated_title: str, wait: float = 20.0) -> bool:
     return False
 
 
+def _dump_raw_nodes(x1: int, y1: int, x2: int, y2: int, tag: str) -> None:
+    """Print every FULL uiautomator element intersecting the given bounds.
+
+    Unlike `_debug_ui_labels` (text/content-desc only), this shows the raw
+    attributes — class, resource-id, clickable, enabled, focused, bounds —
+    so a touch target that has no text (like the FAB's parent TouchableOpacity)
+    is still visible in the log.
+    """
+    xml = ui_dump()
+    if not xml:
+        print(f"  [{tag}] RAW: ui_dump empty")
+        return
+    print(f"  [{tag}] RAW nodes in ({x1},{y1})-({x2},{y2}):")
+    for m in re.finditer(r'<node[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"[^>]*/?>', xml):
+        nx1, ny1, nx2, ny2 = map(int, m.groups())
+        if nx2 < x1 or nx1 > x2 or ny2 < y1 or ny1 > y2:
+            continue
+        elem = m.group(0)
+        cls = re.search(r'class="([^"]*)"', elem)
+        rid = re.search(r'resource-id="([^"]*)"', elem)
+        text = re.search(r'text="([^"]*)"', elem)
+        desc = re.search(r'content-desc="([^"]*)"', elem)
+        clickable = re.search(r'clickable="([^"]*)"', elem)
+        enabled = re.search(r'enabled="([^"]*)"', elem)
+        print(
+            f"    class={cls.group(1) if cls else '?'} "
+            f"id={rid.group(1) if rid else ''} "
+            f"text={text.group(1) if text else ''!r} "
+            f"desc={desc.group(1) if desc else ''!r} "
+            f"clickable={clickable.group(1) if clickable else '?'} "
+            f"enabled={enabled.group(1) if enabled else '?'} "
+            f"bounds=[{nx1},{ny1}][{nx2},{ny2}]"
+        )
+
+
+def _input_raw(*args: str) -> str:
+    """Run adb shell input and return stdout+stderr so injection errors are visible."""
+    result = subprocess.run(
+        ["adb", "shell", "input", *args],
+        capture_output=True, text=True, timeout=30,
+    )
+    out = (result.stdout + result.stderr).strip()
+    if out:
+        print(f"  [input] 'input {' '.join(args)}' -> {out}")
+    return out
+
+
 def _scripted_new_session(wait: float = 15.0) -> bool:
     """Deterministic new_session phase (0 LLM calls).
 
     The sessions FAB's SHORT press quick-creates a session in the current
-    project (no modal); the LONG press opens the directory options modal.
-    This phase exercises the modal path: long-press the FAB, tap 'Current
-    Project', then assert a chat input (EditText) appears.
+    project and navigates to the chat screen; the LONG press opens the
+    directory options modal ('Current Project' → chat). Both gestures are
+    valid ways to create a session, so this phase tries them in order and
+    passes on the first that lands:
 
-    Long-press must be injected as DOWN -> hold -> CANCEL (not `input swipe`):
-    the swipe's trailing UP event lands on the freshly-opened modal's
-    full-screen dismiss overlay, which closes the modal instantly (the
-    `animationType="slide"` modal appears under the still-held finger).
-    A CANCEL event ends the gesture without pressing the overlay, so the
-    modal stays open. `delayLongPress` is 500ms in the app; hold ~800ms.
+      A. `input tap` on the FAB center — short-press quick-create path.
+      B. `input motionevent DOWN` + hold + `CANCEL` — long-press modal path
+         (a plain `input swipe` UP lands on the freshly-opened modal's
+         full-screen dismiss overlay and closes it instantly, so it must be
+         CANCEL, not UP).
 
-    The short-press path was the old bug: the script tapped the FAB and then
-    looked for the modal, but a short press never opens it (runs 27-28).
+    Diagnostics: before anything, dump the RAW FAB node (class/clickable/
+    enabled) so a non-touchable FAB is visible in the log instead of another
+    blind round-trip.
     """
     print("  [new_session-scripted] driving via uiautomator (0 LLM calls)")
     cx, cy = _find_fab_center()
-    opened = False
+    _dump_raw_nodes(200, 480, 320, 640, "new_session")
+
+    # A. Short-press quick-create: tap FAB -> chat screen (EditText) appears.
+    for _ in range(2):
+        adb("shell", "input", "tap", str(cx), str(cy))
+        end = time.time() + 6.0
+        while time.time() < end:
+            if _ui_has_edittext():
+                print("  [new_session-scripted] OK: chat input visible (short-press quick-create)")
+                return True
+            _sleep(0.6)
+        if check_ui_text("Current Project"):
+            break  # modal appeared — tap may have been a long-press; use it below
+
+    # B. Long-press modal path: DOWN + hold + CANCEL.
     for _ in range(3):
-        adb("shell", "input", "motionevent", "DOWN", str(cx), str(cy))
+        _input_raw("motionevent", "DOWN", str(cx), str(cy))
         _sleep(0.8)
-        adb("shell", "input", "motionevent", "CANCEL")
+        _input_raw("motionevent", "CANCEL")
         _sleep(1.8)
         if check_ui_text("Current Project"):
-            opened = True
             break
-    if not opened:
-        print("  [new_session-scripted] FAIL: options modal did not open (FAB long-press missed?)")
+    if not check_ui_text("Current Project"):
+        print("  [new_session-scripted] FAIL: neither quick-create nor options modal opened")
         _debug_ui_labels("new_session")
         return False
     if not _tap_first(["Current Project", "current project"], fuzzy=True):
@@ -678,10 +739,10 @@ def _scripted_new_session(wait: float = 15.0) -> bool:
     end = time.time() + wait
     while time.time() < end:
         if _ui_has_edittext():
-            print("  [new_session-scripted] OK: chat input visible")
+            print("  [new_session-scripted] OK: chat input visible (modal path)")
             return True
         _sleep(1.0)
-    print("  [new_session-scripted] FAIL: chat input not visible")
+    print("  [new_session-scripted] FAIL: chat input not visible after 'Current Project'")
     _debug_ui_labels("new_session")
     return False
 

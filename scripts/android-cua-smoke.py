@@ -450,60 +450,104 @@ def _tap_first_edittext() -> bool:
 def _scripted_connect(host_only: str, wait_after: float = 2.0) -> bool:
     """Deterministic add-connection flow via uiautomator (0 LLM calls).
 
-    Taps Add Connection -> types the host IP -> dismisses the IME -> scrolls
-    to and taps the real Connect button -> verifies the form actually closed
-    (the old "my server"/"4096" check false-positived on the form's own port
-    field). Returns True on success.
+    CI emulators run with a hardware keyboard (hw.keyboard=yes), so the soft
+    IME never opens: a KEYCODE_BACK "dismiss keyboard" pops the WHOLE form
+    route instead, leaving the connection unsaved while the old form-closed
+    check false-positived on the tab screen (runs 2-5). So:
+      * NEVER press BACK here;
+      * type via `adb input text` (works without the IME) and verify the value
+        actually landed in the hierarchy before continuing;
+      * scroll the form with swipes in the UPPER half of the screen (a swipe
+        that starts on the keyboard zone is swallowed by the IME);
+      * tap the exact 'Connect' submit (fuzzy would match the 'Connect to
+        OpenCode' header, which is a no-op);
+      * then verify the SAVED connection is actually listed — a real check
+        that cannot false-positive on a back-navigation.
+    Returns True on success.
     """
     print("  [connect-scripted] driving add-connection via uiautomator (0 LLM calls)")
-    if not _tap_first(["Add Connection", "New Connection", "Add Server"]):
+
+    def wait_for_form(timeout: float = 6.0) -> bool:
+        end = time.time() + timeout
+        while time.time() < end:
+            if "connect to opencode" in ui_dump().lower():
+                return True
+            _sleep(0.5)
+        return False
+
+    # 1. Open the add-connection form. On first launch this is the Sessions
+    #    tab's empty-state button; the Connections-tab FAB exposes the same
+    #    label ("Add Connection").
+    if not _tap_first(["Add Connection", "New Connection", "Add Server"], retries=3):
         print("  [connect-scripted] FAIL: no add-connection control found")
+        _debug_ui_labels("connect")
+        return False
+    if not wait_for_form():
+        print("  [connect-scripted] FAIL: add-connection form did not open")
         _debug_ui_labels("connect")
         return False
     _sleep(1.0)
 
-    if not (_tap_first(["IP Address", "IP address", "Address", "Host"], fuzzy=True)
-            or _tap_first_edittext()):
-        print("  [connect-scripted] FAIL: address field not found")
+    # 2. Focus the IP field (the first EditText on the form — tapping the
+    #    "IP Address" LABEL does not focus the input), type the host, and
+    #    verify the value landed. A silent typing miss used to save a
+    #    placeholder-IP connection (192.168.1.100).
+    if not _tap_first_edittext():
+        if not _tap_first(["IP Address", "IP address", "Address", "Host"], fuzzy=True):
+            print("  [connect-scripted] FAIL: address field not found")
+            _debug_ui_labels("connect")
+            return False
+    _sleep(0.6)
+    adb("shell", "input", "text", host_only)  # plain IP — safe chars only
+    _sleep(0.4)
+    if host_only not in ui_dump():
+        _tap_first_edittext()
+        _sleep(0.5)
+        adb("shell", "input", "text", host_only)
+        _sleep(0.4)
+    if host_only not in ui_dump():
+        print("  [connect-scripted] FAIL: typed IP not visible in the form")
         _debug_ui_labels("connect")
         return False
-    _sleep(0.8)
-    adb("shell", "input", "text", host_only)  # plain IP — safe chars only
-    _sleep(0.5)
 
-    # Dismiss the IME: while the keyboard is up it swallows swipes, so the
-    # form (which is scrollable) never scrolls and the submit button stays
-    # hidden below the fold.
-    adb("shell", "input", "keyevent", "KEYCODE_BACK")
-    _sleep(0.8)
-
-    # Scroll down until a submit control is visible, then tap it.
-    # IMPORTANT: exact match — fuzzy "Connect" also matches the form header
-    # "Connect to OpenCode" (tapping the header is a no-op).
+    # 3. Scroll the form until the exact 'Connect' submit is visible, then tap
+    #    it. fuzzy=False so the 'Connect to OpenCode' header never matches.
+    #    Swipes start at y=300 (above the IME zone) so the ScrollView moves.
     tapped = False
     for _ in range(6):
         if _tap_first(["Connect", "Save", "Done"], fuzzy=False, retries=1):
             tapped = True
             break
-        adb("shell", "input", "swipe", "160", "560", "160", "200", "300")
+        adb("shell", "input", "swipe", "160", "300", "160", "80", "300")
         _sleep(0.9)
     if not tapped:
-        # Last resort: the submit button is a full-width dark bar at the very
-        # bottom of the scrolled form.
-        adb("shell", "input", "tap", "160", "610")
-        _sleep(1.0)
+        print("  [connect-scripted] FAIL: submit button not found after scrolling")
+        _debug_ui_labels("connect")
+        return False
 
-    # Confirm the FORM is gone — "4096" is a false positive (the form's port
-    # field always contains it).
-    end = time.time() + 12
+    # 4. THE REAL save check: the form must close AND the saved connection
+    #    must be listed. 'My Server' is the saved name when the optional name
+    #    field is left empty (connection.shared.namePlaceholder); the row also
+    #    shows the host. The Connections tab has the 'Expose over internet'
+    #    card; if back() landed on Sessions, the active-connection name renders
+    #    in the Sessions header. An error dialog means FAIL.
+    end = time.time() + 20
     while time.time() < end:
         xml = ui_dump().lower()
-        if "connect to opencode" not in xml and "ip address" not in xml:
-            print("  [connect-scripted] OK: connection saved (form closed)")
+        if "connect to opencode" in xml:
+            _sleep(1.0)
+            continue
+        if "failed" in xml or "share report" in xml:
+            print("  [connect-scripted] FAIL: submit error dialog shown")
+            _debug_ui_labels("connect")
+            return False
+        if ("my server" in xml or host_only in xml or "my mac" in xml) and \
+           ("expose over internet" in xml or "sessions" in xml or "settings" in xml):
+            print("  [connect-scripted] OK: connection saved (listed in app)")
             _sleep(wait_after)
             return True
         _sleep(1.0)
-    print("  [connect-scripted] WARN: form did not close within 12s")
+    print("  [connect-scripted] FAIL: connection not saved/listed after submit")
     _debug_ui_labels("connect")
     return False
 
@@ -514,41 +558,42 @@ def _ui_has_edittext() -> bool:
     return bool(xml) and 'class="android.widget.EditText"' in xml
 
 
-def _scripted_session_list(precreated_title: str, wait: float = 12.0) -> bool:
+def _scripted_session_list(precreated_title: str, wait: float = 20.0) -> bool:
     """Deterministic session_list phase (0 LLM calls).
 
-    Taps the saved connection (activates it), taps the Sessions tab, then
-    asserts the pre-created session title is visible — the core regression
-    guard: if the app doesn't load pre-existing sessions from the server on
-    connect, this returns False.
+    The just-saved connection is the FIRST connection, so it is auto-active
+    (see addConnection in src/stores/connections.ts) — no need to tap a
+    connection row. If we landed on the Connections tab, verify the saved row
+    is actually listed (a real save check), then make sure the Sessions tab is
+    the active tab. The pre-created session title only renders if the
+    connection was saved AND the server is reachable — the core regression
+    guard: if the app doesn't load pre-existing sessions on connect, this
+    returns False.
     """
     print("  [session_list-scripted] driving via uiautomator (0 LLM calls)")
-    # The saved connection row shows the name from the connect form ("My Mac"
-    # is the default) and/or the host URL (10.0.2.2).
-    if not _tap_first(["My Mac", "my mac", "10.0.2.2", "My Server", "my server"], fuzzy=True):
-        print("  [session_list-scripted] FAIL: connection entry not found")
-        _debug_ui_labels("session_list")
-        return False
-    _sleep(1.5)
-    # The connection row tap triggers a re-render; keep trying the Sessions tab
-    # for a few seconds so a transient busy/dump-empty window doesn't false-fail.
-    end = time.time() + 8
-    while time.time() < end:
-        if _tap_first(["Sessions", "sessions", "Session"], fuzzy=True, retries=1):
-            break
+    xml = ui_dump().lower()
+    if "expose over internet" in xml:
+        if not any(k in xml for k in ("my server", "my mac", "10.0.2.2")):
+            print("  [session_list-scripted] FAIL: connection row missing on Connections tab")
+            _debug_ui_labels("session_list")
+            return False
+        print("  [session_list-scripted] OK: connection row listed")
         _sleep(1.0)
-    else:
-        print("  [session_list-scripted] FAIL: Sessions tab not found")
-        _debug_ui_labels("session_list")
-        return False
     end = time.time() + wait
     while time.time() < end:
-        if check_ui_text(precreated_title):
+        xml = ui_dump().lower()
+        if precreated_title.lower() in xml:
             print(f"  [session_list-scripted] OK: '{precreated_title}' visible in list")
             _sleep(1.0)
             return True
+        # Make sure the Sessions tab is active (tab-bar labels are always
+        # present on the tabs screen; tapping the active tab is a no-op).
+        if _tap_first(["Sessions", "sessions"], fuzzy=True, retries=1):
+            _sleep(1.5)
+            continue
         _sleep(1.0)
     print(f"  [session_list-scripted] FAIL: '{precreated_title}' not found in {wait:.0f}s")
+    _debug_ui_labels("session_list")
     return False
 
 

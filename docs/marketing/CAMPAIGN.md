@@ -1,6 +1,6 @@
 # OpenCode Mobile — Launch Campaign Plan
 
-> Owner: dzianisv (dzianisvv@gmail.com). All copy in this folder is verified-true. Do not invent metrics, ratings, or store claims.
+> Owner: XKILLER2006Y (XKILLER2006Yv@gmail.com). All copy in this folder is verified-true. Do not invent metrics, ratings, or store claims.
 > `{{PLAY_URL}}` = `https://play.google.com/store/apps/details?id=cc.agentlabs.opencode` — Play submitted to production review 2026-06-02, IN REVIEW, auto-publishes on approval (typically ≤7 days). Treat as "launching imminently"; swap the placeholder the moment it goes live.
 
 ---

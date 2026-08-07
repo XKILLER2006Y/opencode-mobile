@@ -16,7 +16,7 @@ App facts these answers derive from:
 ---
 
 ## 1. Privacy policy
-- URL: `https://dzianisv.github.io/opencode-mobile/privacy/`
+- URL: `https://XKILLER2006Y.github.io/opencode-mobile/privacy/`
 
 ## 2. Data safety
 **Does your app collect or share any required user data types?**

@@ -15,9 +15,9 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const APP_ID = "cc.agentlabs.opencode";
-const SITE = "https://dzianisv.github.io/opencode-mobile";
+const SITE = "https://XKILLER2006Y.github.io/opencode-mobile";
 const FDROID_INDEX = `${SITE}/fdroid/repo/index-v1.json`;
-const RELEASES = "https://github.com/dzianisv/opencode-mobile/releases/latest";
+const RELEASES = "https://github.com/XKILLER2006Y/opencode-mobile/releases/latest";
 const PLAY = `https://play.google.com/store/apps/details?id=${APP_ID}`;
 const FDROID_MAINLINE = `https://f-droid.org/packages/${APP_ID}/`;
 const TIMEOUT_MS = 20_000;
@@ -171,7 +171,7 @@ if (!has("gh")) {
 } else if (spawnSync("gh", ["auth", "status"], { encoding: "utf8" }).status !== 0) {
   record("F_repo", "gh-repo-meta", "WARN", "gh unauthenticated — skipped");
 } else {
-  const r = spawnSync("gh", ["repo", "view", "dzianisv/opencode-mobile", "--json", "repositoryTopics,homepageUrl"], { encoding: "utf8" });
+  const r = spawnSync("gh", ["repo", "view", "XKILLER2006Y/opencode-mobile", "--json", "repositoryTopics,homepageUrl"], { encoding: "utf8" });
   try {
     const m = JSON.parse(r.stdout) as { repositoryTopics?: Array<{ name: string }>; homepageUrl?: string };
     const topics = (m.repositoryTopics ?? []).map(t => t.name).join(",");

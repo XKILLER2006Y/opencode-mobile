@@ -31,7 +31,7 @@ Thank you for your interest in contributing. This document covers how to set up 
 **Clone and install**
 
 ```bash
-git clone https://github.com/dzianisv/opencode-mobile.git
+git clone https://github.com/XKILLER2006Y/opencode-mobile.git
 cd opencode-mobile
 npm install       # or: bun install
 ```
@@ -119,7 +119,7 @@ Key conventions:
 
 ## Filing a bug
 
-Use the [Bug Report template](https://github.com/dzianisv/opencode-mobile/issues/new?template=bug_report.md).
+Use the [Bug Report template](https://github.com/XKILLER2006Y/opencode-mobile/issues/new?template=bug_report.md).
 
 Please include:
 - App version (visible in Settings screen)
@@ -135,7 +135,7 @@ Please include:
 
 ## Proposing a feature
 
-Use the [Feature Request template](https://github.com/dzianisv/opencode-mobile/issues/new?template=feature_request.md) or start a [GitHub Discussion](https://github.com/dzianisv/opencode-mobile/discussions) if you want to explore the idea before opening a formal issue.
+Use the [Feature Request template](https://github.com/XKILLER2006Y/opencode-mobile/issues/new?template=feature_request.md) or start a [GitHub Discussion](https://github.com/XKILLER2006Y/opencode-mobile/discussions) if you want to explore the idea before opening a formal issue.
 
 ---
 
@@ -145,7 +145,7 @@ Use the [Feature Request template](https://github.com/dzianisv/opencode-mobile/i
 2. Make your changes. Keep commits focused — one logical change per commit.
 3. Ensure `npm run lint`, `npm run typecheck`, and `npm test` pass.
 4. If you changed UI, include a screenshot in the PR description.
-5. Open the PR against `dzianisv/opencode-mobile main`. Fill in the PR template.
+5. Open the PR against `XKILLER2006Y/opencode-mobile main`. Fill in the PR template.
 6. A maintainer will review within a few business days.
 
 PRs that add new npm dependencies will receive extra scrutiny — keep the bundle lean.

@@ -26,11 +26,11 @@ Drive your self-hosted AI coding agent from your phone
 
 ## Links
 
-- Website (primary): https://dzianisv.github.io/opencode-mobile/
-- Install (F-Droid + APK, one page): https://dzianisv.github.io/opencode-mobile/download/
-- GitHub: https://github.com/dzianisv/opencode-mobile
-- F-Droid repo: https://dzianisv.github.io/opencode-mobile/fdroid/repo
-- Direct APK: https://github.com/dzianisv/opencode-mobile/releases/latest
+- Website (primary): https://XKILLER2006Y.github.io/opencode-mobile/
+- Install (F-Droid + APK, one page): https://XKILLER2006Y.github.io/opencode-mobile/download/
+- GitHub: https://github.com/XKILLER2006Y/opencode-mobile
+- F-Droid repo: https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
+- Direct APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
 - Google Play: {{PLAY_URL}}  *(add on launch day once approved)*
 
 ---

@@ -16,7 +16,7 @@
 - RENAME: pass.
 
 ## Known red, NOT a regression
-- CUA Smoke Test 26683001488 => failure: "goal not reached: open a session and send a message". Pre-existing (run 26563595855 same failure pre-rebrand). Cause: no opencode server reachable from CI. Tracked in issue #15 (https://github.com/dzianisv/opencode-mobile/issues/15).
+- CUA Smoke Test 26683001488 => failure: "goal not reached: open a session and send a message". Pre-existing (run 26563595855 same failure pre-rebrand). Cause: no opencode server reachable from CI. Tracked in issue #15 (https://github.com/XKILLER2006Y/opencode-mobile/issues/15).
 
 ## Out of slice (teammate)
 - New Play Console app cc.agentlabs.opencode + manual first AAB upload + testers.

@@ -33,11 +33,11 @@ opencode supports any OpenAI-compatible API via its provider config. Point it at
 
 **Source / install**
 
-- Source (MIT): https://github.com/dzianisv/opencode-mobile
-- Install (F-Droid + APK, one page): https://dzianisv.github.io/opencode-mobile/download/
-- All install options + guide: https://dzianisv.github.io/opencode-mobile/
-- F-Droid repo: https://dzianisv.github.io/opencode-mobile/fdroid/repo
-- Direct APK: https://github.com/dzianisv/opencode-mobile/releases/latest
+- Source (MIT): https://github.com/XKILLER2006Y/opencode-mobile
+- Install (F-Droid + APK, one page): https://XKILLER2006Y.github.io/opencode-mobile/download/
+- All install options + guide: https://XKILLER2006Y.github.io/opencode-mobile/
+- F-Droid repo: https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
+- Direct APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
 - Google Play: in review, live shortly — {{PLAY_URL}}
 
 I'm especially interested in feedback from people running local models: how does the streaming UI feel when tokens arrive at 3–5 tok/s on slower hardware? The renderer has a minimum repaint interval to avoid thrashing and I'm not sure the threshold is right for slow generation. Also curious which local backends people are pairing with opencode.

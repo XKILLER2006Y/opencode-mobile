@@ -102,7 +102,7 @@ git push origin main --tags
 
 ### 5.5 Observability
 - **Sentry dashboard:** `sentry.io → vibetechnologies → opencode-mobile`
-- **Alert email:** configure issue alert rules on the Sentry project to send to `dzianisvv@gmail.com` (or your distribution list).
+- **Alert email:** configure issue alert rules on the Sentry project to send to `XKILLER2006Yv@gmail.com` (or your distribution list).
 - **In-app log buffer:** the last 200 log lines are always available in any shared diagnostic report; users can reproduce a bug and immediately share the trace.
 
 ## 6. Success Metrics

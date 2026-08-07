@@ -11,7 +11,7 @@
 Show HN: OpenCode Mobile – drive your self-hosted AI coding agent from your phone
 ```
 
-**URL field:** `https://github.com/dzianisv/opencode-mobile`
+**URL field:** `https://github.com/XKILLER2006Y/opencode-mobile`
 
 ---
 
@@ -59,11 +59,11 @@ OPENCODE_SERVER_PASSWORD=yourpassword opencode serve --hostname 0.0.0.0 --port 4
 
 Stable on Android, MIT licensed. No accounts, no ads. Sentry crash reporting is opt-in and off by default. Install today via a self-hosted F-Droid repo or a direct signed APK. Google Play is in review and should be live shortly — {{PLAY_URL}} (currently in review; until then use the links below).
 
-- Source: https://github.com/dzianisv/opencode-mobile
-- Install (F-Droid + APK, one page): https://dzianisv.github.io/opencode-mobile/download/
-- Landing page: https://dzianisv.github.io/opencode-mobile/
-- Setup guide: https://dzianisv.github.io/opencode-mobile/guide/
-- F-Droid repo (add this URL in an F-Droid client): https://dzianisv.github.io/opencode-mobile/fdroid/repo
-- Direct APK: https://github.com/dzianisv/opencode-mobile/releases/latest
+- Source: https://github.com/XKILLER2006Y/opencode-mobile
+- Install (F-Droid + APK, one page): https://XKILLER2006Y.github.io/opencode-mobile/download/
+- Landing page: https://XKILLER2006Y.github.io/opencode-mobile/
+- Setup guide: https://XKILLER2006Y.github.io/opencode-mobile/guide/
+- F-Droid repo (add this URL in an F-Droid client): https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
+- Direct APK: https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
 
 Happy to answer questions about the SSE streaming implementation, the Expo build pipeline, or the opencode API surface.

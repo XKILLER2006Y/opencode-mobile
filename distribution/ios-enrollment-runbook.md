@@ -113,7 +113,7 @@ While waiting for Apple's verification call and approval:
 - [x] Create app icon 1024×1024 PNG
 - [ ] Replace placeholder iPhone screenshots with captures from the current iOS Simulator build
 - [ ] Replace placeholder iPad screenshots with captures from the current iOS Simulator build
-- [x] Write/publish privacy policy at https://dzianisv.github.io/opencode-mobile/privacy/
+- [x] Write/publish privacy policy at https://XKILLER2006Y.github.io/opencode-mobile/privacy/
 - [ ] Set up EAS account at https://expo.dev/ (free tier, log in with Expo account)
 - [ ] Add iOS config patches to `app.json` (done in this PR)
 - [ ] Run `npx expo prebuild --platform ios` on a Mac to validate the Xcode project

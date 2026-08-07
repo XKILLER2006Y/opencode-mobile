@@ -81,7 +81,7 @@ Full runtime audit (stores + screens + sdk). Outcome:
 
 ## F-DROID + PLAY PUBLISH PUSH (2026-06-02) — agent-controlled paths found
 - DISCOVERY: self-hosted F-Droid repo is ALREADY LIVE at
-  https://dzianisv.github.io/opencode-mobile/fdroid/repo (index 200), but STALE —
+  https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo (index 200), but STALE —
   serving old package ai.opencode.mobile @ v0.4.1. publish-fdroid succeeded for
   v0.3.2/0.4.0/0.4.1, then FAILED from v0.4.2 on.
 - ROOT CAUSE: androguard (in fdroidserver) crashes on the CI APK's v2+v3 signature

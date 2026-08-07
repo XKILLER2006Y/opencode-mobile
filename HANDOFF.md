@@ -2,7 +2,7 @@
 
 App: **`cc.agentlabs.opencode`** (OpenCode Mobile) — Expo/React Native Android client
 for a user self-hosted opencode AI server. Owner: VIBE TECHNOLOGIES, LLC.
-Repo: `dzianisv/opencode-mobile`. Full running log: `context.md`.
+Repo: `XKILLER2006Y/opencode-mobile`. Full running log: `context.md`.
 Goal: bug-free E2E + published on F-Droid & Play + 1k downloads.
 
 ---
@@ -88,8 +88,8 @@ Add diff viewer + tool-call approval screenshots. Upload via Play Developer API 
 
 ## App URLs
 
-- **Direct APK (works now):** https://github.com/dzianisv/opencode-mobile/releases/latest
-- **F-Droid self-hosted repo:** https://dzianisv.github.io/opencode-mobile/fdroid/repo
+- **Direct APK (works now):** https://github.com/XKILLER2006Y/opencode-mobile/releases/latest
+- **F-Droid self-hosted repo:** https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo
   (add this URL in any F-Droid client). **LIVE @ v0.4.3** — verified 2026-06-02.
 - **Google Play (NOT public yet):** https://play.google.com/store/apps/details?id=cc.agentlabs.opencode
   — 404s until production rollout; internal-testing track has v0.4.3.
@@ -133,7 +133,7 @@ Add diff viewer + tool-call approval screenshots. Upload via Play Developer API 
    README non-affiliation note; CI typecheck+tests; test coverage 4→65; version bump 0.4.3→0.4.4.
    Run (owner):
    ```
-   cd /Users/engineer/workspace/opencode-mobile && source ~/.env.d/github-dzianisv.env
+   cd /Users/engineer/workspace/opencode-mobile && source ~/.env.d/github-XKILLER2006Y.env
    git push origin main                       # deploys site (safe, no release)
    git tag v0.4.4 && git push origin main --tags   # fires F-Droid + Play publish
    ```
@@ -153,7 +153,7 @@ Add diff viewer + tool-call approval screenshots. Upload via Play Developer API 
    `publish-fdroid.yml` and `publish-play-store.yml` automatically.
 
 1. **Privacy policy is live (Play-production blocker cleared).** Canonical privacy URL is
-   now `https://dzianisv.github.io/opencode-mobile/privacy/` — live & verified (HTTP 200) on
+   now `https://XKILLER2006Y.github.io/opencode-mobile/privacy/` — live & verified (HTTP 200) on
    the gh-pages branch, serving `distribution/privacy-policy.html`. This GitHub Pages URL is
    the canonical privacy URL cited across all store-submission docs (Play "App content"
    answers, IzzyOnDroid request). If the owner later deploys the branded
@@ -187,7 +187,7 @@ Add diff viewer + tool-call approval screenshots. Upload via Play Developer API 
    sequence in `distribution/launch/LAUNCH-CHECKLIST.md`.
    **Gate:** every post file contains `{{PLAY_URL}}` / `{{FDROID_URL}}` placeholders —
    do NOT post any file that still has a `{{...}}` token. Replace:
-   `{{FDROID_URL}}` → `https://dzianisv.github.io/opencode-mobile/fdroid/repo` (live now);
+   `{{FDROID_URL}}` → `https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo` (live now);
    `{{PLAY_URL}}` → `https://play.google.com/store/apps/details?id=cc.agentlabs.opencode`
    (only valid after item 2's production rollout is live — until then, link the F-Droid
    repo + GitHub releases instead). ASO copy in `distribution/play-listing.md` /
@@ -254,7 +254,7 @@ npm test                   # node:test suite (4 passing)
 gh run list --workflow=publish-fdroid.yml --limit 3      # F-Droid publish status
 gh run list --workflow=cua-smoke.yml --limit 3           # E2E smoke status
 # Is the live F-Droid repo updated to cc.agentlabs.opencode @ v0.4.3?
-curl -s https://dzianisv.github.io/opencode-mobile/fdroid/repo/index-v1.json | \
+curl -s https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo/index-v1.json | \
   python3 -c "import sys,json;d=json.load(sys.stdin);print({p:[v['versionName'] for v in vs] for p,vs in d['packages'].items()})"
 ```
 
@@ -276,7 +276,7 @@ curl -s https://dzianisv.github.io/opencode-mobile/fdroid/repo/index-v1.json | \
 - CUA smoke vision model: Azure `gpt-5.4`; endpoint
   `https://info-mjnxtt51-eastus2.cognitiveservices.azure.com`; gpt-5.x needs
   `max_completion_tokens` (not `max_tokens`). Secrets in repo Actions.
-- GitHub auth (local): `source ~/.env.d/github-dzianisv.env`.
+- GitHub auth (local): `source ~/.env.d/github-XKILLER2006Y.env`.
 - Signing: production key SHA-256
   `0C:25:9D:94:E0:FF:EA:5D:63:19:61:4B:22:9D:4B:6B:DC:22:DE:1F:56:E3:8E:76:94:83:98:D2:DF:6A:A0:99`
   (same key across Play / F-Droid / IzzyOnDroid — in-place updates work).

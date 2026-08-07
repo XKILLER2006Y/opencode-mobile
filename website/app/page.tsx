@@ -82,7 +82,7 @@ export default function HomePage() {
               Download for Android
             </a>
             <a
-              href="https://github.com/dzianisv/opencode-mobile/releases"
+              href="https://github.com/XKILLER2006Y/opencode-mobile/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm"
@@ -90,7 +90,7 @@ export default function HomePage() {
               GitHub Releases
             </a>
             <a
-              href="https://dzianisv.github.io/opencode-mobile/fdroid/repo"
+              href="https://XKILLER2006Y.github.io/opencode-mobile/fdroid/repo"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm"
@@ -184,7 +184,7 @@ export default function HomePage() {
               </p>
             </div>
             <a
-              href="https://github.com/dzianisv/opencode-mobile"
+              href="https://github.com/XKILLER2006Y/opencode-mobile"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm shrink-0"

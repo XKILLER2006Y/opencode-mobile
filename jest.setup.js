@@ -24,3 +24,34 @@ jest.mock("expo-font", () => ({
   loadAsync: jest.fn(async () => {}),
   isLoaded: jest.fn(() => true),
 }))
+
+// expo-notifications auto-registers a push-token listener on import
+// (DevicePushTokenAutoRegistration), which leaks a timer under Jest.
+// Only src/lib/notifications.ts consumes it and no test exercises that
+// module's logic, so a no-op stub keeps suites from hanging on teardown.
+jest.mock("expo-notifications", () => ({
+  setNotificationHandler: jest.fn(),
+  getPermissionsAsync: jest.fn(async () => ({ status: "undetermined" })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: "undetermined" })),
+  setNotificationChannelAsync: jest.fn(async () => null),
+  scheduleNotificationAsync: jest.fn(async () => "mock-notification-id"),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  AndroidImportance: { HIGH: 4 },
+}))
+
+// @sentry/react-native starts a module-scope AsyncExpiringMap cleanup
+// setInterval on import (timeToDisplayFallback), which leaks a timer under
+// Jest. src/lib/sentry.ts guards everything behind an enabled flag that is
+// off in tests, so a no-op stub keeps suites from hanging on teardown.
+jest.mock("@sentry/react-native", () => {
+  const passthrough = (fn) => fn
+  return {
+    init: jest.fn(),
+    wrap: passthrough,
+    close: jest.fn(async () => {}),
+    addBreadcrumb: jest.fn(),
+    captureException: jest.fn(),
+    withScope: jest.fn((cb) => cb({ setTag: jest.fn(), setExtra: jest.fn(), setContext: jest.fn() })),
+    setTag: jest.fn(),
+  }
+})

@@ -3,8 +3,6 @@ import { theme } from "../../src/lib/theme"
 import {
   View,
   Text,
-  FlatList,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   useColorScheme,
@@ -12,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  type FlatList,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from "react-native"
@@ -22,21 +21,16 @@ import { useTranslation } from "react-i18next"
 import * as ImagePicker from "expo-image-picker"
 import * as ImageManipulator from "expo-image-manipulator"
 import * as Clipboard from "expo-clipboard"
-import { BlurView } from "expo-blur"
 import type BottomSheet from "@gorhom/bottom-sheet"
 import {
-  MessageBubble,
-  PermissionPrompt,
-  QuestionPrompt,
-  StatusIndicator,
   SlashPopover,
   ModelPicker,
   VariantPicker,
-  ImageAttachments,
   SessionInfo,
   type SlashCommand,
   type Attachment,
 } from "../../src/components/chat"
+import { MessageList, StatusChrome, ComposerToolbar, type MessageListItem } from "../../src/components/session"
 import { useSessions, type RevertResult } from "../../src/stores/sessions"
 import { useEvents, refreshPending } from "../../src/stores/events"
 import { useConnections } from "../../src/stores/connections"
@@ -45,7 +39,6 @@ import { useCatalog } from "../../src/stores/catalog"
 import { useSpeech } from "../../src/lib/speech"
 import { nameOf } from "../../src/lib/path-utils"
 import { hapticTap } from "../../src/lib/haptics"
-import { JumpToLatest } from "../../src/components/session/JumpToLatest"
 
 // --- Builtin slash commands ---
 const BUILTIN_COMMANDS: SlashCommand[] = [
@@ -85,7 +78,7 @@ export default function SessionScreen() {
   const insets = useSafeAreaInsets()
   const { t } = useTranslation()
 
-  const flatListRef = useRef<FlatList>(null)
+  const flatListRef = useRef<FlatList<MessageListItem>>(null)
   const modelSheetRef = useRef<BottomSheet>(null)
   const variantSheetRef = useRef<BottomSheet>(null)
   const [input, setInput] = useState("")
@@ -279,6 +272,15 @@ export default function SessionScreen() {
   const scrollToBottom = useCallback((animated = true) => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated })
   }, [])
+
+  // Undo a pending revert: drop the revert marker AND clear the prefilled
+  // composer draft (see applyRevertResult) so Undo doesn't leave a stale
+  // draft that could be sent as a duplicate.
+  const handleUndoRevert = useCallback(() => {
+    unrevertSession()
+    setInput("")
+    setAttachments([])
+  }, [unrevertSession])
 
   // Re-select on every focus, not just mount. currentSession/messages/
   // permissions are a single global store, and the native stack keeps screens
@@ -678,14 +680,7 @@ export default function SessionScreen() {
           <View style={[s.banner, s.bannerRevert]}>
             <Text style={s.bannerText}>{t("session.banners.reverted")}</Text>
             <TouchableOpacity
-              onPress={() => {
-                unrevertSession()
-                // The composer was prefilled with the reverted message's text/
-                // attachments (see applyRevertResult) — clear it so Undo doesn't
-                // leave a stale draft that could be sent as a duplicate.
-                setInput("")
-                setAttachments([])
-              }}
+              onPress={handleUndoRevert}
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={t("session.banners.undo")}
@@ -700,237 +695,62 @@ export default function SessionScreen() {
             <ActivityIndicator size="large" color={isDark ? theme.colors.dark.textPrimary : theme.colors.light.textPrimary} />
           </View>
         ) : (
-          <View style={s.listWrap}>
-            <FlatList
-              ref={flatListRef}
-              data={messageData}
-              inverted
-              keyExtractor={(item) => item.message.id}
-              // Virtualization tuning for long streaming sessions. Default
-              // windowSize (21) keeps ~21 screens of rows mounted — halving
-              // it cuts the per-update diff cost during token streaming.
-              // updateCellsBatchingPeriod slightly below default keeps new
-              // streamed rows appearing promptly. removeClippedSubviews is
-              // deliberately left alone (buggy with inverted lists +
-              // maintainVisibleContentPosition), and getItemLayout is
-              // unusable here since markdown rows are variable-height.
-              windowSize={11}
-              initialNumToRender={12}
-              maxToRenderPerBatch={12}
-              updateCellsBatchingPeriod={40}
-              renderItem={({ item }) => (
-                <MessageBubble
-                  message={item.message}
-                  parts={item.parts}
-                  isDark={isDark}
-                  onLongPress={handleMessageLongPress}
-                />
-              )}
-              contentContainerStyle={s.messageList}
-              onScroll={handleScroll}
-              scrollEventThrottle={100}
-              onEndReached={handleLoadMore}
-              onEndReachedThreshold={0.5}
-              // Prevent jump when older messages are prepended
-              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
-              ListFooterComponent={
-                loadingMore ? (
-                  <View style={s.loadingMore}>
-                    <ActivityIndicator size="small" color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-                    <Text style={[s.loadingMoreText, isDark && s.metaDark]}>{t("session.loadingOlder")}</Text>
-                  </View>
-                ) : null
-              }
-            />
-            {/* Empty state rendered OUTSIDE the inverted list to avoid the
-                inverted transform mirroring its text/icon (see #ui-mirror). */}
-            {messageData.length === 0 && (
-              <View style={s.emptyOverlay} pointerEvents="none">
-                <Ionicons name="chatbubble-outline" size={48} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.border} />
-                <Text style={[s.emptyText, isDark && s.metaDark]}>{t("session.empty.title")}</Text>
-                <Text style={[s.emptyHint, isDark && s.metaDark]}>{t("session.empty.hint")}</Text>
-              </View>
-            )}
-            {showScrollButton && <JumpToLatest visible onPress={() => scrollToBottom(true)} isDark={isDark} />}
-          </View>
+          <MessageList
+            data={messageData}
+            isDark={isDark}
+            listRef={flatListRef}
+            loadingMore={loadingMore}
+            onLoadMore={handleLoadMore}
+            onScroll={handleScroll}
+            showScrollButton={showScrollButton}
+            onScrollToBottom={() => scrollToBottom(true)}
+            onLongPress={handleMessageLongPress}
+          />
         )}
 
-        {/* Status */}
-        {currentSession && <StatusIndicator sessionID={currentSession.id} isDark={isDark} />}
-
-        {/* Permissions */}
-        {permissions.map((perm) => (
-          <PermissionPrompt
-            key={perm.id}
-            permission={perm}
-            isDark={isDark}
-            onReply={(reply) => handlePermissionReply(perm.id, reply)}
-          />
-        ))}
-
-        {/* Questions */}
-        {questions.map((q) => (
-          <QuestionPrompt
-            key={q.id}
-            request={q}
-            isDark={isDark}
-            onReply={(answers) => handleQuestionReply(q.id, answers)}
-            onReject={() => handleQuestionReject(q.id)}
-          />
-        ))}
+        {/* Status chrome: live status + pending permission/question prompts */}
+        <StatusChrome
+          sessionID={sessionID}
+          isDark={isDark}
+          permissions={permissions}
+          onPermissionReply={handlePermissionReply}
+          questions={questions}
+          onQuestionReply={handleQuestionReply}
+          onQuestionReject={handleQuestionReject}
+        />
 
         {/* Slash popover */}
         {slashActive && (
           <SlashPopover query={slashQuery} commands={allCommands} isDark={isDark} onSelect={handleSlashSelect} />
         )}
 
-        {/* Agent/model toolbar */}
-        <BlurView
-          intensity={isDark ? 40 : 60}
-          tint={isDark ? "dark" : "light"}
-          style={s.composerGlass}
-        >
-          <View style={[s.toolbar, isDark && s.toolbarDark]}>
-            <TouchableOpacity
-              style={[s.agentChip, { borderColor: agentColor }]}
-              onPress={() => cycleAgent()}
-              onLongPress={() => cycleAgent(-1)}
-              accessibilityRole="button"
-              accessibilityLabel={agent || "build"}
-              accessibilityHint={t("session.toolbar.switchAgentHint")}
-            >
-              <View style={[s.agentDot, { backgroundColor: agentColor }]} />
-              <Text style={[s.agentLabel, isDark && s.textWhite]}>{agent || "build"}</Text>
-              <Ionicons name="swap-horizontal-outline" size={12} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[s.modelChip, isDark && s.modelChipDark]}
-              onPress={() => modelSheetRef.current?.expand()}
-              testID="model-chip"
-              accessibilityRole="button"
-              accessibilityLabel={`${t("session.toolbar.modelButton")}: ${modelLabel}`}
-            >
-              <Ionicons name="hardware-chip-outline" size={14} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-              <Text style={[s.modelLabel, isDark && s.metaDark]} numberOfLines={1}>
-                {modelLabel}
-              </Text>
-            </TouchableOpacity>
-
-            {currentModelVariants && Object.keys(currentModelVariants).length > 0 && (
-              <TouchableOpacity
-                style={[s.variantChip, isDark && s.variantChipDark, variant && s.variantChipActive]}
-                onPress={() => variantSheetRef.current?.expand()}
-                testID="variant-chip"
-                accessibilityRole="button"
-                accessibilityLabel={`${t("session.toolbar.variantButton")}: ${
-                  variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")
-                }`}
-              >
-                <Ionicons name="flash-outline" size={14} color={variant ? (isDark ? theme.colors.dark.accent : theme.colors.light.accent) : isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-                <Text style={[s.variantLabel, isDark && s.metaDark, variant && s.variantLabelActive]} numberOfLines={1}>
-                  {variant ? variant.charAt(0).toUpperCase() + variant.slice(1) : t("session.toolbar.auto")}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Attachment preview */}
-          <ImageAttachments attachments={attachments} isDark={isDark} onRemove={removeAttachment} />
-
-          {/* Input */}
-          <View
-            style={[s.inputContainer, isDark && s.inputContainerDark, { paddingBottom: Math.max(12, insets.bottom) }]}
-          >
-            <View style={s.inputRow}>
-              {/* Attach button */}
-              <TouchableOpacity
-                style={s.attachBtn}
-                onPress={pickFromLibrary}
-                onLongPress={pickFromCamera}
-                accessibilityRole="button"
-                accessibilityLabel={t("session.input.attachButton")}
-                accessibilityHint={t("session.input.attachCameraHint")}
-              >
-                <Ionicons name="add-circle-outline" size={26} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-              </TouchableOpacity>
-
-              {/* Clipboard paste button */}
-              <TouchableOpacity
-                style={s.attachBtn}
-                onPress={pasteFromClipboard}
-                accessibilityRole="button"
-                accessibilityLabel={t("session.input.pasteButton")}
-              >
-                <Ionicons name="clipboard-outline" size={22} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-              </TouchableOpacity>
-
-              <TextInput
-                style={[s.input, isDark && s.inputDark, speech.listening && s.inputListening, speech.listening && isDark && s.inputListeningDark]}
-                placeholder={
-                  speech.listening
-                    ? t("session.input.placeholderListening")
-                    : isSending
-                      ? t("session.input.placeholderFollowUp")
-                      : t("session.input.placeholderDefault")
-                }
-                placeholderTextColor={speech.listening ? (isDark ? theme.colors.dark.statusError : theme.colors.light.statusError) : isDark ? theme.colors.dark.textSecondary : theme.colors.light.textMuted}
-                value={speech.listening ? speech.transcript : input}
-                onChangeText={speech.listening ? undefined : setInput}
-                editable={!speech.listening}
-                multiline
-                maxLength={10000}
-                testID="chat-message-input"
-                accessibilityLabel={t("session.input.label")}
-              />
-              {/* Stop button: only when busy and no input */}
-              {isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-                <TouchableOpacity
-                  style={s.stopBtn}
-                  onPress={abortSession}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("session.input.stopButton")}
-                >
-                  <Ionicons name="stop" size={20} color={theme.colors.light.surface} />
-                </TouchableOpacity>
-              )}
-              {/* Mic button: when no input, not sending, and not listening */}
-              {!isSending && !input.trim() && attachments.length === 0 && !speech.listening && (
-                <TouchableOpacity
-                  style={s.micBtn}
-                  onPress={speech.start}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("session.input.micButton")}
-                >
-                  <Ionicons name="mic" size={22} color={isDark ? theme.colors.dark.textMuted : theme.colors.light.textSecondary} />
-                </TouchableOpacity>
-              )}
-              {/* Listening indicator: tap to stop */}
-              {speech.listening && (
-                <TouchableOpacity
-                  style={s.micBtnActive}
-                  onPress={speech.stop}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("session.input.stopListeningButton")}
-                >
-                  <Ionicons name="mic" size={22} color={theme.colors.light.surface} />
-                </TouchableOpacity>
-              )}
-              {/* Send button: when there's input */}
-              {!speech.listening && (input.trim() || attachments.length > 0) && (
-                <TouchableOpacity
-                  style={s.sendBtn}
-                  onPress={handleSend}
-                  testID="chat-send-button"
-                  accessibilityRole="button"
-                  accessibilityLabel={t("session.input.sendButton")}
-                >
-                  <Ionicons name="send" size={20} color={theme.colors.light.surface} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </BlurView>
+        {/* Agent/model toolbar + composer */}
+        <ComposerToolbar
+          input={input}
+          onChangeInput={setInput}
+          onSend={handleSend}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+          onPickFromLibrary={pickFromLibrary}
+          onPickFromCamera={pickFromCamera}
+          onPaste={pasteFromClipboard}
+          agent={agent}
+          agentColor={agentColor}
+          onCycleAgent={cycleAgent}
+          modelLabel={modelLabel}
+          onOpenModelPicker={() => modelSheetRef.current?.expand()}
+          hasVariants={!!currentModelVariants && Object.keys(currentModelVariants).length > 0}
+          variant={variant}
+          onOpenVariantPicker={() => variantSheetRef.current?.expand()}
+          isSending={isSending}
+          onAbort={abortSession}
+          speechListening={speech.listening}
+          speechTranscript={speech.transcript}
+          onStartSpeech={speech.start}
+          onStopSpeech={speech.stop}
+          bottomInset={insets.bottom}
+          isDark={isDark}
+        />
       </KeyboardAvoidingView>
       </View>
 
@@ -959,159 +779,6 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.light.bgApp },
   containerDark: { backgroundColor: theme.colors.dark.bgApp },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
-  listWrap: { flex: 1, position: "relative" },
-
-  // Messages
-  messageList: { padding: 16, paddingBottom: 8 },
-
-  // Loading more (appears at top in inverted list = ListFooterComponent)
-  loadingMore: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 16,
-  },
-  loadingMoreText: { fontSize: 13, color: theme.colors.light.textMuted },
-
-  // Empty state overlay — sits on top of the (empty) inverted list, untransformed,
-  // so its text/icon render upright and un-mirrored on Android.
-  emptyOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 64,
-  },
-
-  // Empty
-  empty: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 64 },
-  emptyText: { fontSize: 16, color: theme.colors.light.textMuted, marginTop: 12 },
-  emptyHint: { fontSize: 13, color: theme.colors.light.textMuted, marginTop: 4 },
-  metaDark: { color: theme.colors.dark.textSecondary },
-  textWhite: { color: theme.colors.light.surface },
-
-  // Toolbar
-  composerGlass: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "transparent",
-  },
-  toolbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "transparent",
-  },
-  toolbarDark: { backgroundColor: "transparent" },
-  agentChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  agentDot: { width: 8, height: 8, borderRadius: 4 },
-  agentLabel: { fontFamily: "Inter-SemiBold", fontSize: 13, color: theme.colors.light.textPrimary },
-  modelChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "rgba(120, 120, 128, 0.12)",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  modelChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
-  modelLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: theme.colors.light.textSecondary, maxWidth: 160 },
-
-  // Variant (reasoning effort) chip
-  variantChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "rgba(120, 120, 128, 0.12)",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  variantChipDark: { backgroundColor: "rgba(120, 120, 128, 0.24)" },
-  variantChipActive: { backgroundColor: "rgba(0, 113, 227, 0.12)" },
-  variantLabel: { fontFamily: "Inter-Medium", fontSize: 13, color: theme.colors.light.textSecondary },
-  variantLabelActive: { color: theme.colors.light.accent },
-
-  // Input
-  inputContainer: {
-    padding: 12,
-    backgroundColor: "transparent",
-  },
-  inputContainerDark: { backgroundColor: "transparent" },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  attachBtn: {
-    width: 36,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "rgba(120, 120, 128, 0.12)",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 16,
-    maxHeight: 120,
-    color: theme.colors.light.textPrimary,
-  },
-  inputDark: { backgroundColor: "rgba(120, 120, 128, 0.24)", color: theme.colors.dark.textPrimary },
-  inputListening: { borderWidth: 1, borderColor: theme.colors.light.statusError },
-  inputListeningDark: { borderColor: theme.colors.dark.statusError },
-  sendBtn: {
-    minWidth: 40,
-    height: 40,
-    borderRadius: 9999,
-    backgroundColor: theme.colors.light.accent,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-    paddingHorizontal: 10,
-  },
-  sendBtnDisabled: { backgroundColor: theme.colors.light.textMuted },
-  micBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 9999,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  micBtnActive: {
-    width: 40,
-    height: 40,
-    borderRadius: 9999,
-    backgroundColor: theme.colors.light.statusError,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  stopBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 9999,
-    backgroundColor: theme.colors.light.statusError,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-  },
 
   // Header
   headerRight: { flexDirection: "row", alignItems: "center", gap: 8 },

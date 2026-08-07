@@ -1,10 +1,64 @@
-import { useColorScheme } from "react-native"
+import { Platform, useColorScheme } from "react-native"
 import { StreamdownRN } from "streamdown-rn"
+import { getTheme } from "../../lib/theme"
 import { Markdown } from "./Markdown"
 
 interface Props {
   children: string
   streaming?: boolean
+}
+
+// streamdown-rn does not export ThemeConfig from its public API, so mirror the
+// shape locally; TS still verifies it structurally against the theme prop.
+interface StreamdownTheme {
+  colors: {
+    background: string
+    foreground: string
+    muted: string
+    accent: string
+    codeBackground: string
+    codeForeground: string
+    border: string
+    link: string
+    syntaxDefault: string
+    syntaxKeyword: string
+    syntaxString: string
+    syntaxNumber: string
+    syntaxComment: string
+    syntaxFunction: string
+    syntaxClass: string
+    syntaxOperator: string
+  }
+  fonts: { mono: string }
+  spacing: { block: number; inline: number; indent: number }
+}
+
+// Maps the app's Apple design tokens (src/lib/theme.ts) into streamdown-rn's
+// ThemeConfig so the streaming path matches the stable Markdown path visually.
+function appleStreamdownTheme(isDark: boolean): StreamdownTheme {
+  const c = getTheme(isDark)
+  return {
+    colors: {
+      background: c.bg,
+      foreground: c.textPrimary,
+      muted: c.textMuted,
+      accent: c.accent,
+      codeBackground: c.codeBg,
+      codeForeground: c.codeText,
+      border: c.border,
+      link: c.markdownLink,
+      syntaxDefault: c.codeText,
+      syntaxKeyword: c.violetStrong,
+      syntaxString: c.markdownCode,
+      syntaxNumber: c.codeCopy,
+      syntaxComment: c.iconSubtle,
+      syntaxFunction: c.codeCopy,
+      syntaxClass: c.violet,
+      syntaxOperator: c.textMuted,
+    },
+    fonts: { mono: Platform.OS === "ios" ? "Menlo" : "monospace" },
+    spacing: { block: 8, inline: 4, indent: 16 },
+  }
 }
 
 // Hybrid markdown path. While a message is actively streaming, StreamdownRN
@@ -20,7 +74,7 @@ export function StreamMarkdown({ children, streaming = false }: Props) {
 
   if (streaming) {
     return (
-      <StreamdownRN theme={isDark ? "dark" : "light"} isComplete={false}>
+      <StreamdownRN theme={appleStreamdownTheme(isDark)} isComplete={false}>
         {children}
       </StreamdownRN>
     )

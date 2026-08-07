@@ -49,17 +49,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-      # CUA driver uses chat-completions; 2024-08-01-preview is sufficient.
-      AZURE_OPENAI_API_VERSION: "2024-08-01-preview"
-      # opencode's @ai-sdk/azure provider hits the new /openai/v1/responses
-      # endpoint. That endpoint accepts ONLY api-version=preview or v1 — every
-      # date-based value (2024-*-preview, 2025-*-preview, 2025-04-01-preview)
-      # returns 400 "API version not supported" and forces MODEL_CAPABLE=false,
-      # which makes send_message/multi_turn scenarios get skipped (#22).
-      # `preview` is also the @ai-sdk/azure 3.x default.
-      OPENCODE_AZURE_API_VERSION: "preview"
+      # Single credential required for the whole gate: the CUA driver's
+      # make_client() uses GEMINI_API_KEY -> OpenAI-compatible endpoint at
+      # generativelanguage.googleapis.com/v1beta/openai/ (gemini-2.0-flash),
+      # and opencode's google provider is wired to {env:GEMINI_API_KEY}.
+      # This makes the workflow runnable on forks WITHOUT the owner's Azure
+      # secrets (owner setup documented in AGENTS.md).
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENCODE_GOOGLE_MODEL: "gemini-2.0-flash"
       # Default: emulator reaches runner host via 10.0.2.2. Override with dispatch input for live server.
       OPENCODE_URL: ${{ inputs.opencode_url != '' && inputs.opencode_url || 'http://10.0.2.2:4096' }}
       ARCHIVEBOX_URL: ${{ secrets.ARCHIVEBOX_URL }}
@@ -124,38 +121,36 @@ jobs:
       - name: Install Python deps
         run: pip install openai
 
-      - name: Configure opencode Azure provider
+      - name: Configure opencode Google provider
         env:
-          AZURE_OPENAI_MODEL: "gpt-5.4"
+          OPENCODE_GOOGLE_MODEL: "gemini-2.0-flash"
         run: |
           npm install -g opencode-ai
-          # opencode (released npm pkg) does NOT read AZURE_OPENAI_* for its own LLM.
-          # It needs an explicit provider in opencode.json + a default `model`.
-          # Wire the same Azure resource the CUA driver uses (@ai-sdk/azure).
-          # Extract the resource name from the endpoint secret at runtime
-          # (e.g. https://NAME.openai.azure.com -> NAME) so nothing secret is in source.
-          RESOURCE_NAME="$(printf '%s' "$AZURE_OPENAI_ENDPOINT" | sed -E 's#https?://([^.]+)\..*#\1#')"
-          echo "Derived Azure resource name: ${RESOURCE_NAME:-<empty>}"
+          # opencode (released npm pkg) does NOT auto-read GEMINI_API_KEY for its
+          # own LLM — Google's declared env convention is GOOGLE_GENERATIVE_AI_API_KEY.
+          # Wire an explicit google provider with {env:GEMINI_API_KEY} substitution
+          # (nothing secret lands in source) so forks only need that one secret.
+          if [ -z "${GEMINI_API_KEY}" ]; then
+            echo "::warning::GEMINI_API_KEY is empty on this repo — the opencode server will have no working model"
+          fi
           mkdir -p "$HOME/.config/opencode"
           cat > "$HOME/.config/opencode/opencode.json" <<EOF
           {
             "\$schema": "https://opencode.ai/config.json",
             "provider": {
-              "azure": {
-                "npm": "@ai-sdk/azure",
-                "name": "Azure OpenAI",
+              "google": {
+                "npm": "@ai-sdk/google",
+                "name": "Google Gemini",
                 "options": {
-                  "resourceName": "${RESOURCE_NAME}",
-                  "apiKey": "{env:AZURE_OPENAI_API_KEY}",
-                  "apiVersion": "${OPENCODE_AZURE_API_VERSION}"
+                  "apiKey": "{env:GEMINI_API_KEY}"
                 },
                 "models": {
-                  "${AZURE_OPENAI_MODEL}": { "name": "Azure ${AZURE_OPENAI_MODEL}" }
+                  "${OPENCODE_GOOGLE_MODEL}": { "name": "Gemini ${OPENCODE_GOOGLE_MODEL}" }
                 }
               }
             },
-            "model": "azure/${AZURE_OPENAI_MODEL}",
-            "small_model": "azure/${AZURE_OPENAI_MODEL}"
+            "model": "google/${OPENCODE_GOOGLE_MODEL}",
+            "small_model": "google/${OPENCODE_GOOGLE_MODEL}"
           }
           EOF
           echo "opencode.json written:"; cat "$HOME/.config/opencode/opencode.json"
@@ -203,7 +198,7 @@ jobs:
         if: ${{ inputs.opencode_url == '' }}
         timeout-minutes: 10
         env:
-          AZURE_OPENAI_MODEL: "gpt-5.4"
+          OPENCODE_GOOGLE_MODEL: "gemini-2.0-flash"
         run: |
           # Deterministic check that the server can actually produce an assistant
           # reply BEFORE we spend ~30min driving the UI. Creates a session, sends a
@@ -211,12 +206,12 @@ jobs:
           # MODEL_CAPABLE=true/false as an informational signal (the emulator step
           # always runs --showcase regardless of model capability).
           set +e
-          # Fail fast when the CI repo lacks the Azure secrets (e.g. forks):
-          # the sync /message endpoint blocks until the model call completes and
-          # has NO server-side timeout, so an empty apiKey stalls it for the
+          # Fail fast when the CI repo lacks GEMINI_API_KEY (e.g. forks without the
+          # secret): the sync /message endpoint blocks until the model call completes
+          # and has NO server-side timeout, so an empty apiKey stalls it for the
           # whole 60-min job budget. The step timeout + curl -m bound the blast.
-          if [ -z "${AZURE_OPENAI_API_KEY}" ] || [ -z "${AZURE_OPENAI_ENDPOINT}" ]; then
-            echo "::warning::AZURE_OPENAI_API_KEY/AZURE_OPENAI_ENDPOINT are empty on this repo — model probe will fail fast (expected without secrets)"
+          if [ -z "${GEMINI_API_KEY}" ]; then
+            echo "::warning::GEMINI_API_KEY is empty on this repo — model probe will fail fast (expected without secrets)"
           fi
           # Use -s (not -sf): we WANT the body even on non-2xx so failures are visible.
           SID=$(curl -s -X POST http://127.0.0.1:4096/session -H 'content-type: application/json' -d '{}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))" 2>/dev/null)
@@ -225,11 +220,11 @@ jobs:
           if [ -n "$SID" ]; then
             # The /session/{id}/message endpoint (what the app SDK's session.prompt
             # hits) REQUIRES an explicit model {providerID, modelID}; without it opencode
-            # has nothing to run. Mirror exactly what the app sends: azure/gpt-5.4.
+            # has nothing to run. Mirror exactly what the app sends: google/gemini-2.0-flash.
             HTTP=$(curl -s -m 90 --connect-timeout 5 -o /tmp/probe_reply.json -w '%{http_code}' \
               -X POST "http://127.0.0.1:4096/session/$SID/message" \
               -H 'content-type: application/json' \
-              -d "{\"model\":{\"providerID\":\"azure\",\"modelID\":\"$AZURE_OPENAI_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: pong\"}]}" \
+              -d "{\"model\":{\"providerID\":\"google\",\"modelID\":\"$OPENCODE_GOOGLE_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: pong\"}]}" \
               2>/tmp/probe_err.txt)
             echo "probe HTTP status: ${HTTP:-<none>}"
             echo "--- probe reply (truncated) ---"; head -c 3000 /tmp/probe_reply.json; echo
@@ -246,7 +241,7 @@ jobs:
               ASYNC_HTTP=$(curl -s -m 90 --connect-timeout 5 -o /tmp/async_resp.txt -w '%{http_code}' \
                 -X POST "http://127.0.0.1:4096/session/$SID/prompt_async" \
                 -H 'content-type: application/json' \
-                -d "{\"model\":{\"providerID\":\"azure\",\"modelID\":\"$AZURE_OPENAI_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: async_pong\"}]}" \
+                -d "{\"model\":{\"providerID\":\"google\",\"modelID\":\"$OPENCODE_GOOGLE_MODEL\"},\"parts\":[{\"type\":\"text\",\"text\":\"reply with the single word: async_pong\"}]}" \
                 2>/dev/null)
               echo "prompt_async HTTP: $ASYNC_HTTP"
               echo "prompt_async body: $(cat /tmp/async_resp.txt)"
@@ -278,11 +273,11 @@ jobs:
           # Generated by CI workflow — dispatches to the right CUA mode.
           set -e
           if [ "${CUA_SCENARIO}" = "e2e" ]; then
-            exec python3 scripts/android-cua-smoke.py --e2e --model gpt-5.4 --include-xml --opencode-url "${OPENCODE_URL}"
+            exec python3 scripts/android-cua-smoke.py --e2e --model gemini-2.0-flash --include-xml --opencode-url "${OPENCODE_URL}"
           elif [ -n "${CUA_QUERY}" ]; then
-            exec python3 scripts/android-cua-smoke.py --query "${CUA_QUERY}" --model gpt-5.4 --include-xml --opencode-url "${OPENCODE_URL}" --eval-output /tmp/cua_eval_report.json
+            exec python3 scripts/android-cua-smoke.py --query "${CUA_QUERY}" --model gemini-2.0-flash --include-xml --opencode-url "${OPENCODE_URL}" --eval-output /tmp/cua_eval_report.json
           else
-            exec python3 scripts/android-cua-smoke.py --showcase --model gpt-5.4 --include-xml --opencode-url "${OPENCODE_URL}"
+            exec python3 scripts/android-cua-smoke.py --showcase --model gemini-2.0-flash --include-xml --opencode-url "${OPENCODE_URL}"
           fi
           RUNNEREOF
           chmod +x /tmp/cua-runner.sh

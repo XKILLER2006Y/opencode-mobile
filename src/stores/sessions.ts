@@ -55,6 +55,10 @@ interface SessionsState {
   ) => Promise<void>
   abortSession: () => Promise<void>
   refreshMessages: () => Promise<void>
+  // Re-pull the current session's messages and merge with what's on screen
+  // after an SSE reconnect — recovers tokens that streamed during the gap
+  // (SSE does not replay missed events). No-op unless the session is open.
+  catchUpSessionMessages: (sessionID: string) => Promise<void>
 
   // Revert (edit sent message) / unrevert (undo the pending revert)
   revertToMessage: (messageID: string) => Promise<RevertResult>
@@ -379,6 +383,43 @@ export const useSessions = create<SessionsState>((set, get) => ({
       set({ messages, parts })
     } catch {
       set({ error: "Failed to refresh messages" })
+    }
+  },
+
+  // Live-stream catch-up: re-fetch the session's messages/parts and MERGE
+  // them into the on-screen state. SSE resumes from "now" after a reconnect
+  // — it never replays events that streamed while the connection was down —
+  // so if the stream dropped mid-generation (mobile OS idle kill, LAN blip,
+  // app backgrounded), the tokens that arrived during the gap would be lost
+  // forever without this. Unlike refreshMessages, this preserves `temp-`
+  // optimistic placeholders so an in-flight send doesn't ghost.
+  catchUpSessionMessages: async (sessionID: string) => {
+    const client = clientFor(get().currentSession?.directory)
+    const session = get().currentSession
+    if (!client || !session || session.id !== sessionID) return
+
+    try {
+      const response = await client.session.messages(sessionID)
+      const { messages, parts } = parseMessages(response)
+
+      set((state) => {
+        const existing = state.messages
+        const temp = existing.filter((m) => m.id.startsWith("temp-"))
+        return {
+          messages: [...messages, ...temp],
+          parts: {
+            ...Object.fromEntries(temp.map((m) => [m.id, state.parts[m.id] || []])),
+            ...parts,
+          },
+          // A successful catch-up is proof the session has content — clear
+          // any stuck spinner, never set it back (see handleEvent).
+          isLoading: false,
+        }
+      })
+    } catch (err) {
+      // Fail silent: a live event or the next reconnect retries. Surfacing an
+      // error here would just add a red banner to an already-flaky moment.
+      console.warn("[Sessions] Message catch-up failed:", err)
     }
   },
 

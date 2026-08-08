@@ -227,6 +227,16 @@ export const useEvents = create<EventsState>((set, get) => ({
           if (!resyncedAfterStream) {
             resyncedAfterStream = true
             void resyncBusySessions()
+            // Live-stream continuity (issue #10288 mobile): SSE resumes from
+            // "now" and never replays events that streamed while the stream
+            // was down. If the connection dropped mid-generation (OS idle
+            // kill during a long thinking gap, LAN blip, backgrounding), the
+            // tokens that arrived in the gap are lost unless we re-pull. The
+            // busy resync above only recovers busy->idle transitions; this
+            // recovers ACTUAL ANSWER CONTENT for the session on screen,
+            // keeping the live stream continuous across reconnects.
+            const current = useSessions.getState().currentSession
+            if (current) void useSessions.getState().catchUpSessionMessages(current.id)
           }
 
           // Some server versions wrap events as `{ payload: { type, properties } }`,
